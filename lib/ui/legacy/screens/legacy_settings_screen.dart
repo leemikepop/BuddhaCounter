@@ -75,8 +75,8 @@ class LegacySettingsScreen extends StatelessWidget {
                   vm.audioService.playClickSfx(val);
                 }
               },
-              child: Column(
-                children: const [
+              child: const Column(
+                children: [
                   RadioListTile<SoundEffectType>(
                     title: Text('木魚聲 (預設)'),
                     subtitle: Text('沉穩定心，傳統佛門法器'),
@@ -121,8 +121,8 @@ class LegacySettingsScreen extends StatelessWidget {
                   }
                 }
               },
-              child: Column(
-                children: const [
+              child: const Column(
+                children: [
                   RadioListTile<AppUiMode>(
                     title: Text('經典復古模式 (Legacy)'),
                     subtitle: Text('父親原創高對比大字體版面，老用戶與長輩無縫延續使用習慣'),

@@ -100,12 +100,12 @@ class _ModernCounterScreenState extends State<ModernCounterScreen>
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: Color(0xFF4A6572)),
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Color(0xFF4A6572)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: const [
+                children: [
                   Text(
                     '南無阿彌陀佛',
                     style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),

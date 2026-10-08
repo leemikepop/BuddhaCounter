@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.yichung.lee.count3">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- 螢幕常亮防止休眠權限 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -30,6 +29,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- 不要刪除！Flutter 引擎用此標籤識別 Android v2 Embedding -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
