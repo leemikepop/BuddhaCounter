@@ -1,0 +1,28 @@
+name: buddha_counter
+description: 念佛計數器 - 念佛、拜佛修持輔助工具（原 Count3）
+publish_to: 'none'
+version: 1.48.0+148
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  audioplayers: ^6.1.0
+  shared_preferences: ^2.3.2
+  wakelock_plus: ^1.2.8
+  provider: ^6.1.2
+  url_launcher: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/audio/
+    - assets/images/

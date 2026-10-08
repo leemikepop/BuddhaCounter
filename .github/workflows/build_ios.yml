@@ -1,0 +1,54 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # 支援在 GitHub 網頁上手動一鍵觸發建置
+
+jobs:
+  build-ios:
+    name: Build iOS IPA (macOS Runner)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Verify Flutter & Environment
+        run: flutter doctor -v
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS Application (No Code Sign for Sideload / Ad-Hoc)
+        run: |
+          flutter build ios --release --no-codesign
+          
+          # 將 Build 產物打包成免簽名的 Payload .ipa 格式，方便使用 AltStore 或 Sideloadly 側載到 iPhone 12 Pro
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload/
+          zip -r BuddhaCounter-unsigned.ipa Payload
+          mv BuddhaCounter-unsigned.ipa ../../../
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BuddhaCounter-iOS-unsigned-ipa
+          path: BuddhaCounter-unsigned.ipa
+          retention-days: 14
