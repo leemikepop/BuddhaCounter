@@ -1,9 +1,7 @@
 # 複製此檔案並命名為 key.properties (位於 android 目錄下)
-# 填入您當初建立 leeyc.jks 時設定的密碼與別名
-# 此檔案已被 .gitignore 忽略，不會被上傳到 Git
 
-storeFile=../keystore/leeyc.jks
+storeFile=../xxx/xxx.jks
 storePassword=請填入金鑰庫密碼
-keyAlias=請填入金鑰別名(通常為leeyc)
+keyAlias=請填入金鑰別名
 keyPassword=請填入金鑰密碼
 
