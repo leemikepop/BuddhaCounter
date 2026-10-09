@@ -39,17 +39,17 @@ class _ModernGuideDialogState extends State<ModernGuideDialog> {
     _GuideSlideData(
       icon: Icons.spa_rounded,
       badgeText: '全新升級',
-      title: '現代禪意 · 沉浸專注',
-      description: '為精進念佛特別重塑的視覺與互動體驗，簡約優雅，安住當下。',
+      title: '全新現代操作介面',
+      description: '為精進念佛特別重塑的視覺與互動體驗，簡約優雅。',
       items: [
         _GuideItem(
           icon: Icons.adjust_rounded,
-          title: '禪意圓環計數',
+          title: '圓環計數',
           subtitle: '流暢呼吸光暈與計數進度，每聲佛號皆清明覺察。',
         ),
         _GuideItem(
           icon: Icons.dark_mode_outlined,
-          title: '晝夜禪意雙主題',
+          title: '深色與雙主題',
           subtitle: '溫潤素雅淺色與靜謐曜石深色，護眼舒適。',
         ),
         _GuideItem(
@@ -78,7 +78,7 @@ class _ModernGuideDialogState extends State<ModernGuideDialog> {
         _GuideItem(
           icon: Icons.favorite_border_rounded,
           title: '迴向發願',
-          subtitle: '釋迦牟尼佛莊嚴佛相與大回向西方文，功德圓滿。',
+          subtitle: '大回向西方文，功德圓滿。',
         ),
       ],
     ),
@@ -150,7 +150,8 @@ class _ModernGuideDialogState extends State<ModernGuideDialog> {
     final primary = theme.colorScheme.primary;
 
     return Dialog(
-      backgroundColor: isDark ? const Color(0xFF1E212A) : const Color(0xFFFCFAF7),
+      backgroundColor:
+          isDark ? const Color(0xFF1E212A) : const Color(0xFFFCFAF7),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
