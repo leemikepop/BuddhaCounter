@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../common/app_toast.dart';
 
 /// 經典念佛自動計數頁面 (忠實復刻原 Main6Activity & activity_main6.xml)
 class LegacyAutoCountScreen extends StatefulWidget {
@@ -13,12 +14,20 @@ class LegacyAutoCountScreen extends StatefulWidget {
 
 class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
   final TextEditingController _stopMinController = TextEditingController(text: '0');
+  CounterViewModel? _vm;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _vm = context.read<CounterViewModel>();
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = context.read<CounterViewModel>();
+      vm.setIsInLegacyAutoCountScreen(true);
       vm.applyScreenWakelockForCurrentPage(vm.keepScreenAuto);
       if (vm.autoStopMinutes > 0) {
         _stopMinController.text = vm.autoStopMinutes.toString();
@@ -29,6 +38,7 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
   @override
   void dispose() {
     _stopMinController.dispose();
+    _vm?.setIsInLegacyAutoCountScreen(false);
     super.dispose();
   }
 
@@ -40,9 +50,46 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('念佛自動計數'),
         backgroundColor: const Color(0xFF0000FF),
         foregroundColor: Colors.white,
+        title: const Text('念佛自動計數'),
+        actions: [
+          // 1. 螢幕方向鎖定
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              vm.isOrientationLocked
+                  ? Icons.screen_lock_rotation_rounded
+                  : Icons.screen_rotation_rounded,
+            ),
+            tooltip: vm.isOrientationLocked ? '解除方向鎖定' : '鎖定螢幕方向',
+            onPressed: () {
+              final orientation = MediaQuery.of(context).orientation;
+              vm.toggleOrientationLock(orientation);
+              AppToast.show(
+                context,
+                vm.isOrientationLocked ? '已鎖定螢幕方向' : '已解除方向鎖定',
+              );
+            },
+          ),
+          // 2. 螢幕常亮（防止休眠）
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              vm.isCurrentScreenAwake
+                  ? Icons.remove_red_eye_rounded
+                  : Icons.visibility_off_outlined,
+            ),
+            tooltip: vm.isCurrentScreenAwake ? '關閉螢幕常亮' : '螢幕常亮',
+            onPressed: () {
+              vm.toggleCurrentScreenAwake();
+              AppToast.show(
+                context,
+                vm.isCurrentScreenAwake ? '螢幕常亮' : '已關閉螢幕常亮',
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(

@@ -1,7 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 螢幕常亮防止休眠權限 -->
+    <!-- 螢幕常亮與背景音訊播放防止休眠權限 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- 網路權限 (供阿忠小站外部連結與推播) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- 震動反饋 -->
@@ -29,6 +32,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- 佛曲背景播放前景服務 (保持螢幕關閉與退至背景時音訊不中斷) -->
+        <service
+            android:name=".ChantMediaService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
+
         <!-- 不要刪除！Flutter 引擎用此標籤識別 Android v2 Embedding -->
         <meta-data
             android:name="flutterEmbedding"

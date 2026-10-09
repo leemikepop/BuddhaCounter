@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../common/app_toast.dart';
 import '../widgets/zen_circle_counter.dart';
 
 /// 現代禪意【念佛計數】專屬視圖
@@ -24,9 +25,7 @@ class ModernCounterView extends StatelessWidget {
             onPressed: () {
               Navigator.pop(ctx);
               vm.resetCount();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('已歸零')),
-              );
+              AppToast.show(context, '已歸零');
             },
             child: const Text('確認歸零'),
           ),

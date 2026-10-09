@@ -7,6 +7,7 @@ import 'legacy_auto_count_screen.dart';
 import 'legacy_music_list_screen.dart';
 import 'legacy_settings_screen.dart';
 import 'legacy_about_screen.dart';
+import '../../common/app_toast.dart';
 
 /// 經典模式主計數畫面 (忠實復刻原 Android MainActivity.java & activity_main.xml)
 class LegacyCounterScreen extends StatefulWidget {
@@ -36,21 +37,58 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
         backgroundColor: const Color(0xFF0000FF),
         foregroundColor: Colors.white,
         title: const Text(
-          '念佛、拜佛記數器',
+          '手動計數',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
+          // 1. 螢幕方向鎖定
           IconButton(
-            icon: const Icon(Icons.style_outlined),
-            tooltip: '切換至現代禪意模式',
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              vm.isOrientationLocked
+                  ? Icons.screen_lock_rotation_rounded
+                  : Icons.screen_rotation_rounded,
+            ),
+            tooltip: vm.isOrientationLocked ? '解除方向鎖定' : '鎖定螢幕方向',
             onPressed: () {
-              vm.setUiMode(AppUiMode.modern);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('已切換為現代禪意模式')),
+              final orientation = MediaQuery.of(context).orientation;
+              vm.toggleOrientationLock(orientation);
+              AppToast.show(
+                context,
+                vm.isOrientationLocked ? '已鎖定螢幕方向' : '已解除鎖定',
               );
             },
           ),
+          // 2. 螢幕常亮
           IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              vm.isCurrentScreenAwake
+                  ? Icons.remove_red_eye_rounded
+                  : Icons.visibility_off_outlined,
+            ),
+            tooltip: vm.isCurrentScreenAwake ? '關閉螢幕常亮' : '螢幕常亮',
+            onPressed: () {
+              vm.toggleCurrentScreenAwake();
+              AppToast.show(
+                context,
+                vm.isCurrentScreenAwake ? '螢幕常亮' : '已關閉螢幕常亮',
+              );
+            },
+          ),
+          // 3. 切換至現代模式
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.style_outlined),
+            tooltip: '切換至現代模式',
+            onPressed: () {
+              vm.setUiMode(AppUiMode.modern);
+              AppToast.show(context, '已切換為現代模式');
+            },
+          ),
+          // 4. 設定
+          IconButton(
+            visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.settings),
             tooltip: '設定',
             onPressed: () {
@@ -75,7 +113,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    '南無阿彌陀佛',
+                    '念佛、拜佛記數器',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -84,15 +122,27 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                   ),
                   SizedBox(height: 6),
                   Text(
-                    '念佛、拜佛記數器',
+                    '南無阿彌陀佛',
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ),
             ),
             ListTile(
+              leading: const Icon(Icons.timer_outlined),
+              title: const Text('自動計數'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const LegacyAutoCountScreen()),
+                );
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.auto_stories),
-              title: const Text('念佛頁面 (回向文)'),
+              title: const Text('迴向'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -101,17 +151,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.timer_outlined),
-              title: const Text('念佛自動計數'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LegacyAutoCountScreen()),
-                );
-              },
-            ),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.library_music),
               title: const Text('佛曲清單'),
@@ -119,10 +159,12 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const LegacyMusicListScreen()),
+                  MaterialPageRoute(
+                      builder: (_) => const LegacyMusicListScreen()),
                 );
               },
             ),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text('偏好設定'),
@@ -130,7 +172,8 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const LegacySettingsScreen()),
+                  MaterialPageRoute(
+                      builder: (_) => const LegacySettingsScreen()),
                 );
               },
             ),
@@ -148,13 +191,11 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.style_outlined),
-              title: const Text('切換至現代禪意模式'),
+              title: const Text('切換至現代模式'),
               onTap: () {
                 Navigator.pop(context);
                 vm.setUiMode(AppUiMode.modern);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('已切換為現代禪意模式')),
-                );
+                AppToast.show(context, '已切換為現代模式');
               },
             ),
           ],
@@ -197,11 +238,13 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                   ),
                   _buildClassicButton(
                     text: '念佛',
-                    textColor: vm.isChantPlaying ? const Color(0xFF0000FF) : Colors.black,
+                    textColor: vm.isChantPlaying
+                        ? const Color(0xFF0000FF)
+                        : Colors.black,
                     onPressed: () => vm.toggleHomeChant(),
                   ),
                   _buildClassicButton(
-                    text: '念佛頁',
+                    text: '迴向頁',
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -215,23 +258,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
               ),
             ),
 
-            // 大計數數字顯示（米黃色背景）
-            Container(
-              width: double.infinity,
-              color: const Color(0xFFFBFFE5),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                '${vm.count}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 44,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-
-            // 中央巨大「按我」主點擊按鈕（淺藍色 #A1C9FF）
+            // 中央巨大點擊按鈕（淺藍色 #A1C9FF），直接顯示計數數字（避免橫向時按鈕消失）
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -247,12 +274,16 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                       elevation: 3,
                     ),
                     onPressed: () => vm.increment(),
-                    child: const Text(
-                      '按我',
-                      style: TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 4,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '${vm.count}',
+                        style: const TextStyle(
+                          fontSize: 54,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                   ),
@@ -367,7 +398,8 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
       onPressed: onPressed,
       child: Text(
         text,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+        style:
+            TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
       ),
     );
   }

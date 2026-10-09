@@ -78,9 +78,10 @@ class _ZenCircleCounterState extends State<ZenCircleCounter>
         onTapUp: _handleTapUp,
         onTapCancel: _handleTapCancel,
         behavior: HitTestBehavior.opaque,
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: Container(
+        child: RepaintBoundary(
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Container(
             width: widget.size,
             height: widget.size,
             decoration: BoxDecoration(
@@ -218,7 +219,8 @@ class _ZenCircleCounterState extends State<ZenCircleCounter>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 

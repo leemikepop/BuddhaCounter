@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../common/app_toast.dart';
 
 /// 經典設定頁面 (忠實復刻原 MainActivity3 & activity_main_activity3.xml + 現代/經典模式切換)
 class LegacySettingsScreen extends StatelessWidget {
@@ -22,36 +23,32 @@ class LegacySettingsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // 螢幕休眠設定標題
-            const Text(
-              '螢幕常亮（防止休眠）設定',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0000FF),
+            // 螢幕常亮（防止休眠）設定
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text(
+                '保持螢幕常亮（防止休眠）',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0000FF),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-
-            CheckboxListTile(
-              title: const Text('首頁不休眠', style: TextStyle(fontSize: 16)),
-              value: vm.keepScreenHome,
-              onChanged: (val) => vm.setKeepScreenHome(val ?? false),
-            ),
-            CheckboxListTile(
-              title: const Text('念佛頁不休眠', style: TextStyle(fontSize: 16)),
-              value: vm.keepScreenChant,
-              onChanged: (val) => vm.setKeepScreenChant(val ?? false),
-            ),
-            CheckboxListTile(
-              title: const Text('佛曲頁不休眠', style: TextStyle(fontSize: 16)),
-              value: vm.keepScreenSongs,
-              onChanged: (val) => vm.setKeepScreenSongs(val ?? false),
-            ),
-            CheckboxListTile(
-              title: const Text('記數頁不休眠', style: TextStyle(fontSize: 16)),
-              value: vm.keepScreenAuto,
-              onChanged: (val) => vm.setKeepScreenAuto(val ?? false),
+              subtitle: const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  '開啟後計數、念佛與播放佛曲時不會自動關閉螢幕，亦可直接於各頁面頂部右上角快捷鍵切換',
+                  style: TextStyle(fontSize: 13, color: Colors.black54),
+                ),
+              ),
+              value: vm.isCurrentScreenAwake,
+              onChanged: (val) {
+                vm.setScreenAwake(val);
+                AppToast.show(
+                  context,
+                  val ? '螢幕常亮' : '已關閉螢幕常亮',
+                );
+              },
             ),
 
             const Divider(height: 32),
@@ -79,17 +76,14 @@ class LegacySettingsScreen extends StatelessWidget {
                 children: [
                   RadioListTile<SoundEffectType>(
                     title: Text('木魚聲 (預設)'),
-                    subtitle: Text('沉穩定心，傳統佛門法器'),
                     value: SoundEffectType.woodfish,
                   ),
                   RadioListTile<SoundEffectType>(
                     title: Text('引磬聲'),
-                    subtitle: Text('清脆悠揚，警策精進'),
                     value: SoundEffectType.bell,
                   ),
                   RadioListTile<SoundEffectType>(
                     title: Text('靜音'),
-                    subtitle: Text('無聲點擊計數'),
                     value: SoundEffectType.none,
                   ),
                 ],
@@ -115,22 +109,18 @@ class LegacySettingsScreen extends StatelessWidget {
                 if (val != null) {
                   vm.setUiMode(val);
                   if (val == AppUiMode.modern) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('已切換為現代禪意模式')),
-                    );
+                    AppToast.show(context, '已切換為現代模式');
                   }
                 }
               },
               child: const Column(
                 children: [
                   RadioListTile<AppUiMode>(
-                    title: Text('經典復古模式 (Legacy)'),
-                    subtitle: Text('父親原創高對比大字體版面，老用戶與長輩無縫延續使用習慣'),
+                    title: Text('經典模式'),
                     value: AppUiMode.legacy,
                   ),
                   RadioListTile<AppUiMode>(
-                    title: Text('現代禪意模式 (Modern)'),
-                    subtitle: Text('新版極簡設計風格，支援圓環計數、現代手勢與深色沉浸修持'),
+                    title: Text('現代模式'),
                     value: AppUiMode.modern,
                   ),
                 ],
@@ -146,7 +136,7 @@ class LegacySettingsScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               onPressed: () => Navigator.pop(context),
-              child: const Text('完成並返回', style: TextStyle(fontSize: 16)),
+              child: const Text('儲存並返回', style: TextStyle(fontSize: 16)),
             ),
           ],
         ),

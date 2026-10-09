@@ -42,8 +42,9 @@ class ModernFloatingPlayer extends StatelessWidget {
     final curMs = vm.audioPosition.inMilliseconds;
     final progress = (totalMs > 0) ? (curMs / totalMs).clamp(0.0, 1.0) : 0.0;
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+    return RepaintBoundary(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF20232B) : Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -199,18 +200,21 @@ class ModernFloatingPlayer extends StatelessWidget {
                 ),
               ),
               // 微型即時進度條
-              LinearProgressIndicator(
-                value: progress,
-                minHeight: 2.5,
-                backgroundColor:
-                    isDark ? const Color(0xFF2E313D) : const Color(0xFFEDE4D5),
-                valueColor: AlwaysStoppedAnimation<Color>(primary),
+              RepaintBoundary(
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 2.5,
+                  backgroundColor:
+                      isDark ? const Color(0xFF2E313D) : const Color(0xFFEDE4D5),
+                  valueColor: AlwaysStoppedAnimation<Color>(primary),
+                ),
               ),
             ],
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }
 

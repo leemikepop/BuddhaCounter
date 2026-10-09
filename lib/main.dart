@@ -39,18 +39,19 @@ class BuddhaCounterApp extends StatelessWidget {
     return MaterialApp(
       title: '念佛計數器',
       debugShowCheckedModeBanner: false,
-      themeMode: (vm.uiMode == AppUiMode.legacy)
-          ? ThemeMode.light
-          : vm.themeMode,
+      themeMode:
+          (vm.uiMode == AppUiMode.legacy) ? ThemeMode.light : vm.themeMode,
       theme: (vm.uiMode == AppUiMode.legacy)
           ? ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
+              colorScheme:
+                  ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
               useMaterial3: true,
             )
           : ModernTheme.lightTheme,
       darkTheme: (vm.uiMode == AppUiMode.legacy)
           ? ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
+              colorScheme:
+                  ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
               useMaterial3: true,
             )
           : ModernTheme.darkTheme,

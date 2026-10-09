@@ -36,3 +36,9 @@
 /android/**/build/
 # Widget Preview related
 .widget_preview/
+
+# Keystores & signing keys
+*.jks
+*.keystore
+*.pepk
+android/keystore/

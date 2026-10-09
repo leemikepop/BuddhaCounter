@@ -55,12 +55,31 @@ android {
                 keyAlias = kAlias
                 keyPassword = kPassword
             } else {
-                // 若未提供金鑰密碼或檔案不存在，安全 fallback 回 debug 簽署，避免編譯中斷
+                // 若未提供金鑰密碼或檔案不存在，安全 fallback 回 debug 簽署，確保 CI/CD 或全新環境編譯不中斷
                 val debugConfig = signingConfigs.getByName("debug")
-                storeFile = debugConfig.storeFile
-                storePassword = debugConfig.storePassword
-                keyAlias = debugConfig.keyAlias
-                keyPassword = debugConfig.keyPassword
+                val fallbackFile = debugConfig.storeFile ?: file("${System.getProperty("user.home")}/.android/debug.keystore")
+                if (!fallbackFile.exists()) {
+                    fallbackFile.parentFile?.mkdirs()
+                    try {
+                        ProcessBuilder(
+                            "keytool", "-genkeypair",
+                            "-alias", "androiddebugkey",
+                            "-keypass", "android",
+                            "-keystore", fallbackFile.absolutePath,
+                            "-storepass", "android",
+                            "-dname", "CN=Android Debug,O=Android,C=US",
+                            "-keyalg", "RSA",
+                            "-keysize", "2048",
+                            "-validity", "10000"
+                        ).start().waitFor()
+                    } catch (e: Exception) {
+                        println("Notice: Could not auto-generate debug keystore: ${e.message}")
+                    }
+                }
+                storeFile = fallbackFile
+                storePassword = debugConfig.storePassword ?: "android"
+                keyAlias = debugConfig.keyAlias ?: "androiddebugkey"
+                keyPassword = debugConfig.keyPassword ?: "android"
             }
         }
     }

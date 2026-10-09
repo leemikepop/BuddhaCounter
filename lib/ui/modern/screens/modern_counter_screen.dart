@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
 import '../../legacy/screens/legacy_about_screen.dart';
-import '../../legacy/screens/legacy_settings_screen.dart';
+import '../../common/app_toast.dart';
 import '../views/modern_counter_view.dart';
 import '../views/modern_timer_view.dart';
 import '../views/modern_practice_view.dart';
@@ -38,7 +38,8 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
     _pageController = PageController(initialPage: _currentTabIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = context.read<CounterViewModel>();
-      vm.applyScreenWakelockForCurrentPage(vm.keepScreenHome);
+      vm.setActiveTabIndex(_currentTabIndex);
+      vm.applyScreenWakelockForCurrentPage(vm.isCurrentScreenAwake);
     });
   }
 
@@ -52,6 +53,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
     setState(() {
       _currentTabIndex = index;
     });
+    context.read<CounterViewModel>().setActiveTabIndex(index);
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 280),
@@ -62,14 +64,10 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
   void _toggleThemeQuickly(CounterViewModel vm, bool isDark) {
     if (isDark) {
       vm.setThemeMode(ThemeMode.light);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已切換為暖白淺色模式')),
-      );
+      AppToast.show(context, '已切換為淺色模式');
     } else {
       vm.setThemeMode(ThemeMode.dark);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已切換為靜謐深色模式')),
-      );
+      AppToast.show(context, '已切換為深色模式');
     }
   }
 
@@ -87,24 +85,59 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
-          // 快速切換深色 / 淺色模式
+          // 1. 螢幕方向鎖定
           IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              vm.isOrientationLocked
+                  ? Icons.screen_lock_rotation_rounded
+                  : Icons.screen_rotation_rounded,
+            ),
+            tooltip: vm.isOrientationLocked ? '解除方向鎖定' : '鎖定螢幕方向',
+            onPressed: () {
+              final orientation = MediaQuery.of(context).orientation;
+              vm.toggleOrientationLock(orientation);
+              AppToast.show(
+                context,
+                vm.isOrientationLocked ? '已鎖定螢幕方向' : '已解除方向鎖定',
+              );
+            },
+          ),
+          // 2. 螢幕常亮（防止休眠）
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              vm.isCurrentScreenAwake
+                  ? Icons.remove_red_eye_rounded
+                  : Icons.visibility_off_outlined,
+            ),
+            tooltip: vm.isCurrentScreenAwake ? '關閉螢幕常亮' : '螢幕常亮',
+            onPressed: () {
+              vm.toggleCurrentScreenAwake();
+              AppToast.show(
+                context,
+                vm.isCurrentScreenAwake ? '螢幕常亮' : '已關閉螢幕常亮',
+              );
+            },
+          ),
+          // 3. 切換至經典模式
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.style_outlined),
+            tooltip: '切換回經典模式',
+            onPressed: () {
+              vm.setUiMode(AppUiMode.legacy);
+              AppToast.show(context, '已切換為經典模式');
+            },
+          ),
+          // 4. 快速切換深色 / 淺色模式
+          IconButton(
+            visualDensity: VisualDensity.compact,
             icon: Icon(
               isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
             ),
             tooltip: isDark ? '切換為淺色模式' : '切換為深色模式',
             onPressed: () => _toggleThemeQuickly(vm, isDark),
-          ),
-          // 切換至經典復古模式 (Legacy)
-          IconButton(
-            icon: const Icon(Icons.style_outlined),
-            tooltip: '切換回經典模式 (Legacy)',
-            onPressed: () {
-              vm.setUiMode(AppUiMode.legacy);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('已切換為經典復古模式')),
-              );
-            },
           ),
         ],
       ),
@@ -121,7 +154,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    '南無阿彌陀佛',
+                    '念佛、拜佛記數器',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -130,7 +163,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
                   ),
                   SizedBox(height: 6),
                   Text(
-                    '心平氣和 · 淨念相繼',
+                    '南無阿彌陀佛',
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
@@ -155,14 +188,6 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.queue_music_rounded),
-              title: const Text('選擇佛曲清單 (31首)'),
-              onTap: () {
-                Navigator.pop(context);
-                ModernFloatingPlayer.openSongPicker(context);
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.spa_rounded),
               title: const Text('迴向'),
               selected: _currentTabIndex == 2,
@@ -173,18 +198,14 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('偏好設定'),
+              leading: const Icon(Icons.queue_music_rounded),
+              title: const Text('選擇佛曲清單'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const LegacySettingsScreen(),
-                  ),
-                );
+                ModernFloatingPlayer.openSongPicker(context);
               },
             ),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.info_outline),
               title: const Text('阿忠小站 · 緣起傳承'),
@@ -201,7 +222,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.history_edu_rounded),
-              title: const Text('切換至經典模式 (Legacy)'),
+              title: const Text('切換回經典模式'),
               onTap: () {
                 Navigator.pop(context);
                 vm.setUiMode(AppUiMode.legacy);
@@ -222,11 +243,12 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
                   setState(() {
                     _currentTabIndex = index;
                   });
+                  context.read<CounterViewModel>().setActiveTabIndex(index);
                 },
                 children: const [
-                  ModernCounterView(),
-                  ModernTimerView(),
-                  ModernPracticeView(),
+                  RepaintBoundary(child: ModernCounterView()),
+                  RepaintBoundary(child: ModernTimerView()),
+                  RepaintBoundary(child: ModernPracticeView()),
                 ],
               ),
             ),

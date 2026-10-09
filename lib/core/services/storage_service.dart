@@ -1,13 +1,13 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum SoundEffectType {
-  bell,     // 引磬 (ens.mp3)
+  bell, // 引磬 (ens.mp3)
   woodfish, // 木魚 (mus.mp3)
-  none,     // 靜音
+  none, // 靜音
 }
 
 enum AppUiMode {
-  legacy, // 經典復古模式（父親原創介面）
+  legacy, // 經典復古模式
   modern, // 現代禪意模式
 }
 
@@ -27,6 +27,7 @@ class StorageService {
   static const String keyVibrationEnabled = 'pref_vibration_enabled';
   static const String keyTargetCount = 'pref_target_count';
   static const String keyFullscreenTap = 'pref_fullscreen_tap';
+  static const String keyOrientationLocked = 'pref_orientation_locked';
 
   final SharedPreferences _prefs;
 
@@ -41,12 +42,14 @@ class StorageService {
   Future<void> setCounter(int val) => _prefs.setInt(keyCounter, val);
 
   SoundEffectType getSoundEffect() {
-    final index = _prefs.getInt(keySoundEffect) ?? SoundEffectType.woodfish.index;
+    final index =
+        _prefs.getInt(keySoundEffect) ?? SoundEffectType.woodfish.index;
     if (index >= 0 && index < SoundEffectType.values.length) {
       return SoundEffectType.values[index];
     }
     return SoundEffectType.woodfish;
   }
+
   Future<void> setSoundEffect(SoundEffectType type) =>
       _prefs.setInt(keySoundEffect, type.index);
 
@@ -55,6 +58,7 @@ class StorageService {
     if (val == 'modern') return AppUiMode.modern;
     return AppUiMode.legacy; // 預設為經典模式
   }
+
   Future<void> setUiMode(AppUiMode mode) =>
       _prefs.setString(keyUiMode, mode.name);
 
@@ -81,20 +85,29 @@ class StorageService {
   Future<void> setAutoCounter(int val) => _prefs.setInt(keyAutoCounter, val);
 
   int getAutoElapsedSeconds() => _prefs.getInt(keyAutoElapsedSeconds) ?? 0;
-  Future<void> setAutoElapsedSeconds(int val) => _prefs.setInt(keyAutoElapsedSeconds, val);
+  Future<void> setAutoElapsedSeconds(int val) =>
+      _prefs.setInt(keyAutoElapsedSeconds, val);
 
   int getAutoStopMinutes() => _prefs.getInt(keyAutoStopMinutes) ?? 0;
-  Future<void> setAutoStopMinutes(int val) => _prefs.setInt(keyAutoStopMinutes, val);
+  Future<void> setAutoStopMinutes(int val) =>
+      _prefs.setInt(keyAutoStopMinutes, val);
 
-  String getThemeMode() => _prefs.getString(keyThemeMode) ?? 'system';
-  Future<void> setThemeMode(String mode) => _prefs.setString(keyThemeMode, mode);
+  String getThemeMode() => _prefs.getString(keyThemeMode) ?? 'light';
+  Future<void> setThemeMode(String mode) =>
+      _prefs.setString(keyThemeMode, mode);
 
   bool getVibrationEnabled() => _prefs.getBool(keyVibrationEnabled) ?? true;
-  Future<void> setVibrationEnabled(bool val) => _prefs.setBool(keyVibrationEnabled, val);
+  Future<void> setVibrationEnabled(bool val) =>
+      _prefs.setBool(keyVibrationEnabled, val);
 
   int getTargetCount() => _prefs.getInt(keyTargetCount) ?? 108;
   Future<void> setTargetCount(int val) => _prefs.setInt(keyTargetCount, val);
 
   bool getFullscreenTap() => _prefs.getBool(keyFullscreenTap) ?? false;
-  Future<void> setFullscreenTap(bool val) => _prefs.setBool(keyFullscreenTap, val);
+  Future<void> setFullscreenTap(bool val) =>
+      _prefs.setBool(keyFullscreenTap, val);
+
+  bool getOrientationLocked() => _prefs.getBool(keyOrientationLocked) ?? false;
+  Future<void> setOrientationLocked(bool val) =>
+      _prefs.setBool(keyOrientationLocked, val);
 }
