@@ -261,7 +261,7 @@ void main() {
       expect(audio.onPlayerComplete, isNotNull);
     });
 
-    testWidgets('AppToast renders message correctly with 300ms duration',
+    testWidgets('AppToast renders message correctly and dismisses',
         (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -280,7 +280,11 @@ void main() {
       await tester.pump();
       expect(find.text('測試快顯通知'), findsOneWidget);
 
-      await tester.pump(const Duration(milliseconds: 350));
+      // SnackBar 入場動畫 (約 250ms)
+      await tester.pump(const Duration(milliseconds: 300));
+      // 等待 SnackBar 顯示時長 (400ms) 結束
+      await tester.pump(const Duration(milliseconds: 500));
+      // 等待退場動畫完成
       await tester.pumpAndSettle();
       expect(find.text('測試快顯通知'), findsNothing);
     });
