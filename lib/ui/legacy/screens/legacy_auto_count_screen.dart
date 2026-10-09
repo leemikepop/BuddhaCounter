@@ -20,6 +20,9 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = context.read<CounterViewModel>();
       vm.applyScreenWakelockForCurrentPage(vm.keepScreenAuto);
+      if (vm.autoStopMinutes > 0) {
+        _stopMinController.text = vm.autoStopMinutes.toString();
+      }
     });
   }
 
@@ -94,7 +97,7 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                               }).toList(),
                               onChanged: (id) {
                                 if (id != null) {
-                                  vm.selectAndPlaySong(id);
+                                  vm.selectSong(id);
                                 }
                               },
                             ),
@@ -126,7 +129,7 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                       ),
                     ),
 
-                    // 音訊狀態區（淺黃綠 #DAFFAA）
+                    // 音訊顯示區（淺黃綠 #DAFFAA，點擊下方「音訊」按鈕切換顯示/隱藏）
                     Container(
                       color: const Color(0xFFDAFFAA),
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -135,14 +138,14 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                         children: [
                           const Text(
                             '音訊：',
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            vm.isAutoCounting ? '播放中' : '停止中',
-                            style: TextStyle(
-                              fontSize: 24,
+                            vm.formattedAudioPosition,
+                            style: const TextStyle(
+                              fontSize: 26,
                               fontWeight: FontWeight.bold,
-                              color: vm.isAutoCounting ? Colors.green.shade800 : Colors.grey.shade700,
+                              fontFeatures: [FontFeature.tabularFigures()],
                             ),
                           ),
                         ],
@@ -217,22 +220,25 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildButton('返回', () => Navigator.pop(context)),
-                  _buildButton('歸0', () => vm.resetAutoCount()),
                   _buildButton(
-                    vm.isAutoCounting ? '停止' : '念佛',
+                    '返回',
                     () {
                       if (vm.isAutoCounting) {
                         vm.stopAutoCount();
-                      } else {
-                        vm.startAutoCount();
                       }
+                      Navigator.pop(context);
                     },
-                    color: vm.isAutoCounting ? Colors.red.shade100 : null,
+                  ),
+                  _buildButton('歸0', () => vm.resetAutoCount()),
+                  _buildButton(
+                    '念佛',
+                    () => vm.toggleAutoCount(),
+                    textColor: vm.isAutoCounting ? const Color(0xFF0000FF) : Colors.black,
                   ),
                   _buildButton(
                     '音訊',
-                    () => vm.toggleChant(vm.currentSongId),
+                    () => vm.toggleShowAudioPosition(),
+                    textColor: vm.showAudioPosition ? const Color(0xFF0000FF) : Colors.black,
                   ),
                 ],
               ),
@@ -243,11 +249,15 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
     );
   }
 
-  Widget _buildButton(String text, VoidCallback onPressed, {Color? color}) {
+  Widget _buildButton(
+    String text,
+    VoidCallback onPressed, {
+    Color? textColor,
+  }) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: color ?? const Color(0xFFE0E0E0),
-        foregroundColor: Colors.black,
+        backgroundColor: const Color(0xFFE0E0E0),
+        foregroundColor: textColor ?? Colors.black,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         minimumSize: const Size(60, 40),
         shape: RoundedRectangleBorder(
@@ -258,7 +268,11 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
       onPressed: onPressed,
       child: Text(
         text,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: textColor ?? Colors.black,
+        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
-# 念佛計數器 (BuddhaCounter) - Flutter 跨平台移植版
+# 念佛、拜佛計數器 (BuddhaCounter) - Flutter 跨平台移植版
 
-> **傳承與初心**：本專案由 李一中（阿忠）居士創立開發，原為 Android 原生應用程式（`Count3` / `com.yichung.lee.count4`）。  
+> **傳承與初心**：本專案由 李義忠（阿忠）居士創立開發，原為 Android 原生應用程式（`Count3` / `com.yichung.lee.count4`）。  
 > 現由新世代接棒現代化維護，完整重構移植為 **Flutter** 跨平台專案，支援 Android 與 iOS 雙平台。
 
 ---
@@ -35,8 +35,9 @@ BuddhaCounter/
 │       ├── build_ios.yml          # GitHub Actions 免 Mac 自動編譯 iOS IPA
 │       └── build_android.yml      # GitHub Actions 自動編譯 Release APK / AAB
 ├── android/
-│   ├── app/build.gradle           # applicationId: com.yichung.lee.count4
-│   └── keystore/                  # 原版 leeyc.jks 簽名金鑰庫
+│   ├── app/build.gradle.kts       # applicationId: com.yichung.lee.count4, compileSdk 37
+│   ├── keystore/                  # 原版 leeyc.jks 簽名金鑰庫與 private_key.pepk
+│   └── key.properties.example     # 本地簽名設定範本 (密碼不入 Git)
 ├── assets/
 │   ├── audio/                     # 33 個完整音訊檔 (bb1~bb31, mus, ens)
 │   └── images/                    # 阿彌陀佛聖像與 App 圖示
@@ -76,6 +77,123 @@ BuddhaCounter/
 
 ---
 
+## 📦 版本號管理與規範 (Version Code / Version Name)
+
+本專案為 Flutter 跨平台專案，版本號由 **[`pubspec.yaml`](pubspec.yaml)** 單一來源管理，**請勿直接在 Gradle 或 Xcode 設定檔中寫死版本號**。
+
+在 `pubspec.yaml` 中：
+```yaml
+version: 1.48.0+148
+```
+
+| 欄位 | 範例 | 說明 |
+| :--- | :--- | :--- |
+| **`+` 前方 (Version Name)** | `1.48.0` | **使用者視覺版本號**。對應 Android 的 `versionName` 與 iOS 的 `CFBundleShortVersionString`。遵循語義化版本規範（主版本.次版本.修訂號）。 |
+| **`+` 後方 (Version Code)** | `148` | **系統與商店識別編號**。對應 Android 的 `versionCode` 與 iOS 的 `CFBundleVersion`。必須為整數，**每次發布 Google Play 更新時必須嚴格累加（+1）**，否則商店會拒絕上架。 |
+
+> 📌 **自動同步機制**：`android/app/build.gradle.kts` 已配置 `versionCode = flutter.versionCode` 與 `versionName = flutter.versionName`，每次編譯時 Flutter 會自動將版本號注入雙平台。
+
+---
+
+## 🔏 Android 正式簽章部署與 Fallback 機制
+
+本專案保留了原版原生應用的發布簽名金鑰庫（位於 `android/keystore/leeyc.jks`）。為兼顧安全性與開發便利性，Gradle 建置系統採用了**三層智慧簽署與安全回退（Fallback）機制**：
+
+### 1. 簽署載入優先順序
+1. **本機正式簽章**：若存在 `android/key.properties` 且包含有效密碼，使用 `leeyc.jks` 正式簽名。
+2. **CI 自動簽章**：若在 GitHub Actions 且已配置 Repository Secrets，從環境變數讀取並進行正式簽名。
+3. **安全回退 (Fallback)**：若以上皆無配置，自動回退為 **`debug` 簽名**，確保任何人 clone 專案後皆能直接順利編譯測試，絕不報錯中斷。
+
+### 2. 本機設定步驟（建立正式簽名包）
+1. 複製範本檔建立本地密碼檔（此檔案已被 `.gitignore` 排除，絕不會外洩到 Git）：
+   ```bash
+   cp android/key.properties.example android/key.properties
+   ```
+2. 編輯 `android/key.properties` 填入實際金鑰密碼：
+   ```properties
+   storeFile=../keystore/leeyc.jks
+   storePassword=<金鑰庫密碼>
+   keyAlias=leeyc
+   keyPassword=<金鑰別名密碼>
+   ```
+3. 執行正式打包：
+   ```bash
+   # 產出正式簽名 APK (手動安裝)
+   flutter build apk --release
+
+   # 產出正式簽名 AAB (Google Play 上架)
+   flutter build appbundle --release
+   ```
+
+---
+
+## 🚀 CI/CD 與特定版本發布流程 (GitHub Actions)
+
+專案已內建完整的自動化 CI/CD 流水線，並**嚴格區分日常開發與正式發布**，避免每次 commit 都產生多餘版本：
+
+### 情況 A：日常程式碼提交 (`git push` 到 `main` / PR)
+* 自動觸發建置驗證，確保 Android APK、AAB 與 iOS 無簽名 IPA 皆可成功編譯。
+* 編譯產物以 **Artifacts** 形式暫存於 GitHub Actions 執行紀錄中（供除錯驗證），**不會建立任何 GitHub Release**。
+
+### 情況 B：發布特定版本（推薦：使用 Git Tag）
+當您完成某個功能階段、並已在 `pubspec.yaml` 遞增好版本號後，只需對該 commit 建立版本標籤並推送：
+
+```bash
+# 1. 確保已 commit 最新程式碼 (包含 pubspec.yaml 版本號更新)
+git add .
+git commit -m "chore: release v1.48.0"
+
+# 2. 建立 tag 並推送到遠端
+git tag v1.48.0
+git push origin v1.48.0
+```
+
+**GitHub Actions 偵測到 `v*` 標籤後會自動執行：**
+1. 啟動 Android 與 iOS 雙平台編譯。
+2. 自動在 GitHub 倉庫的 **Releases** 頁面建立 `v1.48.0` 正式發布版本。
+3. 自動生成變更紀錄（Release Notes），並自動將產物掛載至該 Release 供同修下載：
+   - 📱 `app-release.apk`（Android 正式安裝包）
+   - 📦 `app-release.aab`（Google Play 上架套件）
+   - 🍏 `BuddhaCounter-unsigned.ipa`（iOS 側載安裝包）
+
+### 情況 C：在 GitHub 網頁上手動一鍵發布 (Workflow Dispatch)
+若不想使用命令列打 tag，也可隨時在網頁上手動觸發：
+1. 瀏覽 GitHub 倉庫 ➡️ 點選 **Actions** 頁籤。
+2. 左側點擊 **Build Android Release**。
+3. 點選右側 **Run workflow** 下拉選單。
+4. 勾選 **`是否直接建立 GitHub Release (附帶 APK / AAB 檔案)`**。
+5. 點擊綠色 **Run workflow** 按鈕即可指定發布。
+
+### 情況 D：在 GitHub Actions 啟用正式簽名（選用）
+若希望 GitHub Actions 自動產出的檔案也具備原作者正式簽名：
+1. 進入 GitHub 倉庫 ➡️ **Settings** ➡️ **Secrets and variables** ➡️ **Actions**。
+2. 點擊 **New repository secret**，新增以下 3 個變數：
+   - `KEYSTORE_PASSWORD`：金鑰庫密碼
+   - `KEY_ALIAS`：金鑰別名（例如 `leeyc`）
+   - `KEY_PASSWORD`：別名密碼
+*(若未設定，CI 會自動安全 fallback 至 debug 簽名)*
+
+---
+
+## 🏪 Google Play 無縫更新指南
+
+本專案已嚴格保留原原生 Android App 的識別參數：
+* **Application ID**：`com.yichung.lee.count4`
+* **Sign Key**：`android/keystore/leeyc.jks`
+
+**更新上架步驟：**
+1. 更新 `pubspec.yaml` 的版本號（確保 `versionCode` 大於上一版）。
+2. 使用正式金鑰打包 AAB：
+   ```bash
+   flutter build appbundle --release
+   ```
+3. 登入 [Google Play Console](https://play.google.com/console/)。
+4. 進入既有的「念佛計數器」應用 ➡️ **正式版本 (Production)** ➡️ **建立新發布版本**。
+5. 上傳 `build/app/outputs/bundle/release/app-release.aab`。
+6. 填寫版本說明並提交審查，即可無縫覆蓋更新老使用者的應用程式！
+
+---
+
 ## 🛠 本地開發啟動命令 (若已安裝 Flutter)
 
 ```bash
@@ -85,3 +203,4 @@ flutter pub get
 # 2. 連接 Android 裝置或模擬器運行
 flutter run
 ```
+

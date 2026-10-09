@@ -5,6 +5,7 @@ import 'core/services/storage_service.dart';
 import 'features/counter/counter_view_model.dart';
 import 'ui/legacy/screens/legacy_counter_screen.dart';
 import 'ui/modern/screens/modern_counter_screen.dart';
+import 'ui/modern/theme/modern_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,10 +39,21 @@ class BuddhaCounterApp extends StatelessWidget {
     return MaterialApp(
       title: '念佛計數器',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
-        useMaterial3: true,
-      ),
+      themeMode: (vm.uiMode == AppUiMode.legacy)
+          ? ThemeMode.light
+          : vm.themeMode,
+      theme: (vm.uiMode == AppUiMode.legacy)
+          ? ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
+              useMaterial3: true,
+            )
+          : ModernTheme.lightTheme,
+      darkTheme: (vm.uiMode == AppUiMode.legacy)
+          ? ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
+              useMaterial3: true,
+            )
+          : ModernTheme.darkTheme,
       // 根據使用者設定自動切換【經典復古模式 (Legacy)】或【現代禪意模式 (Modern)】
       home: vm.uiMode == AppUiMode.legacy
           ? const LegacyCounterScreen()

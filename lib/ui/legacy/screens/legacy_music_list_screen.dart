@@ -68,7 +68,7 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
                         child: Row(
                           children: [
                             Text(
-                              '${song.id}. ',
+                              '${song.id + 1}. ',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: isCurrent ? const Color(0xFF0000FF) : Colors.black54,

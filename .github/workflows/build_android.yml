@@ -3,9 +3,19 @@ name: Build Android Release
 on:
   push:
     branches: [ main, master ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      create_release:
+        description: '是否直接建立 GitHub Release (附帶 APK / AAB 檔案)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
 
 jobs:
   build-android:
@@ -20,12 +30,12 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.x'
+          flutter-version: '3.47.x'
           channel: 'stable'
           cache: true
 
@@ -33,19 +43,39 @@ jobs:
         run: flutter pub get
 
       - name: Build APK (Release)
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: flutter build apk --release
 
       - name: Build App Bundle (AAB for Google Play)
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: flutter build appbundle --release
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: BuddhaCounter-Android-APK
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      - name: Upload AAB (Google Play)
+      - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
           name: BuddhaCounter-GooglePlay-AAB
           path: build/app/outputs/bundle/release/app-release.aab
+
+      # 只有推送 tag (如 v1.48.0) 或手動勾選 create_release 時，才會發布正式 GitHub Release
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+          generate_release_notes: true
+          draft: false
+          prerelease: false

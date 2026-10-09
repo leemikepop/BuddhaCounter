@@ -32,4 +32,7 @@
 # Android Studio
 /android/.gradle/
 /android/local.properties
+/android/key.properties
 /android/**/build/
+# Widget Preview related
+.widget_preview/

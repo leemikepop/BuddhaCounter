@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
 import 'legacy_chant_screen.dart';
 import 'legacy_auto_count_screen.dart';
@@ -40,6 +41,16 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.style_outlined),
+            tooltip: '切換至現代禪意模式',
+            onPressed: () {
+              vm.setUiMode(AppUiMode.modern);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('已切換為現代禪意模式')),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.settings),
             tooltip: '設定',
             onPressed: () {
@@ -51,19 +62,103 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            tooltip: '阿忠小站',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const LegacyAboutScreen(),
-                ),
-              );
-            },
-          ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Color(0xFF0000FF)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    '南無阿彌陀佛',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    '念佛、拜佛記數器',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.auto_stories),
+              title: const Text('念佛頁面 (回向文)'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LegacyChantScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.timer_outlined),
+              title: const Text('念佛自動計數'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LegacyAutoCountScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.library_music),
+              title: const Text('佛曲清單'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LegacyMusicListScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('偏好設定'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LegacySettingsScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('阿忠小站 · 緣起傳承'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LegacyAboutScreen()),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.style_outlined),
+              title: const Text('切換至現代禪意模式'),
+              onTap: () {
+                Navigator.pop(context);
+                vm.setUiMode(AppUiMode.modern);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('已切換為現代禪意模式')),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       body: SafeArea(
         child: Column(
@@ -102,7 +197,8 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                   ),
                   _buildClassicButton(
                     text: '念佛',
-                    onPressed: () => vm.increment(),
+                    textColor: vm.isChantPlaying ? const Color(0xFF0000FF) : Colors.black,
+                    onPressed: () => vm.toggleHomeChant(),
                   ),
                   _buildClassicButton(
                     text: '念佛頁',
@@ -254,11 +350,13 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
   Widget _buildClassicButton({
     required String text,
     required VoidCallback onPressed,
+    Color? textColor,
   }) {
+    final color = textColor ?? Colors.black;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFFE0E0E0),
-        foregroundColor: Colors.black,
+        foregroundColor: color,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         minimumSize: const Size(60, 36),
         shape: RoundedRectangleBorder(
@@ -269,7 +367,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
       onPressed: onPressed,
       child: Text(
         text,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
       ),
     );
   }

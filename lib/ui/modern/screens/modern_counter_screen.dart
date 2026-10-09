@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
-import '../../legacy/screens/legacy_chant_screen.dart';
-import '../../legacy/screens/legacy_music_list_screen.dart';
-import '../../legacy/screens/legacy_settings_screen.dart';
 import '../../legacy/screens/legacy_about_screen.dart';
+import '../../legacy/screens/legacy_settings_screen.dart';
+import '../views/modern_counter_view.dart';
+import '../views/modern_timer_view.dart';
+import '../views/modern_practice_view.dart';
+import '../widgets/modern_floating_player.dart';
 
-/// 現代禪意風格計數畫面 (未來擴充之全新現代化介面，與經典模式無縫共用同一個狀態模型)
+/// 現代禪意模式主導航視圖
+/// 特色：
+/// 1. 支援水平左右滑動切換頁面 (PageView)
+/// 2. 下方常駐浮動佛曲播放器，旁附一鍵選曲清單
+/// 3. 頂部簡約計時碼表（置於計數頁最上方）
+/// 4. 完美深色/淺色禪意主題切換
 class ModernCounterScreen extends StatefulWidget {
   const ModernCounterScreen({super.key});
 
@@ -15,26 +22,20 @@ class ModernCounterScreen extends StatefulWidget {
   State<ModernCounterScreen> createState() => _ModernCounterScreenState();
 }
 
-class _ModernCounterScreenState extends State<ModernCounterScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animController;
-  late Animation<double> _scaleAnimation;
+class _ModernCounterScreenState extends State<ModernCounterScreen> {
+  int _currentTabIndex = 0;
+  late final PageController _pageController;
+
+  final List<String> _tabTitles = const [
+    '手動計數',
+    '自動計數',
+    '迴向',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-      lowerBound: 0.95,
-      upperBound: 1.0,
-      value: 1.0,
-    );
-    _scaleAnimation = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOut,
-    );
-
+    _pageController = PageController(initialPage: _currentTabIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = context.read<CounterViewModel>();
       vm.applyScreenWakelockForCurrentPage(vm.keepScreenHome);
@@ -43,35 +44,58 @@ class _ModernCounterScreenState extends State<ModernCounterScreen>
 
   @override
   void dispose() {
-    _animController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
-  void _onTapCount(CounterViewModel vm) {
-    _animController.reverse().then((_) => _animController.forward());
-    vm.increment();
+  void _onTabSelect(int index) {
+    setState(() {
+      _currentTabIndex = index;
+    });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _toggleThemeQuickly(CounterViewModel vm, bool isDark) {
+    if (isDark) {
+      vm.setThemeMode(ThemeMode.light);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已切換為暖白淺色模式')),
+      );
+    } else {
+      vm.setThemeMode(ThemeMode.dark);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已切換為靜謐深色模式')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<CounterViewModel>();
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F7F2), // 禪意米白
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        foregroundColor: const Color(0xFF2C2C2C),
-        title: const Text(
-          '念佛計數器 · 禪意模式',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1.2,
-          ),
+        title: Text(
+          _tabTitles[_currentTabIndex],
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
+          // 快速切換深色 / 淺色模式
+          IconButton(
+            icon: Icon(
+              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+            ),
+            tooltip: isDark ? '切換為淺色模式' : '切換為深色模式',
+            onPressed: () => _toggleThemeQuickly(vm, isDark),
+          ),
+          // 切換至經典復古模式 (Legacy)
           IconButton(
             icon: const Icon(Icons.style_outlined),
             tooltip: '切換回經典模式 (Legacy)',
@@ -82,33 +106,27 @@ class _ModernCounterScreenState extends State<ModernCounterScreen>
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: '設定',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const LegacySettingsScreen(),
-                ),
-              );
-            },
-          ),
         ],
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Color(0xFF4A6572)),
-              child: Column(
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF22242B) : primary,
+              ),
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
                     '南無阿彌陀佛',
-                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   SizedBox(height: 6),
                   Text(
@@ -119,27 +137,52 @@ class _ModernCounterScreenState extends State<ModernCounterScreen>
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.auto_stories),
-              title: const Text('念佛頁面 (回向文)'),
+              leading: const Icon(Icons.touch_app_rounded),
+              title: const Text('手動計數'),
+              selected: _currentTabIndex == 0,
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const LegacyChantScreen()));
+                _onTabSelect(0);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.library_music),
-              title: const Text('佛曲清單'),
+              leading: const Icon(Icons.timer_outlined),
+              title: const Text('自動計數'),
+              selected: _currentTabIndex == 1,
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const LegacyMusicListScreen()));
+                _onTabSelect(1);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.queue_music_rounded),
+              title: const Text('選擇佛曲清單 (31首)'),
+              onTap: () {
+                Navigator.pop(context);
+                ModernFloatingPlayer.openSongPicker(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.spa_rounded),
+              title: const Text('迴向'),
+              selected: _currentTabIndex == 2,
+              onTap: () {
+                Navigator.pop(context);
+                _onTabSelect(2);
+              },
+            ),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text('偏好設定'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const LegacySettingsScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LegacySettingsScreen(),
+                  ),
+                );
               },
             ),
             ListTile(
@@ -147,12 +190,17 @@ class _ModernCounterScreenState extends State<ModernCounterScreen>
               title: const Text('阿忠小站 · 緣起傳承'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const LegacyAboutScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LegacyAboutScreen(),
+                  ),
+                );
               },
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.history),
+              leading: const Icon(Icons.history_edu_rounded),
               title: const Text('切換至經典模式 (Legacy)'),
               onTap: () {
                 Navigator.pop(context);
@@ -165,149 +213,49 @@ class _ModernCounterScreenState extends State<ModernCounterScreen>
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 20),
-
-            // 偈頌提示
-            const Text(
-              '「都攝六根，淨念相繼」',
-              style: TextStyle(
-                fontSize: 16,
-                letterSpacing: 3,
-                color: Color(0xFF757575),
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-
-            const Spacer(),
-
-            // 圓形禪意計數按鈕
-            Center(
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: GestureDetector(
-                  onTap: () => _onTapCount(vm),
-                  child: Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF4A6572).withValues(alpha: 0.15),
-                          blurRadius: 30,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                      border: Border.all(
-                        color: const Color(0xFFD6C7A1),
-                        width: 4,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '${vm.count}',
-                          style: const TextStyle(
-                            fontSize: 60,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2C2C2C),
-                            fontFeatures: [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          '點擊念佛',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF8D6E63),
-                            letterSpacing: 2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            const Spacer(),
-
-            // 快捷控制按鈕群
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton.filledTonal(
-                    icon: const Icon(Icons.refresh),
-                    tooltip: '歸零',
-                    onPressed: () => vm.resetCount(),
-                  ),
-                  IconButton.filledTonal(
-                    icon: const Icon(Icons.remove),
-                    tooltip: '減 1',
-                    onPressed: () => vm.decrement(),
-                  ),
-                  IconButton.filledTonal(
-                    icon: Icon(vm.isTimerRunning ? Icons.pause : Icons.play_arrow),
-                    tooltip: vm.isTimerRunning ? '暫停計時' : '開始計時',
-                    onPressed: () {
-                      if (vm.isTimerRunning) {
-                        vm.stopTimer();
-                      } else {
-                        vm.startTimer();
-                      }
-                    },
-                  ),
-                  IconButton.filledTonal(
-                    icon: const Icon(Icons.queue_music),
-                    tooltip: '佛曲',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const LegacyMusicListScreen(),
-                        ),
-                      );
-                    },
-                  ),
+            // 可左右滑動的分頁視圖 (PageView)
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: const BouncingScrollPhysics(),
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentTabIndex = index;
+                  });
+                },
+                children: const [
+                  ModernCounterView(),
+                  ModernTimerView(),
+                  ModernPracticeView(),
                 ],
               ),
             ),
 
-            const SizedBox(height: 16),
-
-            // 底部計時條
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-              margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.black12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.timer_outlined, size: 20, color: Colors.grey),
-                  const SizedBox(width: 8),
-                  Text(
-                    '計時修持：${vm.formattedTimer}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF424242),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 10),
+            // 下方常駐浮動佛曲播放器（附帶播放清單選單鈕）
+            const ModernFloatingPlayer(),
           ],
         ),
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentTabIndex,
+        onDestinationSelected: _onTabSelect,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.touch_app_outlined),
+            selectedIcon: Icon(Icons.touch_app_rounded),
+            label: '手動計數',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.timer_outlined),
+            selectedIcon: Icon(Icons.timer_rounded),
+            label: '自動計數',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.spa_outlined),
+            selectedIcon: Icon(Icons.spa_rounded),
+            label: '迴向',
+          ),
+        ],
       ),
     );
   }
