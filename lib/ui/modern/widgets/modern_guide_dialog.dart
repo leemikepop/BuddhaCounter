@@ -15,10 +15,9 @@ class ModernGuideDialog extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     VoidCallback? onComplete,
-  }) async {
+  }) {
     final vm = context.read<CounterViewModel>();
-    await vm.markModernGuideSeen();
-    if (!context.mounted) return;
+    vm.markModernGuideSeen();
 
     return showDialog<void>(
       context: context,

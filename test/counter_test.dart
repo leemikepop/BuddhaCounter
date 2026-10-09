@@ -697,6 +697,8 @@ void main() {
 
       // 驗證動態顯示專案版本號 1.48.0
       expect(find.text('版本 1.48.0'), findsOneWidget);
+      // 驗證隱私權政策按鈕存在
+      expect(find.text('隱私權政策 (Privacy Policy)'), findsOneWidget);
     });
 
     test('Storage handles seenModernGuide flag and ViewModel updates',
@@ -759,6 +761,10 @@ void main() {
       await tester.tap(find.text('目標 888'));
       await tester.pumpAndSettle();
       expect(find.text('888 聲 (自訂)'), findsOneWidget);
+
+      // 關閉面板
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('ModernGuideDialog renders slides and navigates through pages',
@@ -791,7 +797,7 @@ void main() {
       expect(vm.hasSeenModernGuide, isTrue);
 
       // 驗證第 1 頁內容
-      expect(find.text('現代禪意 · 沉浸專注'), findsOneWidget);
+      expect(find.text('全新現代操作介面'), findsOneWidget);
       expect(find.text('下一步'), findsOneWidget);
 
       // 點擊下一步切換至第 2 頁
@@ -806,7 +812,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 對話框已關閉
-      expect(find.text('現代禪意 · 沉浸專注'), findsNothing);
+      expect(find.text('全新現代操作介面'), findsNothing);
     });
   });
 }
