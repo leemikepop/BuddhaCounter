@@ -128,6 +128,9 @@ class CounterViewModel extends ChangeNotifier {
   bool _isOrientationLocked = false;
   bool get isOrientationLocked => _isOrientationLocked;
 
+  bool _hasSeenModernGuide = false;
+  bool get hasSeenModernGuide => _hasSeenModernGuide;
+
   int _currentSongId = 0;
   int get currentSongId => _currentSongId;
 
@@ -163,6 +166,7 @@ class CounterViewModel extends ChangeNotifier {
     _vibrationEnabled = _storage.getVibrationEnabled();
     _targetCount = _storage.getTargetCount();
     _fullscreenTap = _storage.getFullscreenTap();
+    _hasSeenModernGuide = _storage.getSeenModernGuide();
 
     // 監聽音訊時長變化
     _durationSubscription = _audio.onDurationChanged.listen((dur) {
@@ -629,6 +633,12 @@ class CounterViewModel extends ChangeNotifier {
   void setFullscreenTap(bool val) {
     _fullscreenTap = val;
     _storage.setFullscreenTap(val);
+    notifyListeners();
+  }
+
+  Future<void> markModernGuideSeen() async {
+    _hasSeenModernGuide = true;
+    await _storage.setSeenModernGuide(true);
     notifyListeners();
   }
 

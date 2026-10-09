@@ -19,6 +19,7 @@ import 'package:buddha_counter/ui/legacy/screens/legacy_counter_screen.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_settings_screen.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_about_screen.dart';
 import 'package:buddha_counter/ui/common/app_toast.dart';
+import 'package:buddha_counter/ui/modern/widgets/modern_guide_dialog.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -696,6 +697,116 @@ void main() {
 
       // 驗證動態顯示專案版本號 1.48.0
       expect(find.text('版本 1.48.0'), findsOneWidget);
+    });
+
+    test('Storage handles seenModernGuide flag and ViewModel updates',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final audio = AudioService();
+      final vm = CounterViewModel(storage: storage, audio: audio);
+
+      expect(storage.getSeenModernGuide(), isFalse);
+      expect(vm.hasSeenModernGuide, isFalse);
+
+      await vm.markModernGuideSeen();
+      expect(storage.getSeenModernGuide(), isTrue);
+      expect(vm.hasSeenModernGuide, isTrue);
+    });
+
+    testWidgets('ModernCounterView allows setting custom target count',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final audio = AudioService();
+      final vm = CounterViewModel(storage: storage, audio: audio);
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: vm,
+          child: const MaterialApp(
+            home: Scaffold(
+              body: ModernCounterView(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 點擊功課目標按鈕開啟設定面板
+      await tester.tap(find.text('目標 108'));
+      await tester.pumpAndSettle();
+
+      // 驗證底部對話框出現
+      expect(find.text('設定今日念佛目標'), findsOneWidget);
+      expect(find.text('或自訂目標聲數：'), findsOneWidget);
+
+      // 輸入自訂目標 888 聲
+      final textField = find.byType(TextField);
+      expect(textField, findsOneWidget);
+      await tester.enterText(textField, '888');
+      await tester.pump();
+
+      // 點擊「設定」按鈕
+      await tester.tap(find.widgetWithText(FilledButton, '設定'));
+      await tester.pumpAndSettle();
+
+      // 驗證目標已更新為 888
+      expect(vm.targetCount, 888);
+      expect(find.text('目標 888'), findsOneWidget);
+
+      // 再次開啟設定面板，驗證自訂標籤出現
+      await tester.tap(find.text('目標 888'));
+      await tester.pumpAndSettle();
+      expect(find.text('888 聲 (自訂)'), findsOneWidget);
+    });
+
+    testWidgets('ModernGuideDialog renders slides and navigates through pages',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final audio = AudioService();
+      final vm = CounterViewModel(storage: storage, audio: audio);
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: vm,
+          child: MaterialApp(
+            home: Builder(
+              builder: (ctx) => ElevatedButton(
+                onPressed: () => ModernGuideDialog.show(ctx),
+                child: const Text('開啟導覽'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 點擊開啟導覽
+      await tester.tap(find.text('開啟導覽'));
+      await tester.pumpAndSettle();
+
+      // 驗證已標記已讀
+      expect(vm.hasSeenModernGuide, isTrue);
+
+      // 驗證第 1 頁內容
+      expect(find.text('現代禪意 · 沉浸專注'), findsOneWidget);
+      expect(find.text('下一步'), findsOneWidget);
+
+      // 點擊下一步切換至第 2 頁
+      await tester.tap(find.text('下一步'));
+      await tester.pumpAndSettle();
+      expect(find.text('三大專屬修持分頁'), findsOneWidget);
+
+      // 點擊關閉/完成
+      final closeButton = find.byIcon(Icons.close_rounded);
+      expect(closeButton, findsOneWidget);
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
+      // 對話框已關閉
+      expect(find.text('現代禪意 · 沉浸專注'), findsNothing);
     });
   });
 }

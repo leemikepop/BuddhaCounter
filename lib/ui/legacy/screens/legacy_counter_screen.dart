@@ -8,6 +8,7 @@ import 'legacy_music_list_screen.dart';
 import 'legacy_settings_screen.dart';
 import 'legacy_about_screen.dart';
 import '../../common/app_toast.dart';
+import '../../modern/widgets/modern_guide_dialog.dart';
 
 /// 經典模式主計數畫面 (忠實復刻原 Android MainActivity.java & activity_main.xml)
 class LegacyCounterScreen extends StatefulWidget {
@@ -24,7 +25,101 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = context.read<CounterViewModel>();
       vm.applyScreenWakelockForCurrentPage(vm.keepScreenHome);
+      if (!vm.hasSeenModernGuide) {
+        Future.delayed(const Duration(milliseconds: 600), () {
+          if (mounted) {
+            _showNewVersionIntro(context, vm);
+          }
+        });
+      }
     });
+  }
+
+  void _showNewVersionIntro(BuildContext context, CounterViewModel vm) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0000FF).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome_rounded,
+                    color: Color(0xFF0000FF),
+                    size: 30,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  '念佛計數器 · 全新升級！',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '已為您推出全新的「現代禪意模式」，包含沉浸圓環計數、自訂目標聲數、隨身佛曲播放器與晝夜護眼主題。\n\n您可隨時切換體驗，日後亦可自由切換回熟悉的經典模式。',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black87,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          vm.markModernGuideSeen();
+                        },
+                        child: const Text('保留經典模式'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF0000FF),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          vm.setUiMode(AppUiMode.modern);
+                          ModernGuideDialog.show(context);
+                        },
+                        child: const Text(
+                          '立即體驗新版',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -189,6 +284,21 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
               },
             ),
             const Divider(),
+            ListTile(
+              leading:
+                  const Icon(Icons.school_outlined, color: Color(0xFF0000FF)),
+              title: const Text('新版功能導覽教學'),
+              subtitle: const Text('了解現代禪意模式與新功能'),
+              onTap: () {
+                Navigator.pop(context);
+                ModernGuideDialog.show(
+                  context,
+                  onComplete: () {
+                    vm.setUiMode(AppUiMode.modern);
+                  },
+                );
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.style_outlined),
               title: const Text('切換至現代模式'),

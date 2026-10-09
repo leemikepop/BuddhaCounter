@@ -8,6 +8,7 @@ import '../views/modern_counter_view.dart';
 import '../views/modern_timer_view.dart';
 import '../views/modern_practice_view.dart';
 import '../widgets/modern_floating_player.dart';
+import '../widgets/modern_guide_dialog.dart';
 
 /// 現代禪意模式主導航視圖
 /// 特色：
@@ -40,6 +41,13 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
       final vm = context.read<CounterViewModel>();
       vm.setActiveTabIndex(_currentTabIndex);
       vm.applyScreenWakelockForCurrentPage(vm.isCurrentScreenAwake);
+      if (!vm.hasSeenModernGuide) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            ModernGuideDialog.show(context);
+          }
+        });
+      }
     });
   }
 
@@ -203,6 +211,15 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
               onTap: () {
                 Navigator.pop(context);
                 ModernFloatingPlayer.openSongPicker(context);
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.school_outlined),
+              title: const Text('新版功能導覽教學'),
+              onTap: () {
+                Navigator.pop(context);
+                ModernGuideDialog.show(context);
               },
             ),
             const Divider(),
