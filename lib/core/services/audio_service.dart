@@ -67,10 +67,9 @@ class AudioService {
   );
 
   AudioService() {
-    // 初始化點擊音效池：設置低延遲 (lowLatency)、停止釋放模式，並配置無焦點搶佔上下文
+    // 初始化點擊音效池：採用標準 MediaPlayer 模式，設置停止釋放模式，並配置無焦點搶佔上下文
     for (final player in _sfxPool) {
       player.setReleaseMode(ReleaseMode.stop);
-      player.setPlayerMode(PlayerMode.lowLatency);
       player.setAudioContext(_sfxAudioContext);
     }
 
@@ -104,9 +103,10 @@ class AudioService {
 
   /// 播放點擊音效（木魚或引磬）
   /// 採用輪詢音效池 (Round-Robin Pool) 架構：
-  /// 1. 每次點擊均立即由下一個獨立通道發聲，達成零延遲即時反饋
+  /// 1. 每次點擊均由獨立通道發聲，達成無延遲即時反饋
   /// 2. 允許多個敲擊聲在不同通道同時疊加（例如引磬之金屬餘音與後續木魚聲自然共鳴）
-  /// 3. 固定通道池不產生額外物件分配，兼顧極致效能與系統穩定性
+  /// 3. 播放前先清空該通道狀態，徹底解決 Android 原生端多擊後無聲/卡死的缺陷
+  /// 4. 固定通道池不產生額外物件分配，兼顧極致效能與系統穩定性
   Future<void> playClickSfx(SoundEffectType type) async {
     if (type == SoundEffectType.none) return;
     final file = (type == SoundEffectType.bell) ? 'audio/ens.mp3' : 'audio/mus.mp3';
@@ -115,8 +115,14 @@ class AudioService {
     final player = _sfxPool[_sfxPoolIndex];
     _sfxPoolIndex = (_sfxPoolIndex + 1) % _sfxPoolSize;
 
-    // 即發即走 (Fire-and-forget)，立即向原生音訊層送出播放指令，達成無延遲即刻出聲與多通道疊加
-    player.play(AssetSource(file)).catchError((_) {});
+    // 非阻塞 (Fire-and-forget) 重置並播放：
+    // 先 stop 清除通道狀態（重設 position 為 0 且 playing 標記為 false），
+    // 隨即播放音訊，徹底杜絕連點時通道因播放未完成或狀態卡死而無聲的問題
+    player.stop().then((_) {
+      player.play(AssetSource(file)).catchError((_) {});
+    }).catchError((_) {
+      player.play(AssetSource(file)).catchError((_) {});
+    });
   }
 
   /// 播放指定佛曲
