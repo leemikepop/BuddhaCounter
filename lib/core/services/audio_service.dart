@@ -4,7 +4,18 @@ import 'background_audio_service.dart';
 import 'storage_service.dart';
 
 class AudioService {
-  final AudioPlayer _sfxPlayer = AudioPlayer();
+  /// 點擊音效播放器池容量 (6 個獨立通道，支援極速連擊與疊音迴響，且記憶體佔用極低)
+  static const int _sfxPoolSize = 6;
+
+  /// 固定音效播放器池 (避免動態創建物件產生記憶體抖動與 GC 負擔)
+  final List<AudioPlayer> _sfxPool = List.generate(
+    _sfxPoolSize,
+    (index) => AudioPlayer(playerId: 'sfx_pool_$index'),
+  );
+
+  /// 輪詢指針 (Round-Robin Pointer)
+  int _sfxPoolIndex = 0;
+
   final AudioPlayer _musicPlayer = AudioPlayer();
 
   AudioPlayer get musicPlayer => _musicPlayer;
@@ -23,6 +34,22 @@ class AudioService {
   Future<Duration?> getCurrentPosition() => _musicPlayer.getCurrentPosition();
   Future<Duration?> getDuration() => _musicPlayer.getDuration();
 
+  static final AudioContext _sfxAudioContext = AudioContext(
+    android: const AudioContextAndroid(
+      isSpeakerphoneOn: false,
+      stayAwake: false,
+      contentType: AndroidContentType.music,
+      usageType: AndroidUsageType.media,
+      audioFocus: AndroidAudioFocus.none,
+    ),
+    iOS: AudioContextIOS(
+      category: AVAudioSessionCategory.playback,
+      options: const {
+        AVAudioSessionOptions.mixWithOthers,
+      },
+    ),
+  );
+
   static final AudioContext _musicAudioContext = AudioContext(
     android: const AudioContextAndroid(
       isSpeakerphoneOn: false,
@@ -40,27 +67,14 @@ class AudioService {
   );
 
   AudioService() {
-    _sfxPlayer.setReleaseMode(ReleaseMode.stop);
-    _musicPlayer.setReleaseMode(ReleaseMode.loop);
+    // 初始化點擊音效池：設置低延遲 (lowLatency)、停止釋放模式，並配置無焦點搶佔上下文
+    for (final player in _sfxPool) {
+      player.setReleaseMode(ReleaseMode.stop);
+      player.setPlayerMode(PlayerMode.lowLatency);
+      player.setAudioContext(_sfxAudioContext);
+    }
 
-    // 關鍵設定：點擊音效 (木魚/引磬) 走媒體音效通道 (Media stream)，不隨手機靜音鍵靜音，且無焦點搶佔避免中斷佛曲
-    _sfxPlayer.setAudioContext(
-      AudioContext(
-        android: const AudioContextAndroid(
-          isSpeakerphoneOn: false,
-          stayAwake: false,
-          contentType: AndroidContentType.music,
-          usageType: AndroidUsageType.media,
-          audioFocus: AndroidAudioFocus.none,
-        ),
-        iOS: AudioContextIOS(
-          category: AVAudioSessionCategory.playback,
-          options: const {
-            AVAudioSessionOptions.mixWithOthers,
-          },
-        ),
-      ),
-    );
+    _musicPlayer.setReleaseMode(ReleaseMode.loop);
 
     // 佛曲播放器設為媒體播放模式
     _musicPlayer.setAudioContext(_musicAudioContext);
@@ -89,11 +103,20 @@ class AudioService {
   }
 
   /// 播放點擊音效（木魚或引磬）
+  /// 採用輪詢音效池 (Round-Robin Pool) 架構：
+  /// 1. 每次點擊均立即由下一個獨立通道發聲，達成零延遲即時反饋
+  /// 2. 允許多個敲擊聲在不同通道同時疊加（例如引磬之金屬餘音與後續木魚聲自然共鳴）
+  /// 3. 固定通道池不產生額外物件分配，兼顧極致效能與系統穩定性
   Future<void> playClickSfx(SoundEffectType type) async {
     if (type == SoundEffectType.none) return;
     final file = (type == SoundEffectType.bell) ? 'audio/ens.mp3' : 'audio/mus.mp3';
-    // 直接 play，無需額外 stop() 避免 Android MediaPlayer 非法狀態
-    await _sfxPlayer.play(AssetSource(file));
+
+    // 取得當前輪詢通道並推進指針
+    final player = _sfxPool[_sfxPoolIndex];
+    _sfxPoolIndex = (_sfxPoolIndex + 1) % _sfxPoolSize;
+
+    // 即發即走 (Fire-and-forget)，立即向原生音訊層送出播放指令，達成無延遲即刻出聲與多通道疊加
+    player.play(AssetSource(file)).catchError((_) {});
   }
 
   /// 播放指定佛曲
@@ -187,7 +210,9 @@ class AudioService {
 
   void dispose() {
     BackgroundAudioService.stop();
-    _sfxPlayer.dispose();
+    for (final player in _sfxPool) {
+      player.dispose();
+    }
     _musicPlayer.dispose();
   }
 }

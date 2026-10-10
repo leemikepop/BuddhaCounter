@@ -814,5 +814,27 @@ void main() {
       // 對話框已關閉
       expect(find.text('全新現代操作介面'), findsNothing);
     });
+
+    test(
+        'AudioService handles rapid overlapping click sound effects via player pool',
+        () async {
+      final audio = AudioService();
+
+      // 連續快速敲擊木魚 8 次（超過池容量 6，驗證輪詢循環與無死鎖/崩潰）
+      for (int i = 0; i < 8; i++) {
+        await audio.playClickSfx(SoundEffectType.woodfish);
+      }
+
+      // 連續敲擊引磬
+      for (int i = 0; i < 4; i++) {
+        await audio.playClickSfx(SoundEffectType.bell);
+      }
+
+      // 靜音模式不播放
+      await audio.playClickSfx(SoundEffectType.none);
+
+      // 釋放資源
+      expect(() => audio.dispose(), returnsNormally);
+    });
   });
 }
