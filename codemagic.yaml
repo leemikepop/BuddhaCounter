@@ -8,8 +8,10 @@ workflows:
       app_store_connect: leemikepop-dev
     environment:
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: app.CountApp
+        certificates:
+          - BuddhaCounter-Cert
+        provisioning_profiles:
+          - CountApp_AppStore-Profile
       flutter: stable
       xcode: latest
       cocoapods: default
