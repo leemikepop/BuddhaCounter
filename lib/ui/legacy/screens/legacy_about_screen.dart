@@ -46,7 +46,7 @@ class LegacyAboutScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               const Text(
-                '念佛計數器 (BuddhaCounter)',
+                '念佛、拜佛計數器 (BuddhaCounter)',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               FutureBuilder<PackageInfo>(

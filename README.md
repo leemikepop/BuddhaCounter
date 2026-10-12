@@ -188,7 +188,7 @@ git push origin v1.48.0
    flutter build appbundle --release
    ```
 3. 登入 [Google Play Console](https://play.google.com/console/)。
-4. 進入既有的「念佛計數器」應用 ➡️ **正式版本 (Production)** ➡️ **建立新發布版本**。
+4. 進入既有的「念佛、拜佛計數器」應用 ➡️ **正式版本 (Production)** ➡️ **建立新發布版本**。
 5. 上傳 `build/app/outputs/bundle/release/app-release.aab`。
 6. 填寫版本說明並提交審查，即可無縫覆蓋更新老使用者的應用程式！
 

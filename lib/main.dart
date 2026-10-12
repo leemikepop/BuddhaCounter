@@ -37,7 +37,7 @@ class BuddhaCounterApp extends StatelessWidget {
     final vm = context.watch<CounterViewModel>();
 
     return MaterialApp(
-      title: '念佛計數器',
+      title: '念佛、拜佛計數器',
       debugShowCheckedModeBanner: false,
       themeMode:
           (vm.uiMode == AppUiMode.legacy) ? ThemeMode.light : vm.themeMode,

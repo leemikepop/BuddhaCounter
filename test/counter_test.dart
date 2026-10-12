@@ -26,7 +26,7 @@ void main() {
 
   setUpAll(() {
     PackageInfo.setMockInitialValues(
-      appName: '念佛計數器',
+      appName: '念佛、拜佛計數器',
       packageName: 'com.yichung.lee.buddha_counter',
       version: '1.48.0',
       buildNumber: '148',
