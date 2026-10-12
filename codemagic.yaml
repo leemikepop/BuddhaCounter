@@ -1,0 +1,53 @@
+workflows:
+  ios-release:
+    name: BuddhaCounter iOS Release (TestFlight)
+    instance_type: mac_mini_m2 # 免費方案標準 M2 虛擬機
+    max_build_duration: 60
+    integrations:
+      # 請確認此名稱與您在 Codemagic (Teams -> Integrations -> Apple Developer Portal) 設定的 Key 名稱一致
+      app_store_connect: leemikepop-dev
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: app.CountApp
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+          source: true
+      tag_patterns:
+        - pattern: 'v*'
+    scripts:
+      - name: Set up code signing settings on Xcode project
+        script: |
+          # Codemagic 專屬工具：自動向 Apple 申請/匹配 Provisioning Profile 並注入 Xcode 專案
+          xcode-project use-profiles
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Install CocoaPods dependencies
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Build Flutter IPA
+        script: |
+          # 使用 Codemagic 自動產生的 export_options.plist 進行正式打包
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+          
+          # 【選用備註】：若您未來有導入 Shorebird 熱更新服務，可將上方指令替換為：
+          # shorebird release ios --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        # 自動上傳至 TestFlight 供 iPhone 測試
+        submit_to_testflight: true
+
