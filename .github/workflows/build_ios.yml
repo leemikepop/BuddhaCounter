@@ -18,13 +18,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        uses: actions/checkout@v7
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -51,7 +45,7 @@ jobs:
           mv BuddhaCounter-unsigned.ipa ../../../
 
       - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: BuddhaCounter-iOS-unsigned-ipa
           path: BuddhaCounter-unsigned.ipa
@@ -60,7 +54,7 @@ jobs:
       # 只有推送 tag (如 v1.48.0) 時，將 IPA 附加到該 GitHub Release
       - name: Publish IPA to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: BuddhaCounter-unsigned.ipa
         env:

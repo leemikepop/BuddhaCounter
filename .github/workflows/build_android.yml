@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -63,13 +63,13 @@ jobs:
         run: flutter build appbundle --release
 
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: BuddhaCounter-Android-APK
           path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: BuddhaCounter-GooglePlay-AAB
           path: build/app/outputs/bundle/release/app-release.aab
@@ -77,7 +77,7 @@ jobs:
       # 只有推送 tag (如 v1.48.0) 或手動勾選 create_release 時，才會發布正式 GitHub Release
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             build/app/outputs/flutter-apk/app-release.apk
