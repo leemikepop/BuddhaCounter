@@ -1,2 +1,6 @@
 #include "Generated.xcconfig"
 DEVELOPMENT_TEAM=BU6AS7C7A8
+CODE_SIGN_STYLE=Manual
+CODE_SIGN_IDENTITY=Apple Distribution
+CODE_SIGN_IDENTITY[sdk=iphoneos*]=Apple Distribution
+PROVISIONING_PROFILE_SPECIFIER=CountApp_AppStore

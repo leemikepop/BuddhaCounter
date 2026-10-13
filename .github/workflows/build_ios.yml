@@ -68,12 +68,13 @@ jobs:
 
           # 5. 安裝 Provisioning Profile 到系統目錄
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/CountApp_AppStore.mobileprovision
           
           # 同時依 UUID 複製一份以確保 Xcode 絕對能精確匹配
           PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(security cms -D -i $PP_PATH) || true)
           if [ -n "$PROFILE_UUID" ]; then
             cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
+            echo "Installed Profile: ${PROFILE_UUID}.mobileprovision"
           fi
 
       - name: Build iOS IPA (App Store Distribution)
