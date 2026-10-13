@@ -46,9 +46,7 @@ class AudioService {
     ),
     iOS: AudioContextIOS(
       category: AVAudioSessionCategory.playback,
-      options: const {
-        AVAudioSessionOptions.mixWithOthers,
-      },
+      options: const {},
     ),
   );
 

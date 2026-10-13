@@ -194,13 +194,86 @@ git push origin v1.48.0
 
 ---
 
-## 🛠 本地開發啟動命令 (若已安裝 Flutter)
+---
 
+## 🛠 常用 Flutter 指令速查表 (Cheat Sheet)
+
+### 🎨 1. 更新應用程式圖示 (App Icon)
+當替換新圖示或修改圖示設定時使用：
 ```bash
-# 1. 取得套件依賴
+# 根據 pubspec.yaml 中的 flutter_launcher_icons 設定一鍵生成雙平台圖示
+dart run flutter_launcher_icons
+```
+> **圖示更新流程提醒：**
+> 1. 將 1024×1024 無透明背景的高解析度 PNG 圖檔放入 `assets/images/`（例如 `assets/images/app_icon_new.png`）。
+> 2. 確認 `pubspec.yaml` 中的 `image_path` 指向該圖檔。
+> 3. 執行 `dart run flutter_launcher_icons` 即可自動覆蓋 Android (`mipmap-*`) 與 iOS (`AppIcon.appiconset`)。
+> 4. 若 Android 編譯提示資源衝突，可執行 `flutter clean` 後再重新編譯。
+
+---
+
+### 💻 2. 日常開發與偵錯
+```bash
+# 取得並同步套件依賴
 flutter pub get
 
-# 2. 連接 Android 裝置或模擬器運行
+# 檢查本機開發環境與工具鏈狀態
+flutter doctor -v
+
+# 列出當前連接的實體裝置與模擬器
+flutter devices
+
+# 啟動應用並進行即時除錯 (Debug Mode)
 flutter run
+
+# 指定特定裝置啟動 (例如 Chrome 或特定手機)
+flutter run -d chrome
+flutter run -d <DEVICE_ID>
 ```
+
+---
+
+### 🧹 3. 程式碼檢查與清理
+```bash
+# 執行靜態程式碼分析 (找出語法錯誤與警告)
+flutter analyze
+
+# 自動格式化整個專案的 Dart 程式碼
+dart format .
+
+# 執行單元測試
+flutter test
+
+# 清理編譯快取 (遇到詭異建置錯誤或資源衝突時首選)
+flutter clean
+```
+
+---
+
+### 📦 4. 依賴套件管理
+```bash
+# 檢查哪些依賴套件有新版本可升級
+flutter pub outdated
+
+# 在相容的版本限制內升級套件
+flutter pub upgrade
+```
+
+---
+
+### 🚀 5. 編譯與打包發布
+```bash
+# 【Android】編譯正式版 APK (可直接安裝於手機測試)
+flutter build apk --release
+
+# 【Android】編譯正式版 AAB (Google Play 上架專用)
+flutter build appbundle --release
+
+# 【iOS】編譯免簽名版本 (供 AltStore / Sideloadly 側載使用)
+flutter build ios --release --no-codesign
+
+# 【iOS】編譯正式發布歸檔 (TestFlight / App Store 上架使用)
+flutter build ipa --release
+```
+
 

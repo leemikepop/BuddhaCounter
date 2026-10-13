@@ -25,6 +25,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
+    AudioPlayer.preparationTimeout = const Duration(milliseconds: 10);
+    AudioPlayer.seekingTimeout = const Duration(milliseconds: 10);
+    SharedPreferences.setMockInitialValues({});
     PackageInfo.setMockInitialValues(
       appName: '念佛計數器',
       packageName: 'com.yichung.lee.buddha_counter',
@@ -40,7 +43,40 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
       const MethodChannel('xyz.luan/audioplayers'),
-      (call) async => 1,
+      (call) async {
+        final playerId = call.arguments?['playerId'];
+        if (playerId != null) {
+          final eventChannel = 'xyz.luan/audioplayers/events/$playerId';
+          if (call.method == 'seek') {
+            final ByteData message =
+                const StandardMethodCodec().encodeSuccessEnvelope({
+              'event': 'audio.onSeekComplete',
+            });
+            TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+                .handlePlatformMessage(eventChannel, message, (data) {});
+          } else if (call.method == 'setSourceUrl' ||
+              call.method == 'setSourceBytes') {
+            final ByteData message =
+                const StandardMethodCodec().encodeSuccessEnvelope({
+              'event': 'audio.onPrepared',
+              'value': true,
+            });
+            TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+                .handlePlatformMessage(eventChannel, message, (data) {});
+          }
+        }
+        return 1;
+      },
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('com.ryanheise.audio_service.client.methods'),
+      (call) async => {},
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('com.ryanheise.audio_service.handler.methods'),
+      (call) async => {},
     );
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
@@ -321,8 +357,9 @@ void main() {
       expect(vm.isInAutoCountMode, isFalse);
     });
 
-    test('Component 1 (toggleChant) toggles auto-count when in auto-count mode',
-        () async {
+    testWidgets(
+        'Component 1 (toggleChant) toggles auto-count when in auto-count mode',
+        (tester) async {
       final storage = await StorageService.init();
       final audio = AudioService();
       final vm = CounterViewModel(storage: storage, audio: audio);
@@ -351,11 +388,12 @@ void main() {
       vm.toggleChant(vm.currentSongId);
       expect(vm.isAutoCounting, isFalse);
       expect(vm.isChantPlaying, isFalse);
+      vm.dispose();
     });
 
-    test(
+    testWidgets(
         'Component 1 (toggleChant) only plays background music when NOT in auto-count mode',
-        () async {
+        (tester) async {
       final storage = await StorageService.init();
       final audio = AudioService();
       final vm = CounterViewModel(storage: storage, audio: audio);
@@ -375,6 +413,7 @@ void main() {
       vm.toggleChant(vm.currentSongId);
       expect(vm.isChantPlaying, isFalse);
       expect(vm.isAutoCounting, isFalse);
+      vm.dispose();
     });
 
     testWidgets(

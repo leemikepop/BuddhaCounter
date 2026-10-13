@@ -28,7 +28,10 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   Stream<bool> get onPlayStateChanged => _playStateController.stream;
 
   Duration _currentPosition = Duration.zero;
+  Duration get currentPosition => _currentPosition;
+
   Duration _currentDuration = Duration.zero;
+  Duration get currentDuration => _currentDuration;
 
   static final AudioContext _musicAudioContext = AudioContext(
     android: const AudioContextAndroid(
@@ -40,9 +43,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     ),
     iOS: AudioContextIOS(
       category: AVAudioSessionCategory.playback,
-      options: const {
-        AVAudioSessionOptions.mixWithOthers,
-      },
+      options: const {},
     ),
   );
 
@@ -107,11 +108,11 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   void _broadcastPlaybackState() {
-    final processingState = _isPlaying
-        ? AudioProcessingState.ready
-        : (_musicPlayer.state == PlayerState.paused
-            ? AudioProcessingState.ready
-            : AudioProcessingState.idle);
+    final isReady = _isPlaying ||
+        _musicPlayer.state == PlayerState.playing ||
+        _musicPlayer.state == PlayerState.paused;
+    final processingState =
+        isReady ? AudioProcessingState.ready : AudioProcessingState.idle;
 
     playbackState.add(
       PlaybackState(
@@ -141,6 +142,8 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     _playStateController.add(true);
     _currentSongId = songId;
     _currentSongController.add(songId);
+    _currentPosition = Duration.zero;
+    _currentDuration = Duration.zero;
 
     final song = ChantConstants.getSongById(songId);
     final item = MediaItem(
@@ -148,17 +151,25 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       album: '念佛計數器',
       title: song.title,
       artist: '三寶弟子',
-      duration: _currentDuration,
+      duration: null,
       displayTitle: song.title,
-      displaySubtitle: '念佛計數器佛取播放',
+      displaySubtitle: '念佛計數器佛曲播放',
       displayDescription: '保持螢幕休眠或退至背景時佛曲持續播放',
     );
     mediaItem.add(item);
     _broadcastPlaybackState();
 
-    await _musicPlayer.play(AssetSource(song.assetPath));
-    await _musicPlayer.setReleaseMode(_releaseMode);
-    await _musicPlayer.setAudioContext(_musicAudioContext);
+    _musicPlayer.play(AssetSource(song.assetPath)).then((_) {
+      _musicPlayer.setReleaseMode(_releaseMode).catchError((_) {});
+      _musicPlayer.getDuration().then((dur) {
+        if (dur != null && dur > Duration.zero) {
+          _currentDuration = dur;
+          if (mediaItem.value != null) {
+            mediaItem.add(mediaItem.value!.copyWith(duration: dur));
+          }
+        }
+      }).catchError((_) {});
+    }).catchError((_) {});
   }
 
   @override
@@ -167,8 +178,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     _playStateController.add(true);
     _broadcastPlaybackState();
     if (_musicPlayer.state == PlayerState.paused) {
-      await _musicPlayer.resume();
-      await _musicPlayer.setReleaseMode(_releaseMode);
+      _musicPlayer.resume().catchError((_) {});
     } else {
       await playSong(_currentSongId);
     }
@@ -179,23 +189,26 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     _isPlaying = false;
     _playStateController.add(false);
     _broadcastPlaybackState();
-    await _musicPlayer.pause();
+    _musicPlayer.pause().catchError((_) {});
   }
 
   @override
   Future<void> stop() async {
     _isPlaying = false;
     _playStateController.add(false);
-    await _musicPlayer.stop();
+    _currentPosition = Duration.zero;
+    _musicPlayer.stop().catchError((_) {});
     playbackState.add(playbackState.value.copyWith(
       processingState: AudioProcessingState.idle,
       playing: false,
+      updatePosition: Duration.zero,
+      bufferedPosition: Duration.zero,
     ));
   }
 
   @override
   Future<void> seek(Duration position) async {
-    await _musicPlayer.seek(position);
+    _musicPlayer.seek(position).catchError((_) {});
   }
 
   @override
