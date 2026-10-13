@@ -2,17 +2,16 @@ name: Build Android Release
 
 on:
   push:
-    branches: [ main, master ]
     tags: [ 'v*' ]
-  pull_request:
-    branches: [ main, master ]
+  release:
+    types: [ published ]
   workflow_dispatch:
     inputs:
       create_release:
-        description: '是否直接建立 GitHub Release (附帶 APK / AAB 檔案)'
+        description: '是否直接建立/更新 GitHub Release (附帶 APK / AAB 檔案)'
         required: false
         type: boolean
-        default: false
+        default: true
 
 permissions:
   contents: write
@@ -74,9 +73,9 @@ jobs:
           name: BuddhaCounter-GooglePlay-AAB
           path: build/app/outputs/bundle/release/app-release.aab
 
-      # 只有推送 tag (如 v1.48.0) 或手動勾選 create_release 時，才會發布正式 GitHub Release
+      # 只有推送 tag (如 v1.48.0)、發布 Release、或手動勾選 create_release 時，才會發布正式 GitHub Release
       - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
         uses: softprops/action-gh-release@v3
         with:
           files: |

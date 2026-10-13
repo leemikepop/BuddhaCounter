@@ -1,5 +1,6 @@
 import 'package:audio_service/audio_service.dart' as bg_audio;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/services/audio_service.dart';
 import 'core/services/chant_audio_handler.dart';
@@ -11,6 +12,16 @@ import 'ui/modern/theme/modern_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 設定邊界至邊界 (Edge-to-Edge) 沉浸式系統 UI 模式與透明導航列/狀態列
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+    ),
+  );
 
   // 初始化系統級音訊媒體會話服務 (Android MediaSession & iOS NowPlayingCenter)
   ChantAudioHandler? audioHandler;

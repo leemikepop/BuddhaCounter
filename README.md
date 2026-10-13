@@ -70,10 +70,10 @@ BuddhaCounter/
    - 點擊「Start」，App 就會直接安裝到您的 iPhone 12 Pro 手機桌面！
    *(附註：個人免費 Apple ID 簽名效期為 7 天，到期若要繼續測試只要重新點一次安裝即可)*
 
-### 方案 B：App Store Connect + TestFlight 雲端測試（適合正式發布前）
-- 若您擁有 Apple Developer 開發者帳號（$99/年）：
-- 可在 GitHub Actions 中配置 Fastlane 或 App Store Connect API Key，CI 完成後直接自動上傳至 **TestFlight**。
-- 您（與其他測試同修）只需在 iPhone 12 Pro 安裝 TestFlight App，隨時接收推播更新並一鍵點擊安裝，免接電腦且效期長達 90 天。
+### 方案 B：GitHub Actions 自動簽名並直推 TestFlight（雲端自動化）
+專案已配置完整的 TestFlight CI 流水線（支援 `apple-actions/upload-testflight-build@v5`）。只要在 GitHub Repository Secrets 配置 Apple 憑證與 App Store Connect API Key：
+- 每次 `git push` 即會自動在 macOS Runner 匯入證書並編譯為 App Store 正式版 IPA，且**自動直接上傳至 TestFlight**。
+- 您（與其他測試同修）只需在 iPhone 安裝 TestFlight App，隨時接收推播更新並一鍵點擊安裝，免接電腦且效期長達 90 天。
 
 ---
 
@@ -132,8 +132,8 @@ version: 1.48.0+148
 專案已內建完整的自動化 CI/CD 流水線，並**嚴格區分日常開發與正式發布**，避免每次 commit 都產生多餘版本：
 
 ### 情況 A：日常程式碼提交 (`git push` 到 `main` / PR)
-* 自動觸發建置驗證，確保 Android APK、AAB 與 iOS 無簽名 IPA 皆可成功編譯。
-* 編譯產物以 **Artifacts** 形式暫存於 GitHub Actions 執行紀錄中（供除錯驗證），**不會建立任何 GitHub Release**。
+* **僅自動觸發 iOS 建置驗證**（Android 已設定為本地 Windows 編譯或正式 Release 時才觸發，以節省 Actions 運算配額）。
+* iOS 編譯產物以 **Artifacts** 形式暫存於 GitHub Actions 執行紀錄中（供側載除錯驗證），**不會建立任何 GitHub Release**。
 
 ### 情況 B：發布特定版本（推薦：使用 Git Tag）
 當您完成某個功能階段、並已在 `pubspec.yaml` 遞增好版本號後，只需對該 commit 建立版本標籤並推送：
@@ -154,7 +154,7 @@ git push origin v1.48.0
 3. 自動生成變更紀錄（Release Notes），並自動將產物掛載至該 Release 供同修下載：
    - 📱 `app-release.apk`（Android 正式安裝包）
    - 📦 `app-release.aab`（Google Play 上架套件）
-   - 🍏 `BuddhaCounter-unsigned.ipa`（iOS 側載安裝包）
+   - 🍏 `BuddhaCounter.ipa`（iOS 正式簽名安裝包 / TestFlight 版本）
 
 ### 情況 C：在 GitHub 網頁上手動一鍵發布 (Workflow Dispatch)
 若不想使用命令列打 tag，也可隨時在網頁上手動觸發：

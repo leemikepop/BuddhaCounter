@@ -41,4 +41,9 @@
 *.jks
 *.keystore
 *.pepk
+*.p12
+*.p8
+*.mobileprovision
+*.pwd
 android/keystore/
+ios/secret/

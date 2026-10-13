@@ -267,8 +267,10 @@ class _SongPickerBottomSheetState extends State<_SongPickerBottomSheet> {
         color: isDark ? const Color(0xFF1B1D24) : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      child: Column(
-        children: [
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
           // 頂部把手與標題
           Container(
             margin: const EdgeInsets.only(top: 10, bottom: 8),
@@ -390,7 +392,8 @@ class _SongPickerBottomSheetState extends State<_SongPickerBottomSheet> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildChip(String label, int index) {

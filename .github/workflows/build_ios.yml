@@ -1,24 +1,24 @@
-name: Build iOS IPA
+name: Build iOS & Deploy to TestFlight
 
 on:
-  push:
-    branches: [ main, master ]
-    tags: [ 'v*' ]
+  push: # 每次 push (任何分支或標籤) 都自動觸發
   pull_request:
     branches: [ main, master ]
+  release:
+    types: [ published ]
   workflow_dispatch: # 支援在 GitHub 網頁上手動一鍵觸發建置
 
 permissions:
   contents: write
 
 jobs:
-  build-ios:
-    name: Build iOS IPA (macOS Runner)
+  build-and-deploy-ios:
+    name: Build iOS & Upload to TestFlight
     runs-on: macos-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -33,29 +33,78 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS Application (No Code Sign for Sideload / Ad-Hoc)
+      - name: Install Apple Certificate and Provisioning Profile
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD || 'buddha-counter-temp-pwd' }}
         run: |
-          flutter build ios --release --no-codesign
+          # 1. 建立暫存路徑
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # 2. Base64 解碼還原為檔案
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+
+          # 3. 建立並解鎖暫存 Keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # 4. 匯入 p12 憑證至 Keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | tr -d '"')
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # 5. 安裝 Provisioning Profile 到系統目錄
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
           
-          # 將 Build 產物打包成免簽名的 Payload .ipa 格式，方便使用 AltStore 或 Sideloadly 側載到 iPhone 12 Pro
-          cd build/ios/iphoneos
-          mkdir Payload
-          cp -r Runner.app Payload/
-          zip -r BuddhaCounter-unsigned.ipa Payload
-          mv BuddhaCounter-unsigned.ipa ../../../
+          # 同時依 UUID 複製一份以確保 Xcode 絕對能精確匹配
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(security cms -D -i $PP_PATH) || true)
+          if [ -n "$PROFILE_UUID" ]; then
+            cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
+          fi
+
+      - name: Build iOS IPA (App Store Distribution)
+        run: |
+          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+          
+          # 將產出的 .ipa 整理至標準路徑
+          mkdir -p build/ios/ipa
+          IPA_FILE=$(find build/ios/ipa -name "*.ipa" | head -n 1)
+          if [ -n "$IPA_FILE" ]; then
+            cp "$IPA_FILE" build/ios/ipa/BuddhaCounter.ipa
+            echo "IPA 成功生成: build/ios/ipa/BuddhaCounter.ipa"
+          else
+            echo "錯誤：未找到 .ipa 檔案"
+            exit 1
+          fi
 
       - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
-          name: BuddhaCounter-iOS-unsigned-ipa
-          path: BuddhaCounter-unsigned.ipa
+          name: BuddhaCounter-iOS-Signed-IPA
+          path: build/ios/ipa/BuddhaCounter.ipa
           retention-days: 14
 
-      # 只有推送 tag (如 v1.48.0) 時，將 IPA 附加到該 GitHub Release
-      - name: Publish IPA to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v3
+      - name: Upload to TestFlight
+        if: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY != '' }}
+        uses: apple-actions/upload-testflight-build@v5
         with:
-          files: BuddhaCounter-unsigned.ipa
+          app-path: 'build/ios/ipa/BuddhaCounter.ipa'
+          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+
+      # 只有推送 tag (如 v1.48.0) 或發布 Release 時，將 IPA 附加到該 GitHub Release
+      - name: Publish IPA to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/ios/ipa/BuddhaCounter.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
