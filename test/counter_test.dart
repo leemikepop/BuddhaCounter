@@ -736,8 +736,9 @@ void main() {
 
       // 驗證動態顯示專案版本號 1.48.0
       expect(find.text('版本 1.48.0'), findsOneWidget);
-      // 驗證隱私權政策按鈕存在
-      expect(find.text('隱私權政策 (Privacy Policy)'), findsOneWidget);
+      // 驗證隱私權政策按鈕存在 (iOS 與 Android 雙版本)
+      expect(find.text('iOS 隱私權政策'), findsOneWidget);
+      expect(find.text('Android 隱私權政策'), findsOneWidget);
     });
 
     test('Storage handles seenModernGuide flag and ViewModel updates',

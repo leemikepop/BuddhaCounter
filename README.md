@@ -32,10 +32,11 @@
 BuddhaCounter/
 ├── .github/
 │   └── workflows/
-│       ├── build_ios.yml          # GitHub Actions 免 Mac 自動編譯 iOS IPA
-│       └── build_android.yml      # GitHub Actions 自動編譯 Release APK / AAB
+│       ├── ci_ios.yml                 # GitHub Actions 日常 push 自動靜態檢查與編譯測試
+│       ├── deploy_ios_testflight.yml  # GitHub Actions 手動/Release 發布簽名 IPA 至 TestFlight
+│       └── build_android.yml          # GitHub Actions 自動編譯 Release APK / AAB
 ├── android/
-│   ├── app/build.gradle.kts       # applicationId: com.yichung.lee.count4, compileSdk 37
+│   ├── app/build.gradle.kts       # applicationId: com.yichung.lee.count4, compileSdk 37, targetSdk 37
 │   ├── keystore/                  # 原版 leeyc.jks 簽名金鑰庫與 private_key.pepk
 │   └── key.properties.example     # 本地簽名設定範本 (密碼不入 Git)
 ├── assets/

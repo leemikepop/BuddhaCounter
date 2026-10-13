@@ -1,0 +1,42 @@
+name: iOS CI - Build & Test
+
+on:
+  push: # 平常每次 push 自動觸發編譯檢查
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # 支援手動觸發測試
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-build-ios:
+    name: Verify & Build iOS (CI Only)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Verify Flutter & Environment
+        run: flutter doctor -v
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run Static Analysis
+        run: flutter analyze
+
+      - name: Run Automated Tests
+        run: flutter test
+
+      - name: Build iOS (No Codesign Check)
+        run: flutter build ios --release --no-codesign
+

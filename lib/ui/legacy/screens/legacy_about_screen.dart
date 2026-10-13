@@ -97,16 +97,33 @@ class LegacyAboutScreen extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // 隱私權政策 (Google Play 規範要求)
-              TextButton.icon(
-                icon: const Icon(Icons.privacy_tip_outlined, size: 18),
-                label: const Text('隱私權政策 (Privacy Policy)'),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF0000FF),
-                ),
-                onPressed: () => _launchSite(
-                  'https://www.leeyc.net/share/privacy_policy.html',
-                ),
+              // 隱私權政策 (iOS & Android 版合規要求)
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  TextButton.icon(
+                    icon: const Icon(Icons.privacy_tip_outlined, size: 18),
+                    label: const Text('iOS 隱私權政策'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF0000FF),
+                    ),
+                    onPressed: () => _launchSite(
+                      'https://www.leeyc.net/share/buddhacounter/iOS/privacy_policy.html',
+                    ),
+                  ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.privacy_tip_outlined, size: 18),
+                    label: const Text('Android 隱私權政策'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF0000FF),
+                    ),
+                    onPressed: () => _launchSite(
+                      'https://www.leeyc.net/share/buddhacounter/Android/privacy_policy.html',
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 24),
