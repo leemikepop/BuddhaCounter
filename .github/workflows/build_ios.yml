@@ -92,7 +92,6 @@ jobs:
           retention-days: 14
 
       - name: Upload to TestFlight
-        if: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY != '' }}
         uses: apple-actions/upload-testflight-build@v5
         with:
           app-path: 'build/ios/ipa/BuddhaCounter.ipa'
