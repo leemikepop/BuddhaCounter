@@ -23,6 +23,10 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       StreamController<int>.broadcast();
   Stream<int> get onCurrentSongChanged => _currentSongController.stream;
 
+  final StreamController<bool> _playStateController =
+      StreamController<bool>.broadcast();
+  Stream<bool> get onPlayStateChanged => _playStateController.stream;
+
   Duration _currentPosition = Duration.zero;
   Duration _currentDuration = Duration.zero;
 
@@ -57,6 +61,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       } else {
         _isPlaying = (state == PlayerState.playing);
       }
+      _playStateController.add(_isPlaying);
       _broadcastPlaybackState();
     });
 
@@ -102,20 +107,17 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   void _broadcastPlaybackState() {
-    final processingState = switch (_musicPlayer.state) {
-      PlayerState.stopped => AudioProcessingState.idle,
-      PlayerState.playing => AudioProcessingState.ready,
-      PlayerState.paused => AudioProcessingState.ready,
-      PlayerState.completed => AudioProcessingState.completed,
-      PlayerState.disposed => AudioProcessingState.idle,
-    };
+    final processingState = _isPlaying
+        ? AudioProcessingState.ready
+        : (_musicPlayer.state == PlayerState.paused
+            ? AudioProcessingState.ready
+            : AudioProcessingState.idle);
 
     playbackState.add(
       PlaybackState(
         controls: [
           MediaControl.skipToPrevious,
           if (_isPlaying) MediaControl.pause else MediaControl.play,
-          MediaControl.stop,
           MediaControl.skipToNext,
         ],
         systemActions: const {
@@ -123,7 +125,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
           MediaAction.seekForward,
           MediaAction.seekBackward,
         },
-        androidCompactActionIndices: const [0, 1, 3], // 顯示上一首、播放/暫停、下一首
+        androidCompactActionIndices: const [0, 1, 2], // 顯示上一首、播放/暫停、下一首
         processingState: processingState,
         playing: _isPlaying,
         updatePosition: _currentPosition,
@@ -136,6 +138,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   /// 播放指定佛曲
   Future<void> playSong(int songId) async {
     _isPlaying = true;
+    _playStateController.add(true);
     _currentSongId = songId;
     _currentSongController.add(songId);
 
@@ -161,6 +164,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> play() async {
     _isPlaying = true;
+    _playStateController.add(true);
     _broadcastPlaybackState();
     if (_musicPlayer.state == PlayerState.paused) {
       await _musicPlayer.resume();
@@ -173,6 +177,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> pause() async {
     _isPlaying = false;
+    _playStateController.add(false);
     _broadcastPlaybackState();
     await _musicPlayer.pause();
   }
@@ -180,6 +185,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> stop() async {
     _isPlaying = false;
+    _playStateController.add(false);
     await _musicPlayer.stop();
     playbackState.add(playbackState.value.copyWith(
       processingState: AudioProcessingState.idle,
@@ -230,5 +236,6 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     await stop();
     await _musicPlayer.dispose();
     await _currentSongController.close();
+    await _playStateController.close();
   }
 }

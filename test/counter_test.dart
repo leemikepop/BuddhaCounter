@@ -820,11 +820,10 @@ void main() {
         () async {
       final audio = AudioService();
 
-      // 連續快速敲擊三種木魚（超過池容量 6，驗證輪詢循環與無死鎖/崩潰）
+      // 連續快速敲擊木魚（超過池容量 6，驗證輪詢循環與無死鎖/崩潰）
       for (int i = 0; i < 4; i++) {
         await audio.playClickSfx(SoundEffectType.woodfish1);
         await audio.playClickSfx(SoundEffectType.woodfish2);
-        await audio.playClickSfx(SoundEffectType.woodfish3);
       }
 
       // 連續敲擊引磬

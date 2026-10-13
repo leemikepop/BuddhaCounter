@@ -2,8 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum SoundEffectType {
   woodfish1, // 木魚一 (wooden-fish-1.mp3)
-  woodfish2, // 木魚二 (wooden-fish-2.mp3)
-  woodfish3, // 木魚三 (wooden-fish-3.mp3，原 mus.mp3 經典原音)
+  woodfish2, // 木魚二 (wooden-fish-3.mp3，原 mus.mp3 經典原音)
   bell, // 引磬 (ens.mp3)
   none; // 靜音
 
@@ -12,10 +11,8 @@ enum SoundEffectType {
     switch (this) {
       case SoundEffectType.woodfish1:
         return 'audio/wooden-fish-1.mp3';
-    //   case SoundEffectType.woodfish2:
-    //     return 'audio/wooden-fish-2.mp3';
-      case SoundEffectType.woodfish3:
-        return 'audio/wooden-fish-3.mp3';
+      case SoundEffectType.woodfish2:
+        return 'audio/wooden-fish-2.mp3';
       case SoundEffectType.bell:
         return 'audio/ens.mp3';
       case SoundEffectType.none:
@@ -28,9 +25,7 @@ enum SoundEffectType {
     switch (this) {
       case SoundEffectType.woodfish1:
         return '木魚一';
-    //   case SoundEffectType.woodfish2:
-    //     return '木魚二';
-      case SoundEffectType.woodfish3:
+      case SoundEffectType.woodfish2:
         return '木魚二';
       case SoundEffectType.bell:
         return '引磬';
@@ -86,9 +81,9 @@ class StorageService {
     }
     final index = _prefs.getInt(keySoundEffect);
     if (index != null) {
-      // 舊版相容對照：0: bell, 1: 原版木魚 (對應木魚三), 2: none
+      // 舊版相容對照：0: bell, 1: 原版木魚 (對應木魚二), 2: none
       if (index == 0) return SoundEffectType.bell;
-      if (index == 1) return SoundEffectType.woodfish3;
+      if (index == 1) return SoundEffectType.woodfish2;
       if (index == 2) return SoundEffectType.none;
       if (index >= 0 && index < SoundEffectType.values.length) {
         return SoundEffectType.values[index];

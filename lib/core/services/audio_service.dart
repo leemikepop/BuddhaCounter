@@ -31,6 +31,7 @@ class AudioService {
   Stream<PlayerState> get onPlayerStateChanged => _handler.musicPlayer.onPlayerStateChanged;
   Stream<void> get onPlayerComplete => _handler.musicPlayer.onPlayerComplete;
   Stream<int> get onCurrentSongChanged => _handler.onCurrentSongChanged;
+  Stream<bool> get onPlayStateChanged => _handler.onPlayStateChanged;
 
   Future<Duration?> getCurrentPosition() => _handler.musicPlayer.getCurrentPosition();
   Future<Duration?> getDuration() => _handler.musicPlayer.getDuration();

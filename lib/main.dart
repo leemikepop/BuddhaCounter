@@ -22,9 +22,9 @@ void main() async {
             'com.yichung.lee.buddha_counter.channel.audio',
         androidNotificationChannelName: '念佛計數器佛曲播放',
         androidNotificationChannelDescription: '保持螢幕休眠或退至背景時佛曲持續播放',
-        androidNotificationOngoing: true,
-        androidStopForegroundOnPause: true,
-        androidNotificationIcon: 'mipmap/ic_launcher',
+        androidNotificationOngoing: false,
+        androidStopForegroundOnPause: false,
+        androidNotificationIcon: 'drawable/ic_stat_music',
       ),
     );
   } catch (e) {

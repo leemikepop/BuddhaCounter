@@ -414,23 +414,19 @@ class ModernCounterView extends StatelessWidget {
                           segments: const [
                             ButtonSegment(
                               value: SoundEffectType.woodfish1,
-                              label: Text('木魚1', style: TextStyle(fontSize: 11)),
+                              label: Text('木魚1', style: TextStyle(fontSize: 12)),
                             ),
                             ButtonSegment(
                               value: SoundEffectType.woodfish2,
-                              label: Text('木魚2', style: TextStyle(fontSize: 11)),
-                            ),
-                            ButtonSegment(
-                              value: SoundEffectType.woodfish3,
-                              label: Text('木魚3', style: TextStyle(fontSize: 11)),
+                              label: Text('木魚2', style: TextStyle(fontSize: 12)),
                             ),
                             ButtonSegment(
                               value: SoundEffectType.bell,
-                              label: Text('引磬', style: TextStyle(fontSize: 11)),
+                              label: Text('引磬', style: TextStyle(fontSize: 12)),
                             ),
                             ButtonSegment(
                               value: SoundEffectType.none,
-                              label: Text('靜音', style: TextStyle(fontSize: 11)),
+                              label: Text('靜音', style: TextStyle(fontSize: 12)),
                             ),
                           ],
                           selected: {vm.soundEffect},

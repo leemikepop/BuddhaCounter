@@ -52,9 +52,10 @@ class CounterViewModel extends ChangeNotifier {
   int _targetNextBeatMs = 0;
   int _lastPositionMs = 0;
   bool _isWaitingForAudioRestart = false;
-  bool _isAudioStarting = false;
   int _lastProgressNotifyMs = 0;
   int _lastPositionUpdateTimestamp = 0;
+
+  StreamSubscription<bool>? _playStateSubscription;
 
   // 當前活躍視圖分頁索引 (現代模式：0手動, 1自動, 2迴向) 與經典模式標記
   int _activeTabIndex = 0;
@@ -193,13 +194,28 @@ class CounterViewModel extends ChangeNotifier {
 
     // 監聽播放狀態變化（用以即時更新首頁念佛按鈕顏色等）
     _playerStateSubscription = _audio.onPlayerStateChanged.listen((state) {
-      if (state == PlayerState.playing) {
-        _isAudioStarting = false;
-      } else if (state == PlayerState.paused && _isAutoCounting && !_isAudioStarting) {
-        // 系統音訊焦點丟失、耳機拔除或外部暫停時，自動同步暫停自動計數與計時碼表
+      if (state == PlayerState.paused && _isAutoCounting) {
         pauseAutoCount();
+      } else {
+        notifyListeners();
       }
-      notifyListeners();
+    });
+
+    // 監聽外部媒體控制播放/暫停事件（支援系統通知欄、鎖定畫面、耳機線控、音訊焦點丟失）
+    _playStateSubscription = _audio.onPlayStateChanged.listen((playing) {
+      if (!playing) {
+        if (_isAutoCounting) {
+          pauseAutoCount();
+        } else {
+          notifyListeners();
+        }
+      } else {
+        if (isInAutoCountMode && !_isAutoCounting) {
+          resumeOrStartAutoCount();
+        } else {
+          notifyListeners();
+        }
+      }
     });
 
     // 監聽播放完成（浮動播放器非單曲循環時自動播放下一首）
@@ -325,7 +341,6 @@ class CounterViewModel extends ChangeNotifier {
   void resumeOrStartAutoCount({bool fromBeginning = false}) {
     if (_isAutoCounting) return;
     _isAutoCounting = true;
-    _isAudioStarting = true;
 
     final song = ChantConstants.getSongById(_currentSongId);
     final bb = song.beatIntervalMs;
@@ -426,7 +441,6 @@ class CounterViewModel extends ChangeNotifier {
     if (!_isAutoCounting) return;
     _isAutoCounting = false;
     _isWaitingForAudioRestart = false;
-    _isAudioStarting = false;
     _autoElapsedTimer?.cancel();
     _autoElapsedTimer = null;
     _autoBeatPollingTimer?.cancel();
@@ -439,7 +453,6 @@ class CounterViewModel extends ChangeNotifier {
   void stopAutoCount() {
     _isAutoCounting = false;
     _isWaitingForAudioRestart = false;
-    _isAudioStarting = false;
     _autoElapsedTimer?.cancel();
     _autoElapsedTimer = null;
     _autoBeatPollingTimer?.cancel();
@@ -769,6 +782,7 @@ class CounterViewModel extends ChangeNotifier {
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
     _playerStateSubscription?.cancel();
+    _playStateSubscription?.cancel();
     _completeSubscription?.cancel();
     _currentSongSubscription?.cancel();
     _audio.dispose();
