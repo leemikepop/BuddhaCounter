@@ -15,6 +15,7 @@ jobs:
   build-and-deploy-ios:
     name: Build iOS & Upload to TestFlight
     runs-on: macos-latest
+    environment: 'Apple Store Connect TestFlight'
 
     steps:
       - name: Checkout repository
@@ -40,6 +41,12 @@ jobs:
           BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD || 'buddha-counter-temp-pwd' }}
         run: |
+          # 0. 檢查 Secrets 是否正確填入
+          if [ -z "$BUILD_CERTIFICATE_BASE64" ] || [ -z "$BUILD_PROVISION_PROFILE_BASE64" ] || [ -z "$P12_PASSWORD" ]; then
+            echo "::error::缺少必要 Secrets！請確認環境 'Apple Store Connect TestFlight' 或 Repository secrets 中是否已正確填入 BUILD_CERTIFICATE_BASE64, BUILD_PROVISION_PROFILE_BASE64, P12_PASSWORD。"
+            exit 1
+          fi
+
           # 1. 建立暫存路徑
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
