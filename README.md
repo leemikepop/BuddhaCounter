@@ -1,4 +1,4 @@
-# 念佛、拜佛計數器 (BuddhaCounter) - Flutter 跨平台移植版
+# 念佛計數器 (BuddhaCounter) - Flutter 跨平台移植版
 
 > **傳承與初心**：本專案由 李義忠（阿忠）居士創立開發，原為 Android 原生應用程式（`Count3` / `com.yichung.lee.count4`）。  
 > 現由新世代接棒現代化維護，完整重構移植為 **Flutter** 跨平台專案，支援 Android 與 iOS 雙平台。
@@ -188,7 +188,7 @@ git push origin v1.48.0
    flutter build appbundle --release
    ```
 3. 登入 [Google Play Console](https://play.google.com/console/)。
-4. 進入既有的「念佛、拜佛計數器」應用 ➡️ **正式版本 (Production)** ➡️ **建立新發布版本**。
+4. 進入既有的「念佛計數器」應用 ➡️ **正式版本 (Production)** ➡️ **建立新發布版本**。
 5. 上傳 `build/app/outputs/bundle/release/app-release.aab`。
 6. 填寫版本說明並提交審查，即可無縫覆蓋更新老使用者的應用程式！
 

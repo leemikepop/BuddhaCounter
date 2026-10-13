@@ -70,7 +70,7 @@ class ChantMediaService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
-                val title = intent.getStringExtra(EXTRA_TITLE) ?: "念佛、拜佛計數器"
+                val title = intent.getStringExtra(EXTRA_TITLE) ?: "念佛計數器"
                 val chant = intent.getStringExtra(EXTRA_CHANT) ?: "南無阿彌陀佛 · 念佛梵音播放中"
                 val notification = buildNotification(title, chant)
                 try {

@@ -1,5 +1,5 @@
 name: buddha_counter
-description: 念佛、拜佛計數器
+description: 念佛計數器
 publish_to: 'none'
 version: 1.49.0+149
 
@@ -20,6 +20,13 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.3   # <--- 新增這行
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon_1024.png"
+  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true

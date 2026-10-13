@@ -131,7 +131,7 @@ class AudioService {
     _isPlaying = true;
     final song = ChantConstants.getSongById(songId);
     BackgroundAudioService.start(
-      title: '念佛、拜佛計數器',
+      title: '念佛計數器',
       chantName: '${song.title} · 念佛梵音播放中',
     );
     // 直接 play，並在加載後重新確認 setReleaseMode 與 AudioContext，
@@ -153,7 +153,7 @@ class AudioService {
     _isPlaying = true;
     final song = ChantConstants.getSongById(_currentSongId);
     BackgroundAudioService.start(
-      title: '念佛、拜佛計數器',
+      title: '念佛計數器',
       chantName: '${song.title} · 念佛梵音播放中',
     );
     try {

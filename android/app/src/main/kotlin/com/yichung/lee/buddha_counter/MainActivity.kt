@@ -13,7 +13,7 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "startService" -> {
-                    val title = call.argument<String>("title") ?: "念佛、拜佛計數器"
+                    val title = call.argument<String>("title") ?: "念佛計數器"
                     val chant = call.argument<String>("chant") ?: "南無阿彌陀佛 · 念佛梵音播放中"
                     ChantMediaService.start(this, title, chant)
                     result.success(true)

@@ -63,7 +63,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                 ),
                 const SizedBox(height: 14),
                 const Text(
-                  '念佛、拜佛計數器 · 全新升級！',
+                  '念佛計數器 · 全新升級！',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
