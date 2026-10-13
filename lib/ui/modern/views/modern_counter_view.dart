@@ -15,8 +15,8 @@ class ModernCounterView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('確認重設記數？'),
-        content: Text('目前記數為 ${vm.count} 聲，確定要歸零嗎？'),
+        title: const Text('確認要歸零嗎？'),
+        content: Text('目前計數為${vm.count}'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -84,7 +84,7 @@ class ModernCounterView extends StatelessWidget {
                     runSpacing: 10,
                     children: [
                       ...targets.map((t) {
-                        final label = (t == 0) ? '不限目標' : '$t 聲';
+                        final label = (t == 0) ? '不限目標' : '$t';
                         final isSel = vm.targetCount == t;
                         return ChoiceChip(
                           label: Text(label),
@@ -95,7 +95,7 @@ class ModernCounterView extends StatelessWidget {
                               Navigator.pop(ctx);
                               AppToast.show(
                                 context,
-                                t == 0 ? '已設定為不限目標' : '已設定目標：$t 聲',
+                                t == 0 ? '已設定為不限目標' : '已設定目標：$t',
                               );
                             }
                           },
@@ -413,25 +413,37 @@ class ModernCounterView extends StatelessWidget {
                           showSelectedIcon: false,
                           segments: const [
                             ButtonSegment(
-                              value: SoundEffectType.woodfish,
-                              label: Text('木魚', style: TextStyle(fontSize: 12)),
+                              value: SoundEffectType.woodfish1,
+                              label: Text('木魚1', style: TextStyle(fontSize: 11)),
+                            ),
+                            ButtonSegment(
+                              value: SoundEffectType.woodfish2,
+                              label: Text('木魚2', style: TextStyle(fontSize: 11)),
+                            ),
+                            ButtonSegment(
+                              value: SoundEffectType.woodfish3,
+                              label: Text('木魚3', style: TextStyle(fontSize: 11)),
                             ),
                             ButtonSegment(
                               value: SoundEffectType.bell,
-                              label: Text('引磬', style: TextStyle(fontSize: 12)),
+                              label: Text('引磬', style: TextStyle(fontSize: 11)),
                             ),
                             ButtonSegment(
                               value: SoundEffectType.none,
-                              label: Text('靜音', style: TextStyle(fontSize: 12)),
+                              label: Text('靜音', style: TextStyle(fontSize: 11)),
                             ),
                           ],
                           selected: {vm.soundEffect},
                           onSelectionChanged: (val) {
                             vm.setSoundEffect(val.first);
+                            vm.audioService.playClickSfx(val.first);
                           },
                           style: const ButtonStyle(
                             visualDensity: VisualDensity.compact,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            padding: WidgetStatePropertyAll(
+                              EdgeInsets.symmetric(horizontal: 2),
+                            ),
                           ),
                         ),
                       ),

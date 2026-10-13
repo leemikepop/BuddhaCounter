@@ -76,9 +76,9 @@ void main() {
       expect(storage.getAutoCounter(), 500);
     });
 
-    test('Default sound effect is woodfish', () async {
+    test('Default sound effect is woodfish1', () async {
       final storage = await StorageService.init();
-      expect(storage.getSoundEffect(), SoundEffectType.woodfish);
+      expect(storage.getSoundEffect(), SoundEffectType.woodfish1);
     });
 
     test('Default UI mode is legacy', () async {
@@ -93,11 +93,11 @@ void main() {
       expect(songs.length, 31);
     });
 
-    test('First song is amitabha.mp3 with 3850ms interval', () {
+    test('First song is bb1.mp3 with 3850ms interval', () {
       final song = ChantConstants.getSongById(0);
       expect(song.id, 0);
       expect(song.title, '阿彌陀佛-四字四音');
-      expect(song.assetPath, 'audio/amitabha.mp3');
+      expect(song.assetPath, 'audio/bb1.mp3');
       expect(song.beatIntervalMs, 3850);
     });
 
@@ -820,9 +820,11 @@ void main() {
         () async {
       final audio = AudioService();
 
-      // 連續快速敲擊木魚 8 次（超過池容量 6，驗證輪詢循環與無死鎖/崩潰）
-      for (int i = 0; i < 8; i++) {
-        await audio.playClickSfx(SoundEffectType.woodfish);
+      // 連續快速敲擊三種木魚（超過池容量 6，驗證輪詢循環與無死鎖/崩潰）
+      for (int i = 0; i < 4; i++) {
+        await audio.playClickSfx(SoundEffectType.woodfish1);
+        await audio.playClickSfx(SoundEffectType.woodfish2);
+        await audio.playClickSfx(SoundEffectType.woodfish3);
       }
 
       // 連續敲擊引磬

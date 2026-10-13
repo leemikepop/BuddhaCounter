@@ -27,6 +27,7 @@ class CounterViewModel extends ChangeNotifier {
   StreamSubscription<Duration>? _durationSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<void>? _completeSubscription;
+  StreamSubscription<int>? _currentSongSubscription;
 
   int _autoCount = 0;
   int get autoCount => _autoCount;
@@ -205,6 +206,15 @@ class CounterViewModel extends ChangeNotifier {
     _completeSubscription = _audio.onPlayerComplete.listen((_) {
       if (_audio.releaseMode != ReleaseMode.loop) {
         playNextSong();
+      }
+    });
+
+    // 監聽外部（系統通知欄/鎖定螢幕）切換曲目事件
+    _currentSongSubscription = _audio.onCurrentSongChanged.listen((songId) {
+      if (_currentSongId != songId) {
+        _currentSongId = songId;
+        _storage.setLastSongId(songId);
+        notifyListeners();
       }
     });
   }
@@ -760,6 +770,7 @@ class CounterViewModel extends ChangeNotifier {
     _durationSubscription?.cancel();
     _playerStateSubscription?.cancel();
     _completeSubscription?.cancel();
+    _currentSongSubscription?.cancel();
     _audio.dispose();
     super.dispose();
   }

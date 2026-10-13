@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
-import '../constants/chant_songs.dart';
-import 'background_audio_service.dart';
+import 'chant_audio_handler.dart';
 import 'storage_service.dart';
 
 class AudioService {
@@ -16,23 +16,24 @@ class AudioService {
   /// 輪詢指針 (Round-Robin Pointer)
   int _sfxPoolIndex = 0;
 
-  final AudioPlayer _musicPlayer = AudioPlayer();
+  /// 系統級媒體處理器 (接軌 Android MediaSession 與 iOS NowPlayingCenter)
+  final ChantAudioHandler _handler;
+  ChantAudioHandler get handler => _handler;
 
-  AudioPlayer get musicPlayer => _musicPlayer;
+  AudioPlayer get musicPlayer => _handler.musicPlayer;
 
-  bool _isPlaying = false;
-  bool get isPlaying => _isPlaying;
+  bool get isPlaying => _handler.isPlaying;
 
-  int _currentSongId = 0;
-  int get currentSongId => _currentSongId;
+  int get currentSongId => _handler.currentSongId;
 
-  Stream<Duration> get onPositionChanged => _musicPlayer.onPositionChanged;
-  Stream<Duration> get onDurationChanged => _musicPlayer.onDurationChanged;
-  Stream<PlayerState> get onPlayerStateChanged => _musicPlayer.onPlayerStateChanged;
-  Stream<void> get onPlayerComplete => _musicPlayer.onPlayerComplete;
+  Stream<Duration> get onPositionChanged => _handler.musicPlayer.onPositionChanged;
+  Stream<Duration> get onDurationChanged => _handler.musicPlayer.onDurationChanged;
+  Stream<PlayerState> get onPlayerStateChanged => _handler.musicPlayer.onPlayerStateChanged;
+  Stream<void> get onPlayerComplete => _handler.musicPlayer.onPlayerComplete;
+  Stream<int> get onCurrentSongChanged => _handler.onCurrentSongChanged;
 
-  Future<Duration?> getCurrentPosition() => _musicPlayer.getCurrentPosition();
-  Future<Duration?> getDuration() => _musicPlayer.getDuration();
+  Future<Duration?> getCurrentPosition() => _handler.musicPlayer.getCurrentPosition();
+  Future<Duration?> getDuration() => _handler.musicPlayer.getDuration();
 
   static final AudioContext _sfxAudioContext = AudioContext(
     android: const AudioContextAndroid(
@@ -50,55 +51,13 @@ class AudioService {
     ),
   );
 
-  static final AudioContext _musicAudioContext = AudioContext(
-    android: const AudioContextAndroid(
-      isSpeakerphoneOn: false,
-      stayAwake: true,
-      contentType: AndroidContentType.music,
-      usageType: AndroidUsageType.media,
-      audioFocus: AndroidAudioFocus.gain,
-    ),
-    iOS: AudioContextIOS(
-      category: AVAudioSessionCategory.playback,
-      options: const {
-        AVAudioSessionOptions.mixWithOthers,
-      },
-    ),
-  );
-
-  AudioService() {
+  AudioService({ChantAudioHandler? handler})
+      : _handler = handler ?? ChantAudioHandler() {
     // 初始化點擊音效池：採用標準 MediaPlayer 模式，設置停止釋放模式，並配置無焦點搶佔上下文
     for (final player in _sfxPool) {
       player.setReleaseMode(ReleaseMode.stop);
       player.setAudioContext(_sfxAudioContext);
     }
-
-    _musicPlayer.setReleaseMode(ReleaseMode.loop);
-
-    // 佛曲播放器設為媒體播放模式
-    _musicPlayer.setAudioContext(_musicAudioContext);
-
-    _musicPlayer.onPlayerStateChanged.listen((state) {
-      if (state == PlayerState.completed && _releaseMode == ReleaseMode.loop) {
-        // 在 loop 模式下，播放完畢時僅為微秒級暫態，依然保持播放狀態
-        _isPlaying = true;
-      } else {
-        _isPlaying = (state == PlayerState.playing);
-      }
-    });
-
-    // 關鍵修復：監聽曲目完成事件，確保在背景播放時達到 100% 循環可靠性
-    _musicPlayer.onPlayerComplete.listen((_) async {
-      if (_releaseMode == ReleaseMode.loop) {
-        try {
-          await _musicPlayer.seek(Duration.zero);
-          await _musicPlayer.resume();
-          await _musicPlayer.setReleaseMode(ReleaseMode.loop);
-        } catch (_) {
-          await playChant(_currentSongId);
-        }
-      }
-    });
   }
 
   /// 播放點擊音效（木魚或引磬）
@@ -108,8 +67,8 @@ class AudioService {
   /// 3. 播放前先清空該通道狀態，徹底解決 Android 原生端多擊後無聲/卡死的缺陷
   /// 4. 固定通道池不產生額外物件分配，兼顧極致效能與系統穩定性
   Future<void> playClickSfx(SoundEffectType type) async {
-    if (type == SoundEffectType.none) return;
-    final file = (type == SoundEffectType.bell) ? 'audio/ens.mp3' : 'audio/mus.mp3';
+    final file = type.assetPath;
+    if (file == null) return;
 
     // 取得當前輪詢通道並推進指針
     final player = _sfxPool[_sfxPoolIndex];
@@ -125,100 +84,48 @@ class AudioService {
     });
   }
 
-  /// 播放指定佛曲
-  Future<void> playChant(int songId) async {
-    _currentSongId = songId;
-    _isPlaying = true;
-    final song = ChantConstants.getSongById(songId);
-    BackgroundAudioService.start(
-      title: '念佛計數器',
-      chantName: '${song.title} · 念佛梵音播放中',
-    );
-    // 直接 play，並在加載後重新確認 setReleaseMode 與 AudioContext，
-    // 防止 Android 原生 MediaPlayer reset() 時丟失 isLooping 與 PARTIAL_WAKE_LOCK
-    await _musicPlayer.play(AssetSource(song.assetPath));
-    await _musicPlayer.setReleaseMode(_releaseMode);
-    await _musicPlayer.setAudioContext(_musicAudioContext);
-  }
+  /// 播放指定佛曲 (更新 OS 通知欄與鎖定畫面控制卡片)
+  Future<void> playChant(int songId) => _handler.playSong(songId);
 
   /// 暫停播放
-  Future<void> pauseChant() async {
-    _isPlaying = false;
-    BackgroundAudioService.stop();
-    await _musicPlayer.pause();
-  }
+  Future<void> pauseChant() => _handler.pause();
 
-  /// 恢復播放（若無法從暫停點恢復則自動重新載入播放）
-  Future<void> resumeChant() async {
-    _isPlaying = true;
-    final song = ChantConstants.getSongById(_currentSongId);
-    BackgroundAudioService.start(
-      title: '念佛計數器',
-      chantName: '${song.title} · 念佛梵音播放中',
-    );
-    try {
-      await _musicPlayer.resume();
-      await _musicPlayer.setReleaseMode(_releaseMode);
-      if (_musicPlayer.state != PlayerState.playing) {
-        await playChant(_currentSongId);
-      }
-    } catch (_) {
-      await playChant(_currentSongId);
-    }
-  }
+  /// 恢復播放
+  Future<void> resumeChant() => _handler.play();
 
   /// 停止播放
-  Future<void> stopChant() async {
-    _isPlaying = false;
-    BackgroundAudioService.stop();
-    await _musicPlayer.stop();
-  }
+  Future<void> stopChant() => _handler.stop();
 
-  /// 暫停/恢復播放指定佛曲（可靠的切換邏輯，支援連續開啟關閉開啟）
-  Future<void> toggleChantPlay(int songId) async {
-    if (_isPlaying) {
-      if (_currentSongId == songId) {
-        await pauseChant();
-      } else {
-        await playChant(songId);
-      }
-    } else {
-      if (_currentSongId == songId && _musicPlayer.state == PlayerState.paused) {
-        await resumeChant();
-      } else {
-        await playChant(songId);
-      }
-    }
-  }
+  /// 暫停/恢復播放指定佛曲
+  Future<void> toggleChantPlay(int songId) => _handler.togglePlay(songId);
+
+  /// 跳至上一首
+  Future<void> playPrevSong() => _handler.skipToPrevious();
+
+  /// 跳至下一首
+  Future<void> playNextSong() => _handler.skipToNext();
 
   /// 跳至指定播放位置
-  Future<void> seek(Duration position) async {
-    await _musicPlayer.seek(position);
-  }
+  Future<void> seek(Duration position) => _handler.seek(position);
 
   /// 相對快轉或倒退
   Future<void> seekRelative(Duration offset) async {
-    final cur = await _musicPlayer.getCurrentPosition() ?? Duration.zero;
-    final dur = await _musicPlayer.getDuration() ?? Duration.zero;
+    final cur = await getCurrentPosition() ?? Duration.zero;
+    final dur = await getDuration() ?? Duration.zero;
     var target = cur + offset;
     if (target < Duration.zero) target = Duration.zero;
     if (dur > Duration.zero && target > dur) target = dur;
-    await _musicPlayer.seek(target);
+    await seek(target);
   }
 
-  ReleaseMode _releaseMode = ReleaseMode.loop;
-  ReleaseMode get releaseMode => _releaseMode;
+  ReleaseMode get releaseMode => _handler.releaseMode;
 
-  Future<void> setReleaseMode(ReleaseMode mode) async {
-    _releaseMode = mode;
-    await _musicPlayer.setReleaseMode(mode);
-  }
+  Future<void> setReleaseMode(ReleaseMode mode) => _handler.setReleaseMode(mode);
 
   void dispose() {
-    BackgroundAudioService.stop();
     for (final player in _sfxPool) {
       player.dispose();
     }
-    _musicPlayer.dispose();
+    _handler.disposePlayer();
   }
 }

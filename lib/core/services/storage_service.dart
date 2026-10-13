@@ -1,9 +1,43 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum SoundEffectType {
+  woodfish1, // 木魚一 (wooden-fish-1.mp3)
+  woodfish2, // 木魚二 (wooden-fish-2.mp3)
+  woodfish3, // 木魚三 (wooden-fish-3.mp3，原 mus.mp3 經典原音)
   bell, // 引磬 (ens.mp3)
-  woodfish, // 木魚 (mus.mp3)
-  none, // 靜音
+  none; // 靜音
+
+  /// 取得對應音效檔路徑 (若為 none 則為 null)
+  String? get assetPath {
+    switch (this) {
+      case SoundEffectType.woodfish1:
+        return 'audio/wooden-fish-1.mp3';
+    //   case SoundEffectType.woodfish2:
+    //     return 'audio/wooden-fish-2.mp3';
+      case SoundEffectType.woodfish3:
+        return 'audio/wooden-fish-3.mp3';
+      case SoundEffectType.bell:
+        return 'audio/ens.mp3';
+      case SoundEffectType.none:
+        return null;
+    }
+  }
+
+  /// 介面顯示名稱
+  String get displayName {
+    switch (this) {
+      case SoundEffectType.woodfish1:
+        return '木魚一';
+    //   case SoundEffectType.woodfish2:
+    //     return '木魚二';
+      case SoundEffectType.woodfish3:
+        return '木魚二';
+      case SoundEffectType.bell:
+        return '引磬';
+      case SoundEffectType.none:
+        return '靜音';
+    }
+  }
 }
 
 enum AppUiMode {
@@ -14,6 +48,7 @@ enum AppUiMode {
 class StorageService {
   static const String keyCounter = 'pref_counter';
   static const String keySoundEffect = 'pref_sound_effect';
+  static const String keySoundEffectKey = 'pref_sound_effect_key';
   static const String keyUiMode = 'pref_ui_mode';
   static const String keyKeepScreenOnHome = 'DormancyCB1';
   static const String keyKeepScreenOnChant = 'DormancyCB2';
@@ -43,16 +78,29 @@ class StorageService {
   Future<void> setCounter(int val) => _prefs.setInt(keyCounter, val);
 
   SoundEffectType getSoundEffect() {
-    final index =
-        _prefs.getInt(keySoundEffect) ?? SoundEffectType.woodfish.index;
-    if (index >= 0 && index < SoundEffectType.values.length) {
-      return SoundEffectType.values[index];
+    final key = _prefs.getString(keySoundEffectKey);
+    if (key != null) {
+      for (final type in SoundEffectType.values) {
+        if (type.name == key) return type;
+      }
     }
-    return SoundEffectType.woodfish;
+    final index = _prefs.getInt(keySoundEffect);
+    if (index != null) {
+      // 舊版相容對照：0: bell, 1: 原版木魚 (對應木魚三), 2: none
+      if (index == 0) return SoundEffectType.bell;
+      if (index == 1) return SoundEffectType.woodfish3;
+      if (index == 2) return SoundEffectType.none;
+      if (index >= 0 && index < SoundEffectType.values.length) {
+        return SoundEffectType.values[index];
+      }
+    }
+    return SoundEffectType.woodfish1;
   }
 
-  Future<void> setSoundEffect(SoundEffectType type) =>
-      _prefs.setInt(keySoundEffect, type.index);
+  Future<void> setSoundEffect(SoundEffectType type) async {
+    await _prefs.setInt(keySoundEffect, type.index);
+    await _prefs.setString(keySoundEffectKey, type.name);
+  }
 
   AppUiMode getUiMode() {
     final val = _prefs.getString(keyUiMode);

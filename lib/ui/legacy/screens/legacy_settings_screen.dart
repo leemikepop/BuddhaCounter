@@ -75,8 +75,16 @@ class LegacySettingsScreen extends StatelessWidget {
               child: const Column(
                 children: [
                   RadioListTile<SoundEffectType>(
-                    title: Text('木魚聲 (預設)'),
-                    value: SoundEffectType.woodfish,
+                    title: Text('木魚一'),
+                    value: SoundEffectType.woodfish1,
+                  ),
+                  RadioListTile<SoundEffectType>(
+                    title: Text('木魚二'),
+                    value: SoundEffectType.woodfish2,
+                  ),
+                  RadioListTile<SoundEffectType>(
+                    title: Text('木魚三 (經典原音)'),
+                    value: SoundEffectType.woodfish3,
                   ),
                   RadioListTile<SoundEffectType>(
                     title: Text('引磬聲'),

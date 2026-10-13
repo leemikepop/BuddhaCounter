@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- 螢幕常亮與背景音訊播放防止休眠權限 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -33,11 +34,25 @@
             </intent-filter>
         </activity>
 
-        <!-- 佛曲背景播放前景服務 (保持螢幕關閉與退至背景時音訊不中斷) -->
+        <!-- audio_service 音訊背景媒體服務與廣播接收器 (支援系統通知欄/鎖定畫面媒體控制卡片) -->
         <service
-            android:name=".ChantMediaService"
+            android:name="com.ryanheise.audioservice.AudioService"
             android:foregroundServiceType="mediaPlayback"
-            android:exported="false" />
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
 
         <!-- 不要刪除！Flutter 引擎用此標籤識別 Android v2 Embedding -->
         <meta-data

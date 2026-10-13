@@ -19,7 +19,7 @@ class ChantConstants {
     ChantSong(
       id: 0,
       title: '阿彌陀佛-四字四音',
-      assetPath: 'audio/amitabha.mp3',
+      assetPath: 'audio/bb1.mp3',
       beatIntervalMs: 3850,
     ),
     ChantSong(
