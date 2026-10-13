@@ -47,3 +47,4 @@
 *.pwd
 android/keystore/
 ios/secret/
+assets/raw/

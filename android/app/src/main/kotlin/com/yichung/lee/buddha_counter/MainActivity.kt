@@ -11,8 +11,8 @@ import com.ryanheise.audioservice.AudioServiceActivity
 
 class MainActivity : AudioServiceActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED
@@ -24,5 +24,14 @@ class MainActivity : AudioServiceActivity() {
                 )
             }
         }
+    }
+
+    companion object {
+        // Explicit references to keep notification drawables during R8 shrinking
+        @Suppress("unused")
+        private val KEEP_DRAWABLES = intArrayOf(
+            R.drawable.ic_stat_music,
+            R.drawable.audio_service_stop,
+        )
     }
 }
