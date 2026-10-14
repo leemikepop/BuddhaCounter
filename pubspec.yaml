@@ -1,7 +1,7 @@
 name: buddha_counter
 description: 念佛計數器
 publish_to: 'none'
-version: 1.52.0+153
+version: 1.53.0+153
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
