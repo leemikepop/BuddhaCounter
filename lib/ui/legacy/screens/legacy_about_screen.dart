@@ -73,7 +73,7 @@ class LegacyAboutScreen extends StatelessWidget {
               const SizedBox(height: 12),
 
               const Text(
-                '本應用程式由李義忠（阿忠）居士發心設計開發，最初於 Android 早期發布，旨在提供十方念佛、拜佛同修一個方便、純粹的隨身修持記數工具。\n\n'
+                '本應用程式由李義忠（阿忠）居士發心設計開發，最初於 Android 早期發布，旨在提供十方念佛、拜佛同修一個方便、純粹的隨身精進記數工具。\n\n'
                 '為使阿忠的心血得以長久傳承、並服務更多現代修行大眾，現由後輩工程師接棒維護，推出全新的操作介面。\n\n'
                 '祈願一切見聞者，皆發菩提心，一向專念南無阿彌陀佛，同生極樂國。',
                 textAlign: TextAlign.start,

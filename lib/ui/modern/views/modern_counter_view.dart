@@ -36,7 +36,7 @@ class ModernCounterView extends StatelessWidget {
   }
 
   void _showTargetPicker(BuildContext context, CounterViewModel vm) {
-    final targets = [108, 300, 1080, 5000, 10000, 0];
+    final targets = [108, 500, 1000, 5000, 10000, 0];
     final customController = TextEditingController();
     showModalBottomSheet(
       context: context,
@@ -67,7 +67,7 @@ class ModernCounterView extends StatelessWidget {
                         padding:
                             EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         child: Text(
-                          '設定今日念佛目標',
+                          '設定今日目標',
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
@@ -104,7 +104,7 @@ class ModernCounterView extends StatelessWidget {
                       if (!targets.contains(vm.targetCount) &&
                           vm.targetCount > 0)
                         ChoiceChip(
-                          label: Text('${vm.targetCount} 聲 (自訂)'),
+                          label: Text('${vm.targetCount}(自訂)'),
                           selected: true,
                           onSelected: (_) {},
                         ),

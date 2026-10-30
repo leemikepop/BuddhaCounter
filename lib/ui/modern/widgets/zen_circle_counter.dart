@@ -199,7 +199,7 @@ class _ZenCircleCounterState extends State<ZenCircleCounter>
                           ),
                           child: Text(
                             isTargetReached
-                                ? '圓滿達成 ${widget.targetCount} 聲'
+                                ? '達成 ${widget.targetCount} 聲'
                                 : '目標 ${widget.targetCount} · ${(progress * 100).toInt()}%',
                             style: TextStyle(
                               fontSize: 11,

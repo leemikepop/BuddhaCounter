@@ -60,6 +60,10 @@ class StorageService {
   static const String keyOrientationLocked = 'pref_orientation_locked';
   static const String keySeenModernGuide = 'pref_seen_modern_guide';
   static const String keyHuiXiangIndex = 'pref_hui_xiang_index';
+  static const String keyDailyRecords = 'pref_daily_records';
+  static const String keyReminderEnabled = 'pref_reminder_enabled';
+  static const String keyReminderHour = 'pref_reminder_hour';
+  static const String keyReminderMinute = 'pref_reminder_minute';
 
   final SharedPreferences _prefs;
 
@@ -163,4 +167,20 @@ class StorageService {
   int getHuiXiangIndex() => _prefs.getInt(keyHuiXiangIndex) ?? 0;
   Future<void> setHuiXiangIndex(int val) =>
       _prefs.setInt(keyHuiXiangIndex, val);
+
+  String? getDailyRecordsJson() => _prefs.getString(keyDailyRecords);
+  Future<void> setDailyRecordsJson(String json) =>
+      _prefs.setString(keyDailyRecords, json);
+
+  bool getReminderEnabled() => _prefs.getBool(keyReminderEnabled) ?? false;
+  Future<void> setReminderEnabled(bool val) =>
+      _prefs.setBool(keyReminderEnabled, val);
+
+  int getReminderHour() => _prefs.getInt(keyReminderHour) ?? 12;
+  Future<void> setReminderHour(int hour) =>
+      _prefs.setInt(keyReminderHour, hour);
+
+  int getReminderMinute() => _prefs.getInt(keyReminderMinute) ?? 0;
+  Future<void> setReminderMinute(int min) =>
+      _prefs.setInt(keyReminderMinute, min);
 }

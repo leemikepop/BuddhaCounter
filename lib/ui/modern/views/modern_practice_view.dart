@@ -118,10 +118,10 @@ class ModernPracticeView extends StatelessWidget {
                   ),
                   onPressed: () {
                     vm.audioService.playClickSfx(SoundEffectType.bell);
-                    AppToast.show(context, '阿彌陀佛，合十迴向功德圓滿');
+                    AppToast.show(context, '合十迴向 功德圓滿');
                   },
                   icon: const Icon(Icons.favorite_outline_rounded, size: 18),
-                  label: const Text('合十祈願 · 敲響引磬', style: TextStyle(fontSize: 15)),
+                  label: const Text('引磬', style: TextStyle(fontSize: 15)),
                 ),
               ],
             ),

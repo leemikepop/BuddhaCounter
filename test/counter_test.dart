@@ -22,6 +22,7 @@ import 'package:buddha_counter/ui/legacy/screens/legacy_about_screen.dart';
 import 'package:buddha_counter/ui/common/app_toast.dart';
 import 'package:buddha_counter/ui/modern/widgets/modern_guide_dialog.dart';
 import 'package:buddha_counter/ui/modern/widgets/song_list_tile.dart';
+import 'package:buddha_counter/core/services/practice_record_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -865,7 +866,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 驗證底部對話框出現
-      expect(find.text('設定今日念佛目標'), findsOneWidget);
+      expect(find.text('設定今日目標'), findsOneWidget);
       expect(find.text('或自訂目標聲數：'), findsOneWidget);
 
       // 輸入自訂目標 888 聲
@@ -885,14 +886,14 @@ void main() {
       // 再次開啟設定面板，驗證自訂標籤出現
       await tester.tap(find.text('目標 888'));
       await tester.pumpAndSettle();
-      expect(find.text('888 聲 (自訂)'), findsOneWidget);
+      expect(find.text('888(自訂)'), findsOneWidget);
 
       // 關閉面板
       await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
     });
 
-    testWidgets('ModernGuideDialog renders slides and navigates through pages',
+    testWidgets('ModernGuideDialog renders single page summary and dismisses',
         (tester) async {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
@@ -921,23 +922,19 @@ void main() {
       // 驗證已標記已讀
       expect(vm.hasSeenModernGuide, isTrue);
 
-      // 驗證第 1 頁內容
-      expect(find.text('全新現代操作介面'), findsOneWidget);
-      expect(find.text('下一步'), findsOneWidget);
+      // 驗證一頁式重點內容
+      expect(find.text('全新功能特色'), findsOneWidget);
+      expect(find.text('念佛與自動計數'), findsOneWidget);
+      expect(find.text('每日功課表記'), findsOneWidget);
+      expect(find.text('桌面小工具與定時提醒'), findsOneWidget);
+      expect(find.text('開始精進'), findsOneWidget);
 
-      // 點擊下一步切換至第 2 頁
-      await tester.tap(find.text('下一步'));
-      await tester.pumpAndSettle();
-      expect(find.text('三大專屬修持分頁'), findsOneWidget);
-
-      // 點擊關閉/完成
-      final closeButton = find.byIcon(Icons.close_rounded);
-      expect(closeButton, findsOneWidget);
-      await tester.tap(closeButton);
+      // 點擊「開始精進」按鈕關閉
+      await tester.tap(find.text('開始精進'));
       await tester.pumpAndSettle();
 
       // 對話框已關閉
-      expect(find.text('全新現代操作介面'), findsNothing);
+      expect(find.text('全新功能特色'), findsNothing);
     });
 
     test(
@@ -1140,6 +1137,199 @@ void main() {
       vm.dispose();
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(seconds: 1));
+    });
+  });
+
+  group('Daily Practice Records, Calendar & Habit Widget Tests', () {
+    test(
+        'PracticeRecordService correctly tracks daily records, manual and auto counts',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final records = PracticeRecordService(storage);
+
+      final date = DateTime(2026, 10, 30);
+      expect(records.getCount(date), 0);
+
+      await records.addCount(date, manual: 108);
+      expect(records.getCount(date), 108);
+      expect(records.getRecord(date).manualCount, 108);
+      expect(records.getRecord(date).autoCount, 0);
+
+      await records.addCount(date, auto: 200);
+      expect(records.getCount(date), 308);
+      expect(records.getRecord(date).autoCount, 200);
+
+      // 手動直接修改自由度
+      await records.setCount(date, 1000);
+      expect(records.getCount(date), 1000);
+
+      // 自由增減 (+108, -200)
+      await records.adjustCount(date, 108);
+      expect(records.getCount(date), 1108);
+
+      await records.adjustCount(date, -200);
+      expect(records.getCount(date), 908);
+
+      // 清空紀錄
+      await records.clearDate(date);
+      expect(records.getCount(date), 0);
+    });
+
+    test(
+        'PracticeRecordService calculates weekly, monthly and Duolingo streak accurately',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final records = PracticeRecordService(storage);
+
+      final baseDate = DateTime(2026, 10, 30); // Friday
+      await records.setCount(DateTime(2026, 10, 26), 100); // Monday
+      await records.setCount(DateTime(2026, 10, 27), 200); // Tuesday
+      await records.setCount(DateTime(2026, 10, 28), 300); // Wednesday
+      await records.setCount(DateTime(2026, 10, 29), 400); // Thursday
+      await records.setCount(DateTime(2026, 10, 30), 500); // Friday
+
+      // 本週累計 (100+200+300+400+500 = 1500)
+      expect(records.getWeeklyTotal(baseDate), 1500);
+
+      // 本月累計 (1500)
+      expect(records.getMonthlyTotal(2026, 10), 1500);
+
+      // 連續天數 (26, 27, 28, 29, 30 -> 5 天)
+      expect(records.calculateStreak(baseDate), 5);
+
+      // 若週六 (31) 尚未念佛，但週五有念佛，連續天數延續 (5 天)
+      final saturday = DateTime(2026, 10, 31);
+      expect(records.calculateStreak(saturday), 5);
+
+      // 週日 (11/1) 若仍未念佛且週六為 0，則中斷為 0
+      final sunday = DateTime(2026, 11, 1);
+      expect(records.calculateStreak(sunday), 0);
+    });
+
+    test(
+        'CounterViewModel increments and manual edits synchronize with practice records',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final audio = AudioService();
+      final vm = CounterViewModel(storage: storage, audio: audio);
+
+      final today = DateTime.now();
+      expect(vm.todayPracticeCount, 0);
+
+      vm.increment();
+      expect(vm.count, 1);
+      expect(vm.todayPracticeCount, 1);
+
+      vm.increment();
+      expect(vm.count, 2);
+      expect(vm.todayPracticeCount, 2);
+
+      vm.decrement();
+      expect(vm.count, 1);
+      expect(vm.todayPracticeCount, 1);
+
+      // 透過 ViewModel 自由調整功課
+      await vm.adjustPracticeCount(today, 107);
+      expect(vm.count, 108);
+      expect(vm.todayPracticeCount, 108);
+
+      // 直接修改數值
+      await vm.setPracticeCount(today, 1000);
+      expect(vm.count, 1000);
+      expect(vm.todayPracticeCount, 1000);
+
+      // 每日提醒設定
+      await vm.updateReminderSettings(enabled: true, hour: 21, minute: 30);
+      expect(vm.isReminderEnabled, isTrue);
+      expect(vm.reminderHour, 21);
+      expect(vm.reminderMinute, 30);
+    });
+
+    testWidgets(
+        'ModernCounterScreen includes 4th tab 功課月曆 and renders ModernCalendarView',
+        (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final audio = AudioService();
+      final vm = CounterViewModel(storage: storage, audio: audio);
+      vm.markModernGuideSeen(); // 防止導覽對話框遮擋
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: vm,
+          child: const MaterialApp(
+            home: ModernCounterScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 驗證底部導覽列包含 4 個項目：手動計數、自動計數、迴向、功課月曆
+      expect(find.text('手動計數'), findsWidgets);
+      expect(find.text('自動計數'), findsWidgets);
+      expect(find.text('迴向'), findsWidgets);
+      expect(find.text('功課月曆'), findsOneWidget);
+
+      // 點擊最右邊第 4 個分頁「功課月曆」
+      await tester.tap(find.text('功課月曆'));
+      await tester.pumpAndSettle();
+
+      // 驗證畫面切換為月曆視圖與統計指標
+      expect(find.text('今日功課'), findsOneWidget);
+      expect(find.text('本週累計'), findsOneWidget);
+      expect(find.text('本月累計'), findsOneWidget);
+      expect(find.text('快速增減修訂：'), findsOneWidget);
+
+      // 點擊 +108 快捷修訂按鈕
+      final add108Chip = find.widgetWithText(ActionChip, '+108');
+      expect(add108Chip, findsOneWidget);
+      await tester.tap(add108Chip);
+      await tester.pumpAndSettle();
+
+      expect(vm.todayPracticeCount, 108);
+      expect(find.text('108'), findsWidgets);
+
+      // 點擊「修改數值」按鈕彈出對話框
+      final editBtn = find.text('修改數值');
+      expect(editBtn, findsOneWidget);
+      await tester.tap(editBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.text('手動修改功課聲數'), findsOneWidget);
+      expect(find.text('確認儲存'), findsOneWidget);
+
+      // 輸入自訂聲數 500
+      await tester.enterText(find.byType(TextField), '500');
+      await tester.tap(find.text('確認儲存'));
+      await tester.pumpAndSettle();
+
+      expect(vm.todayPracticeCount, 500);
+      expect(find.text('500'), findsWidgets);
+
+      // 點擊年月標頭彈出年月選擇器
+      final now = DateTime.now();
+      final headerFinder = find.text('${now.year} 年 ${now.month} 月');
+      expect(headerFinder, findsOneWidget);
+      await tester.tap(headerFinder);
+      await tester.pumpAndSettle();
+
+      // 驗證彈出年月九宮格對話框
+      expect(find.text('回到本月'), findsOneWidget);
+      expect(find.text('1 月'), findsOneWidget);
+      expect(find.text('12 月'), findsOneWidget);
+
+      // 點擊「1 月」跳轉至 1 月
+      await tester.tap(find.text('1 月'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('${now.year} 年 1 月'), findsOneWidget);
     });
   });
 }

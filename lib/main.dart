@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import 'core/constants/chant_songs.dart';
 import 'core/services/audio_service.dart';
 import 'core/services/chant_audio_handler.dart';
+import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
+import 'core/services/widget_service.dart';
 import 'features/counter/counter_view_model.dart';
 import 'ui/legacy/screens/legacy_counter_screen.dart';
 import 'ui/modern/screens/modern_counter_screen.dart';
@@ -50,6 +52,11 @@ void main() async {
   final storageService = await StorageService.init();
   final audioService = AudioService(handler: audioHandler);
 
+  // 初始化桌面小工具與定時提醒通知服務
+  await WidgetService.init();
+  final notificationService = NotificationService(storageService);
+  await notificationService.init();
+
   runApp(
     MultiProvider(
       providers: [
@@ -57,6 +64,7 @@ void main() async {
           create: (_) => CounterViewModel(
             storage: storageService,
             audio: audioService,
+            notifications: notificationService,
           ),
         ),
       ],

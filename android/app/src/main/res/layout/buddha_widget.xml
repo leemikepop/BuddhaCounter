@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/buddha_widget_background"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- 頂部標題與連續修持徽章 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="念佛計數器"
+            android:textColor="#F59E0B"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_streak_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/buddha_widget_badge"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="3dp"
+            android:text="🔥 連續 1 天"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- 中間今日功課聲數 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/widget_today_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_target_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="今日累積功課數"
+            android:textColor="#C5BAA8"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- 底部本週與本月累計 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_weekly_count"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="本週: 0聲"
+            android:textColor="#9E9484"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/widget_monthly_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="本月: 0聲"
+            android:textColor="#9E9484"
+            android:textSize="11sp" />
+    </LinearLayout>
+</LinearLayout>
+

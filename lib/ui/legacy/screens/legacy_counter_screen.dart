@@ -9,6 +9,7 @@ import 'legacy_settings_screen.dart';
 import 'legacy_about_screen.dart';
 import '../../common/app_toast.dart';
 import '../../modern/widgets/modern_guide_dialog.dart';
+import '../../modern/views/modern_calendar_view.dart';
 
 /// 經典模式主計數畫面 (忠實復刻原 Android MainActivity.java & activity_main.xml)
 class LegacyCounterScreen extends StatefulWidget {
@@ -243,6 +244,24 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const LegacyChantScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_month_rounded),
+              title: const Text('功課月曆表記'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => Scaffold(
+                      appBar: AppBar(
+                        title: const Text('功課月曆表記'),
+                      ),
+                      body: const SafeArea(child: ModernCalendarView()),
+                    ),
+                  ),
                 );
               },
             ),

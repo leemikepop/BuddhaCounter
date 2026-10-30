@@ -17,6 +17,10 @@
 # Keep MainActivity
 -keep class com.yichung.lee.buddha_counter.MainActivity { *; }
 
+# Keep HomeWidget and WidgetProvider
+-keep class com.yichung.lee.buddha_counter.BuddhaCounterWidgetProvider { *; }
+-keep class es.antonborri.home_widget.** { *; }
+
 # Suppress missing Play Core references from Flutter deferred components
 -dontwarn com.google.android.play.core.**
 

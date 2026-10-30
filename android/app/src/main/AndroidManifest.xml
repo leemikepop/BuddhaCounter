@@ -10,6 +10,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- 震動反饋 -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- 定時提醒通知與開機重設廣播 -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:label="念佛計數器"
@@ -52,6 +55,18 @@
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
+        </receiver>
+
+        <!-- 桌面小工具 (Home Screen AppWidget) 廣播接收器 -->
+        <receiver
+            android:name=".BuddhaCounterWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/buddha_widget_info" />
         </receiver>
 
         <!-- 不要刪除！Flutter 引擎用此標籤識別 Android v2 Embedding -->

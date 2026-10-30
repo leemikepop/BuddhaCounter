@@ -6,11 +6,15 @@ import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../core/constants/chant_songs.dart';
 import '../../core/services/audio_service.dart';
+import '../../core/services/notification_service.dart';
+import '../../core/services/practice_record_service.dart';
 import '../../core/services/storage_service.dart';
 
 class CounterViewModel extends ChangeNotifier {
   final StorageService _storage;
   final AudioService _audio;
+  final PracticeRecordService _practiceRecords;
+  final NotificationService _notifications;
 
   int _count = 0;
   int get count => _count;
@@ -114,6 +118,8 @@ class CounterViewModel extends ChangeNotifier {
       applyScreenWakelockForCurrentPage(_keepScreenAuto);
     } else if (_activeTabIndex == 2) {
       applyScreenWakelockForCurrentPage(_keepScreenChant);
+    } else if (_activeTabIndex == 3) {
+      applyScreenWakelockForCurrentPage(false);
     }
     notifyListeners();
   }
@@ -169,12 +175,28 @@ class CounterViewModel extends ChangeNotifier {
   int get currentSongId => _currentSongId;
 
   AudioService get audioService => _audio;
+  PracticeRecordService get practiceRecords => _practiceRecords;
+  NotificationService get notifications => _notifications;
+
+  int get streakDays => _practiceRecords.calculateStreak();
+  int get todayPracticeCount => _practiceRecords.getCount(DateTime.now());
+  int get weeklyPracticeCount => _practiceRecords.getWeeklyTotal(DateTime.now());
+  int get monthlyPracticeCount =>
+      _practiceRecords.getMonthlyTotal(DateTime.now().year, DateTime.now().month);
+
+  bool get isReminderEnabled => _storage.getReminderEnabled();
+  int get reminderHour => _storage.getReminderHour();
+  int get reminderMinute => _storage.getReminderMinute();
 
   CounterViewModel({
     required StorageService storage,
     required AudioService audio,
+    PracticeRecordService? practiceRecords,
+    NotificationService? notifications,
   })  : _storage = storage,
         _audio = audio,
+        _practiceRecords = practiceRecords ?? PracticeRecordService(storage),
+        _notifications = notifications ?? NotificationService(storage),
         _soundEffect = storage.getSoundEffect(),
         _uiMode = storage.getUiMode() {
     _count = _storage.getCounter();
@@ -288,6 +310,7 @@ class CounterViewModel extends ChangeNotifier {
   void increment() {
     _count++;
     _storage.setCounter(_count);
+    _practiceRecords.addCount(DateTime.now(), manual: 1);
     _audio.playClickSfx(_soundEffect);
     if (_vibrationEnabled) {
       HapticFeedback.lightImpact();
@@ -299,6 +322,7 @@ class CounterViewModel extends ChangeNotifier {
     if (_count > 0) {
       _count--;
       _storage.setCounter(_count);
+      _practiceRecords.adjustCount(DateTime.now(), -1);
       if (_vibrationEnabled) {
         HapticFeedback.selectionClick();
       }
@@ -309,6 +333,56 @@ class CounterViewModel extends ChangeNotifier {
   void resetCount() {
     _count = 0;
     _storage.setCounter(_count);
+    notifyListeners();
+  }
+
+  // --- 功課月曆與記錄操作 ---
+  Future<void> setPracticeCount(DateTime date, int newCount) async {
+    final future = _practiceRecords.setCount(date, newCount);
+    final now = DateTime.now();
+    if (PracticeRecordService.formatDateKey(date) ==
+        PracticeRecordService.formatDateKey(now)) {
+      _count = newCount;
+      _storage.setCounter(_count);
+    }
+    notifyListeners();
+    await future;
+  }
+
+  Future<void> adjustPracticeCount(DateTime date, int delta) async {
+    final future = _practiceRecords.adjustCount(date, delta);
+    final now = DateTime.now();
+    if (PracticeRecordService.formatDateKey(date) ==
+        PracticeRecordService.formatDateKey(now)) {
+      _count = _practiceRecords.getCount(date);
+      _storage.setCounter(_count);
+    }
+    notifyListeners();
+    await future;
+  }
+
+  Future<void> clearPracticeDate(DateTime date) async {
+    final future = _practiceRecords.clearDate(date);
+    final now = DateTime.now();
+    if (PracticeRecordService.formatDateKey(date) ==
+        PracticeRecordService.formatDateKey(now)) {
+      _count = 0;
+      _storage.setCounter(0);
+    }
+    notifyListeners();
+    await future;
+  }
+
+  Future<void> updateReminderSettings({
+    required bool enabled,
+    required int hour,
+    required int minute,
+  }) async {
+    await _notifications.scheduleDailyReminder(
+      hour: hour,
+      minute: minute,
+      enabled: enabled,
+    );
     notifyListeners();
   }
 
@@ -513,6 +587,7 @@ class CounterViewModel extends ChangeNotifier {
         if (posMs - markerMs <= 3000) {
           _autoCount++;
           _storage.setAutoCounter(_autoCount);
+          _practiceRecords.addCount(DateTime.now(), auto: 1);
           beatChanged = true;
         }
         _nextMarkerIndex++;
@@ -525,6 +600,7 @@ class CounterViewModel extends ChangeNotifier {
           while (posMs >= _targetNextBeatMs) {
             _autoCount++;
             _storage.setAutoCounter(_autoCount);
+            _practiceRecords.addCount(DateTime.now(), auto: 1);
             _targetNextBeatMs += bb;
             beatChanged = true;
           }

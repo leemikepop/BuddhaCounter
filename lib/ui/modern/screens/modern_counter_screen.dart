@@ -7,6 +7,7 @@ import '../../common/app_toast.dart';
 import '../views/modern_counter_view.dart';
 import '../views/modern_timer_view.dart';
 import '../views/modern_practice_view.dart';
+import '../views/modern_calendar_view.dart';
 import '../widgets/modern_floating_player.dart';
 import '../widgets/modern_guide_dialog.dart';
 
@@ -31,6 +32,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
     '手動計數',
     '自動計數',
     '迴向',
+    '功課月曆',
   ];
 
   @override
@@ -209,6 +211,15 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
                 _onTabSelect(2);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.calendar_month_rounded),
+              title: const Text('功課月曆'),
+              selected: _currentTabIndex == 3,
+              onTap: () {
+                Navigator.pop(context);
+                _onTabSelect(3);
+              },
+            ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.queue_music_rounded),
@@ -271,6 +282,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
                   RepaintBoundary(child: ModernCounterView()),
                   RepaintBoundary(child: ModernTimerView()),
                   RepaintBoundary(child: ModernPracticeView()),
+                  RepaintBoundary(child: ModernCalendarView()),
                 ],
               ),
             ),
@@ -298,6 +310,11 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             icon: Icon(Icons.spa_outlined),
             selectedIcon: Icon(Icons.spa_rounded),
             label: '迴向',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.calendar_month_outlined),
+            selectedIcon: Icon(Icons.calendar_month_rounded),
+            label: '功課月曆',
           ),
         ],
       ),
