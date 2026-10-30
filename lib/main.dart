@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart' as bg_audio;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'core/constants/chant_songs.dart';
 import 'core/services/audio_service.dart';
 import 'core/services/chant_audio_handler.dart';
 import 'core/services/storage_service.dart';
@@ -22,6 +23,9 @@ void main() async {
       systemNavigationBarDividerColor: Colors.transparent,
     ),
   );
+
+  // 優先載入 31 首佛曲音檔內嵌之 Metadata（title / 參與演出者 artist / 專輯 album）
+  await ChantConstants.loadMetadataFromAssets();
 
   // 初始化系統級音訊媒體會話服務 (Android MediaSession & iOS NowPlayingCenter)
   ChantAudioHandler? audioHandler;
@@ -62,33 +66,32 @@ void main() async {
 }
 
 class BuddhaCounterApp extends StatelessWidget {
+  static final ThemeData _legacyTheme = ThemeData(
+    colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
+    useMaterial3: true,
+  );
+
   const BuddhaCounterApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<CounterViewModel>();
+    // 僅訂閱 UI 模式與深淺色主題變化，避免計數或音訊播放時重複重建整棵 MaterialApp
+    final (uiMode, themeMode) = context.select<CounterViewModel, (AppUiMode, ThemeMode)>(
+      (vm) => (vm.uiMode, vm.themeMode),
+    );
 
     return MaterialApp(
       title: '念佛計數器',
       debugShowCheckedModeBanner: false,
-      themeMode:
-          (vm.uiMode == AppUiMode.legacy) ? ThemeMode.light : vm.themeMode,
-      theme: (vm.uiMode == AppUiMode.legacy)
-          ? ThemeData(
-              colorScheme:
-                  ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
-              useMaterial3: true,
-            )
+      themeMode: (uiMode == AppUiMode.legacy) ? ThemeMode.light : themeMode,
+      theme: (uiMode == AppUiMode.legacy)
+          ? _legacyTheme
           : ModernTheme.lightTheme,
-      darkTheme: (vm.uiMode == AppUiMode.legacy)
-          ? ThemeData(
-              colorScheme:
-                  ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
-              useMaterial3: true,
-            )
+      darkTheme: (uiMode == AppUiMode.legacy)
+          ? _legacyTheme
           : ModernTheme.darkTheme,
       // 根據使用者設定自動切換【經典復古模式 (Legacy)】或【現代禪意模式 (Modern)】
-      home: vm.uiMode == AppUiMode.legacy
+      home: uiMode == AppUiMode.legacy
           ? const LegacyCounterScreen()
           : const ModernCounterScreen(),
     );

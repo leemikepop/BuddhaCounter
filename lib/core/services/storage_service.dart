@@ -59,6 +59,7 @@ class StorageService {
   static const String keyFullscreenTap = 'pref_fullscreen_tap';
   static const String keyOrientationLocked = 'pref_orientation_locked';
   static const String keySeenModernGuide = 'pref_seen_modern_guide';
+  static const String keyHuiXiangIndex = 'pref_hui_xiang_index';
 
   final SharedPreferences _prefs;
 
@@ -158,4 +159,8 @@ class StorageService {
   bool getSeenModernGuide() => _prefs.getBool(keySeenModernGuide) ?? false;
   Future<void> setSeenModernGuide(bool val) =>
       _prefs.setBool(keySeenModernGuide, val);
+
+  int getHuiXiangIndex() => _prefs.getInt(keyHuiXiangIndex) ?? 0;
+  Future<void> setHuiXiangIndex(int val) =>
+      _prefs.setInt(keyHuiXiangIndex, val);
 }

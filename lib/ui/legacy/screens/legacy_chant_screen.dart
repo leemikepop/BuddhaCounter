@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../common/swipeable_hui_xiang.dart';
 
 /// 經典念佛頁面 (忠實復刻原 MainActivity2 & activity_main_activity2.xml)
 class LegacyChantScreen extends StatefulWidget {
@@ -77,30 +78,27 @@ class _LegacyChantScreenState extends State<LegacyChantScreen> {
 
                 const SizedBox(height: 12),
 
-                // 大回向西方文標題
-                const Text(
-                  ChantConstants.huiXiangTitle,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // 回向偈頌文句
-                ...ChantConstants.huiXiangVerses.map(
-                  (verse) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
-                    child: Text(
-                      verse,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500,
-                      ),
+                // 可左右滑動切換之迴向文（大回向西方文 / 回向偈）
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: SwipeableHuiXiangCarousel(
+                    items: ChantConstants.huiXiangItems,
+                    initialIndex: _vm.huiXiangIndex,
+                    onIndexChanged: _vm.setHuiXiangIndex,
+                    accentColor: const Color(0xFF0000FF),
+                    titleStyle: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
+                    verseStyle: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    verseVerticalPadding: 3.0,
+                    titleBottomSpacing: 8.0,
+                    showLotusIcons: false,
                   ),
                 ),
 

@@ -26,8 +26,8 @@ class AudioService {
 
   int get currentSongId => _handler.currentSongId;
 
-  Stream<Duration> get onPositionChanged => _handler.musicPlayer.onPositionChanged;
-  Stream<Duration> get onDurationChanged => _handler.musicPlayer.onDurationChanged;
+  Stream<Duration> get onPositionChanged => _handler.onPositionChanged;
+  Stream<Duration> get onDurationChanged => _handler.onDurationChanged;
   Stream<PlayerState> get onPlayerStateChanged => _handler.musicPlayer.onPlayerStateChanged;
   Stream<void> get onPlayerComplete => _handler.musicPlayer.onPlayerComplete;
   Stream<int> get onCurrentSongChanged => _handler.onCurrentSongChanged;
@@ -52,8 +52,9 @@ class AudioService {
 
   AudioService({ChantAudioHandler? handler})
       : _handler = handler ?? ChantAudioHandler() {
-    // 初始化點擊音效池：採用標準 MediaPlayer 模式，設置停止釋放模式，並配置無焦點搶佔上下文
+    // 初始化點擊音效池：關閉進度輪詢（杜絕音效觸發 FramePositionUpdater 每幀 IPC），設置停止釋放模式與無焦點搶佔上下文
     for (final player in _sfxPool) {
+      player.positionUpdater = null;
       player.setReleaseMode(ReleaseMode.stop);
       player.setAudioContext(_sfxAudioContext);
     }

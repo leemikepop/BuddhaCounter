@@ -372,7 +372,7 @@ class ModernTimerView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        '每拍 ${(song.beatIntervalMs / 1000).toStringAsFixed(2)}s 自動累加',
+                        '每拍 ${(song.effectiveBeatIntervalMs / 1000).toStringAsFixed(2)}s 自動累加',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,

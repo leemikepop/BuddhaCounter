@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/chant_songs.dart';
 
-/// 現代佛曲清單卡片組件
+/// 現代佛曲清單卡片組件（含分類標籤、平均節拍與演出者資訊）
 class SongListTile extends StatelessWidget {
   final ChantSong song;
   final bool isSelected;
@@ -18,15 +18,8 @@ class SongListTile extends StatelessWidget {
     required this.onTogglePlay,
   });
 
-  String _getTempoBadge(int beatMs) {
-    final sec = (beatMs / 1000).toStringAsFixed(2);
-    if (beatMs <= 1000) {
-      return '⚡ 快速 ($sec s/拍)';
-    } else if (beatMs >= 8000) {
-      return '🕊️ 莊嚴慢板 ($sec s/拍)';
-    } else {
-      return '🌿 舒緩標準 ($sec s/拍)';
-    }
+  String _formatBeatSec(int beatMs) {
+    return '${(beatMs / 1000).toStringAsFixed(2)}s/拍';
   }
 
   @override
@@ -34,6 +27,10 @@ class SongListTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
+
+    final pillBg = isDark ? const Color(0xFF282B35) : const Color(0xFFEDE6DA);
+    final pillFg = isDark ? const Color(0xFFAFAEA8) : const Color(0xFF6B655E);
+    final tagBg = primary.withValues(alpha: isDark ? 0.16 : 0.10);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -47,9 +44,7 @@ class SongListTile extends StatelessWidget {
         border: Border.all(
           color: isSelected
               ? primary
-              : (isDark
-                  ? const Color(0xFF2C2F3B)
-                  : const Color(0xFFEDE6DA)),
+              : (isDark ? const Color(0xFF2C2F3B) : const Color(0xFFEDE6DA)),
           width: isSelected ? 1.5 : 1.0,
         ),
       ),
@@ -91,56 +86,91 @@ class SongListTile extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
 
-                // 曲目資訊
+                // 曲目資訊與標籤
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        song.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected
-                              ? primary
-                              : theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
                       Row(
                         children: [
+                          Expanded(
+                            child: Text(
+                              song.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? primary
+                                    : theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                          if (isSelected && isPlaying) ...[
+                            const SizedBox(width: 6),
+                            Icon(
+                              Icons.equalizer_rounded,
+                              size: 15,
+                              color: primary,
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 5,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          for (final tag in song.tags.take(3))
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 1.5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: tagBg,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                tag,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: primary,
+                                ),
+                              ),
+                            ),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
                               vertical: 1.5,
                             ),
                             decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF282B35)
-                                  : const Color(0xFFEDE6DA),
+                              color: pillBg,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              _getTempoBadge(song.beatIntervalMs),
+                              _formatBeatSec(song.effectiveBeatIntervalMs),
                               style: TextStyle(
                                 fontSize: 10,
-                                color: isDark
-                                    ? const Color(0xFFAFAEA8)
-                                    : const Color(0xFF6B655E),
+                                color: pillFg,
                               ),
                             ),
                           ),
-                          if (isSelected && isPlaying) ...[
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.equalizer_rounded,
-                              size: 14,
-                              color: primary,
+                          Text(
+                            song.artist,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark
+                                  ? const Color(0xFFA3A199)
+                                  : const Color(0xFF756F68),
                             ),
-                          ],
+                          ),
                         ],
                       ),
                     ],
@@ -169,4 +199,3 @@ class SongListTile extends StatelessWidget {
     );
   }
 }
-

@@ -4,9 +4,10 @@ import '../../../core/constants/chant_songs.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
 import '../../common/app_toast.dart';
+import '../../common/swipeable_hui_xiang.dart';
 
 /// 現代禪意【迴向】專屬視圖
-/// 包含：阿彌陀佛聖像、大回向西方文（與 Legacy 一致）、合十祈願與引磬敲響
+/// 包含：阿彌陀佛聖像、可左右滑動切換之迴向文（與 Legacy 一致）、合十祈願與引磬敲響
 class ModernPracticeView extends StatelessWidget {
   const ModernPracticeView({super.key});
 
@@ -66,48 +67,33 @@ class ModernPracticeView extends StatelessWidget {
             ),
             child: Column(
               children: [
-                // 大回向西方文 標題
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.spa_outlined, size: 20, color: primary),
-                    const SizedBox(width: 8),
-                    Text(
-                      ChantConstants.huiXiangTitle,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2.0,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(Icons.spa_outlined, size: 20, color: primary),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // 回向偈頌文句
-                ...ChantConstants.huiXiangVerses.map(
-                  (verse) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      verse,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        height: 1.8,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 1.5,
-                        color: isDark
-                            ? const Color(0xFFE2E2E6)
-                            : const Color(0xFF333333),
-                      ),
-                    ),
+                // 可左右滑動切換之迴向文（大回向西方文 / 回向偈）
+                SwipeableHuiXiangCarousel(
+                  items: ChantConstants.huiXiangItems,
+                  initialIndex: vm.huiXiangIndex,
+                  onIndexChanged: vm.setHuiXiangIndex,
+                  accentColor: primary,
+                  titleStyle: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2.0,
+                    color: theme.colorScheme.onSurface,
                   ),
+                  verseStyle: TextStyle(
+                    fontSize: 16,
+                    height: 1.8,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.5,
+                    color: isDark
+                        ? const Color(0xFFE2E2E6)
+                        : const Color(0xFF333333),
+                  ),
+                  verseVerticalPadding: 4.0,
+                  titleBottomSpacing: 16.0,
+                  showLotusIcons: true,
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
 
                 // 南無阿彌陀佛
                 Text(

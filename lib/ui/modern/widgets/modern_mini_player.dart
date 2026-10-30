@@ -87,7 +87,9 @@ class ModernMiniPlayer extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '每拍 ${(song.beatIntervalMs / 1000).toStringAsFixed(2)}s · 點擊展開播放器',
+                        '${song.artist} · 每拍 ${(song.effectiveBeatIntervalMs / 1000).toStringAsFixed(2)}s · 點擊展開播放器',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 11,
                           color: isDark

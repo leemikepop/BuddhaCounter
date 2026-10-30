@@ -17,11 +17,13 @@ class ModernPlayerView extends StatefulWidget {
 class _ModernPlayerViewState extends State<ModernPlayerView> {
   final TextEditingController _searchController = TextEditingController();
   String _searchKeyword = '';
-  int _tempoFilterIndex = 0; // 0: 全部, 1: 快速, 2: 舒緩標準, 3: 莊嚴慢板
+  String? _selectedTag; // null 代表「全部」
+  final ValueNotifier<double?> _dragValueNotifier = ValueNotifier<double?>(null);
 
   @override
   void dispose() {
     _searchController.dispose();
+    _dragValueNotifier.dispose();
     super.dispose();
   }
 
@@ -32,37 +34,35 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
   }
 
   List<ChantSong> _getFilteredSongs() {
+    final kw = _searchKeyword.trim().toLowerCase();
     return ChantConstants.allSongs.where((song) {
-      if (_searchKeyword.isNotEmpty &&
-          !song.title.toLowerCase().contains(_searchKeyword.toLowerCase())) {
+      if (_selectedTag != null && !song.tags.contains(_selectedTag)) {
         return false;
       }
-      if (_tempoFilterIndex == 1 && song.beatIntervalMs > 1000) return false;
-      if (_tempoFilterIndex == 2 &&
-          (song.beatIntervalMs <= 1000 || song.beatIntervalMs >= 8000)) {
+      if (kw.isNotEmpty &&
+          !song.title.toLowerCase().contains(kw) &&
+          !song.artist.toLowerCase().contains(kw) &&
+          !song.album.toLowerCase().contains(kw) &&
+          !song.tags.any((t) => t.toLowerCase().contains(kw))) {
         return false;
       }
-      if (_tempoFilterIndex == 3 && song.beatIntervalMs < 8000) return false;
       return true;
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<CounterViewModel>();
+    final (currentSongId, isChantPlaying, releaseMode) =
+        context.select<CounterViewModel, (int, bool, ReleaseMode)>(
+      (vm) => (vm.currentSongId, vm.isChantPlaying, vm.releaseMode),
+    );
+    final vm = context.read<CounterViewModel>();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
 
-    final currentSong = ChantConstants.getSongById(vm.currentSongId);
+    final currentSong = ChantConstants.getSongById(currentSongId);
     final filteredSongs = _getFilteredSongs();
-
-    final position = vm.audioPosition;
-    final duration = vm.audioDuration;
-    final maxMs = (duration.inMilliseconds > 0)
-        ? duration.inMilliseconds.toDouble()
-        : 1000.0;
-    final curMs = position.inMilliseconds.toDouble().clamp(0.0, maxMs);
 
     return Column(
       children: [
@@ -122,7 +122,9 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          '節奏頻率：每拍 ${(currentSong.beatIntervalMs / 1000).toStringAsFixed(2)} 秒',
+                          '${currentSong.artist} · ${currentSong.album} · 每拍 ${(currentSong.effectiveBeatIntervalMs / 1000).toStringAsFixed(2)} 秒',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 12,
                             color: isDark
@@ -136,64 +138,104 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
                   // 循環模式開關
                   IconButton(
                     icon: Icon(
-                      vm.releaseMode == ReleaseMode.loop
+                      releaseMode == ReleaseMode.loop
                           ? Icons.repeat_one_rounded
                           : Icons.repeat_rounded,
-                      color: vm.releaseMode == ReleaseMode.loop
+                      color: releaseMode == ReleaseMode.loop
                           ? primary
                           : theme.colorScheme.onSurface.withValues(alpha: 0.4),
                       size: 22,
                     ),
-                    tooltip: vm.releaseMode == ReleaseMode.loop ? '單曲循環' : '清單播放',
+                    tooltip: releaseMode == ReleaseMode.loop ? '單曲循環' : '清單播放',
                     onPressed: () => vm.toggleAudioLoop(),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
 
-              // 進度條 (Slider)
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  trackHeight: 4,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-                ),
-                child: Slider(
-                  value: curMs,
-                  min: 0.0,
-                  max: maxMs,
-                  onChanged: (val) {
-                    vm.seekAudio(Duration(milliseconds: val.toInt()));
-                  },
-                ),
-              ),
+              // 進度條與時間顯示（局部重繪）
+              ListenableBuilder(
+                listenable: Listenable.merge([
+                  vm.audioPositionListenable,
+                  vm.audioDurationListenable,
+                  _dragValueNotifier,
+                ]),
+                builder: (context, _) {
+                  final position = vm.audioPositionListenable.value;
+                  final duration = vm.audioDurationListenable.value;
+                  final dragVal = _dragValueNotifier.value;
+                  final maxMs = (duration.inMilliseconds > 0)
+                      ? duration.inMilliseconds.toDouble()
+                      : 1000.0;
+                  final curMs =
+                      position.inMilliseconds.toDouble().clamp(0.0, maxMs);
 
-              // 時間顯示
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _formatDuration(position),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark
-                            ? const Color(0xFFA3A199)
-                            : const Color(0xFF756F68),
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 4,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 6,
+                          ),
+                          overlayShape: const RoundSliderOverlayShape(
+                            overlayRadius: 14,
+                          ),
+                        ),
+                        child: Slider(
+                          value: (dragVal ?? curMs).clamp(0.0, maxMs),
+                          min: 0.0,
+                          max: maxMs,
+                          onChangeStart: (val) {
+                            _dragValueNotifier.value = val;
+                            vm.beginScrubbing();
+                          },
+                          onChanged: (val) {
+                            _dragValueNotifier.value = val;
+                          },
+                          onChangeEnd: (val) {
+                            final targetMs = val.toInt();
+                            _dragValueNotifier.value = null;
+                            vm.endScrubbing(
+                              Duration(milliseconds: targetMs),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    Text(
-                      _formatDuration(duration),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark
-                            ? const Color(0xFFA3A199)
-                            : const Color(0xFF756F68),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _formatDuration(
+                                dragVal != null
+                                    ? Duration(milliseconds: dragVal.toInt())
+                                    : position,
+                              ),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark
+                                    ? const Color(0xFFA3A199)
+                                    : const Color(0xFF756F68),
+                              ),
+                            ),
+                            Text(
+                              _formatDuration(duration),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark
+                                    ? const Color(0xFFA3A199)
+                                    : const Color(0xFF756F68),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 8),
 
@@ -232,14 +274,14 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
                     ),
                     child: IconButton(
                       icon: Icon(
-                        vm.isChantPlaying
+                        isChantPlaying
                             ? Icons.pause_rounded
                             : Icons.play_arrow_rounded,
                         color: isDark ? Colors.black : Colors.white,
                         size: 34,
                       ),
-                      tooltip: vm.isChantPlaying ? '暫停' : '播放',
-                      onPressed: () => vm.toggleChant(vm.currentSongId),
+                      tooltip: isChantPlaying ? '暫停' : '播放',
+                      onPressed: () => vm.toggleChant(currentSongId),
                     ),
                   ),
 
@@ -316,19 +358,20 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
         ),
         const SizedBox(height: 8),
 
-        // 篩選標籤 Chips
+        // 分類標籤篩選列
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              _buildFilterChip('全部 (${ChantConstants.allSongs.length})', 0),
-              const SizedBox(width: 8),
-              _buildFilterChip('⚡ 快速', 1),
-              const SizedBox(width: 8),
-              _buildFilterChip('🌿 舒緩標準', 2),
-              const SizedBox(width: 8),
-              _buildFilterChip('🕊️ 莊嚴慢板', 3),
+              _buildFilterChip('全部 (${ChantConstants.allSongs.length})', null),
+              for (final tag in ChantConstants.availableTags) ...[
+                const SizedBox(width: 8),
+                _buildFilterChip(
+                  '$tag (${ChantConstants.countSongsByTag(tag)})',
+                  tag,
+                ),
+              ],
             ],
           ),
         ),
@@ -352,11 +395,11 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
                   itemCount: filteredSongs.length,
                   itemBuilder: (context, index) {
                     final song = filteredSongs[index];
-                    final isSel = vm.currentSongId == song.id;
+                    final isSel = currentSongId == song.id;
                     return SongListTile(
                       song: song,
                       isSelected: isSel,
-                      isPlaying: vm.isChantPlaying,
+                      isPlaying: isChantPlaying,
                       onTap: () {
                         vm.selectAndPlaySong(song.id);
                       },
@@ -371,17 +414,19 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
     );
   }
 
-  Widget _buildFilterChip(String label, int index) {
-    final isSel = _tempoFilterIndex == index;
+  Widget _buildFilterChip(String label, String? tagValue) {
+    final isSel = _selectedTag == tagValue;
     return ChoiceChip(
       label: Text(label),
       selected: isSel,
       onSelected: (val) {
-        if (val) {
-          setState(() {
-            _tempoFilterIndex = index;
-          });
-        }
+        setState(() {
+          if (tagValue != null && _selectedTag == tagValue && !val) {
+            _selectedTag = null;
+          } else {
+            _selectedTag = tagValue;
+          }
+        });
       },
       visualDensity: VisualDensity.compact,
     );

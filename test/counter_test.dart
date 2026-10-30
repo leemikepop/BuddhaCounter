@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:buddha_counter/core/constants/chant_songs.dart';
 import 'package:buddha_counter/core/services/audio_service.dart';
+import 'package:buddha_counter/core/services/chant_audio_handler.dart';
 import 'package:buddha_counter/core/services/storage_service.dart';
 import 'package:buddha_counter/features/counter/counter_view_model.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,7 @@ import 'package:buddha_counter/ui/legacy/screens/legacy_settings_screen.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_about_screen.dart';
 import 'package:buddha_counter/ui/common/app_toast.dart';
 import 'package:buddha_counter/ui/modern/widgets/modern_guide_dialog.dart';
+import 'package:buddha_counter/ui/modern/widgets/song_list_tile.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -123,32 +125,69 @@ void main() {
     });
   });
 
-  group('Chant Songs & Tempo (bb) Tests', () {
-    test('Contains exactly 31 songs from legacy Count3', () {
+  group('Chant Songs & Audio Metadata Tests', () {
+    test('Contains 31 reordered OGG songs (4-char -> 6-char -> others)', () {
       final songs = ChantConstants.getAllSongs();
       expect(songs.length, 31);
+
+      // 0..10 為四字「阿彌陀佛」開頭
+      for (var i = 0; i <= 10; i++) {
+        expect(songs[i].title.startsWith('阿彌陀佛'), isTrue);
+      }
+      // 11..25 為六字「南無阿彌陀佛」開頭
+      for (var i = 11; i <= 25; i++) {
+        expect(songs[i].title.startsWith('南無阿彌陀佛'), isTrue);
+      }
     });
 
-    test('First song is bb1.mp3 with 3850ms interval', () {
-      final song = ChantConstants.getSongById(0);
-      expect(song.id, 0);
-      expect(song.title, '阿彌陀佛-四字四音');
-      expect(song.assetPath, 'audio/bb1.mp3');
-      expect(song.beatIntervalMs, 3850);
+    test('All 31 songs have calibrated beatIntervalMs, ascending markers, and tags', () {
+      for (final song in ChantConstants.defaultSongs) {
+        expect(song.phraseMarkersMs, isNotEmpty);
+        expect(song.tags, isNotEmpty);
+        for (var i = 1; i < song.phraseMarkersMs.length; i++) {
+          expect(song.phraseMarkersMs[i], greaterThan(song.phraseMarkersMs[i - 1]));
+        }
+        final expectedBeatMs =
+            (song.phraseMarkersMs.last / song.phraseMarkersMs.length).round();
+        expect(song.beatIntervalMs, expectedBeatMs);
+      }
+
+      // 驗證省略 beatIntervalMs 時仍可由 phraseMarkersMs 自動推算，並具備預設演出者與專輯
+      const customSong = ChantSong(
+        id: 99,
+        title: '測試佛曲',
+        assetPath: 'audio/test.ogg',
+        phraseMarkersMs: [4000, 8000],
+      );
+      expect(customSong.beatIntervalMs, isNull);
+      expect(customSong.effectiveBeatIntervalMs, 4000);
+      expect(customSong.artist, '三寶弟子');
+      expect(customSong.album, '念佛計數器');
+      expect(ChantConstants.availableTags, contains(ChantTags.fourCharAmitabha));
+      expect(ChantConstants.countSongsByTag(ChantTags.fourCharAmitabha), 12);
     });
 
-    test('Song 26 (fast 4-character) has 750ms interval and bb27.mp3', () {
-      final song = ChantConstants.getSongById(26);
-      expect(song.title, '淨空法師念佛 快速四字版');
-      expect(song.assetPath, 'audio/bb27.mp3');
-      expect(song.beatIntervalMs, 750);
-    });
+    test('loadMetadataFromAssets reads OGG Vorbis title, artist, album with defaults', () async {
+      await ChantConstants.loadMetadataFromAssets();
+      expect(ChantConstants.isMetadataLoaded, isTrue);
 
-    test('Song 2 (slow 6-tone) has 13510ms interval and bb3.mp3', () {
-      final song = ChantConstants.getSongById(2);
-      expect(song.title, '靈巖梵唄-南無阿彌陀佛聖號-六度彌陀');
-      expect(song.assetPath, 'audio/bb3.mp3');
-      expect(song.beatIntervalMs, 13510);
+      // bb01 音檔內嵌 artist 為「悟道法師」、album 為「念佛計數器」
+      final s0 = ChantConstants.getSongById(0);
+      expect(s0.title, '阿彌陀佛-四字四音-華藏淨宗-悟道法師');
+      expect(s0.artist, '悟道法師');
+      expect(s0.album, '念佛計數器');
+
+      // bb02 音檔未設定 artist，應自動套用預設值「三寶弟子」
+      final s1 = ChantConstants.getSongById(1);
+      expect(s1.title, '阿彌陀佛-四字四音配樂-華藏淨宗');
+      expect(s1.artist, '三寶弟子');
+      expect(s1.album, '念佛計數器');
+
+      // bb27 正字後內嵌標題為「南無釋迦牟尼佛-朝山聖號-靈巖梵唄-沙彌師父」
+      final s26 = ChantConstants.getSongById(26);
+      expect(s26.title, '南無釋迦牟尼佛-朝山聖號-靈巖梵唄-沙彌師父');
+      expect(s26.artist, '沙彌師父');
+      expect(s26.album, '念佛計數器');
     });
 
     test('AudioService can be created without assertion errors', () {
@@ -192,6 +231,27 @@ void main() {
 
       vm.stopAutoCount();
       expect(vm.isAutoCounting, false);
+    });
+
+    test('Phrase markers and scrubbing seek prevent count miscalculation', () async {
+      final storage = await StorageService.init();
+      final audio = AudioService();
+      final vm = CounterViewModel(storage: storage, audio: audio);
+
+      vm.resetAutoCount();
+      expect(vm.autoCount, 0);
+
+      // 模擬手動拖動進度條
+      vm.beginScrubbing();
+      expect(vm.isScrubbing, true);
+
+      // 放開進度條跳至 25 秒
+      vm.endScrubbing(const Duration(seconds: 25));
+      expect(vm.isScrubbing, false);
+      expect(vm.audioPosition, const Duration(seconds: 25));
+
+      // 驗證跳轉未造成次數暴增或亂加
+      expect(vm.autoCount, 0);
     });
 
     test('Separated resetAutoCount and resetAutoTimer work independently',
@@ -625,11 +685,12 @@ void main() {
     });
 
     testWidgets(
-        'ModernPracticeView renders Buddha image and identical verses with Legacy',
+        'ModernPracticeView renders Buddha image and swipeable HuiXiang verses',
         (tester) async {
       final storage = await StorageService.init();
       final audio = AudioService();
       final vm = CounterViewModel(storage: storage, audio: audio);
+      await vm.setHuiXiangIndex(0);
 
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
@@ -642,12 +703,36 @@ void main() {
         ),
       );
       await tester.pump();
+      await tester.pump();
 
       // 驗證阿彌陀佛聖像、大回向西方文標題與偈頌文句
       expect(find.byType(Image), findsOneWidget);
       expect(find.text(ChantConstants.huiXiangTitle), findsOneWidget);
       expect(find.text(ChantConstants.huiXiangVerses.first), findsOneWidget);
       expect(find.text('南無阿彌陀佛'), findsOneWidget);
+
+      // 向左滑動切換至第二則迴向文（回向偈）
+      await tester.fling(
+        find.text(ChantConstants.huiXiangTitle),
+        const Offset(-300, 0),
+        1000,
+      );
+      await tester.pumpAndSettle();
+
+      expect(vm.huiXiangIndex, 1);
+      expect(find.text(ChantConstants.huiXiangTitle2), findsOneWidget);
+      expect(find.text(ChantConstants.huiXiangVerses2.first), findsOneWidget);
+
+      // 向右滑動切回第一則迴向文（大回向西方文）
+      await tester.fling(
+        find.text(ChantConstants.huiXiangTitle2),
+        const Offset(300, 0),
+        1000,
+      );
+      await tester.pumpAndSettle();
+
+      expect(vm.huiXiangIndex, 0);
+      expect(find.text(ChantConstants.huiXiangTitle), findsOneWidget);
     });
 
     test('autoStopProgress calculates remaining fraction correctly', () async {
@@ -877,5 +962,194 @@ void main() {
       // 釋放資源
       expect(() => audio.dispose(), returnsNormally);
     });
+
+    testWidgets(
+        'Unified player bottom sheet expands on swipe/tap to reveal tag-filtered song menu',
+        (tester) async {
+      // 模擬 Pixel 7 直向螢幕比例 (412 x 915)，驗證收合時無大面積空白區域
+      tester.view.physicalSize = const Size(412, 915);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final storage = await StorageService.init();
+      await storage.setSeenModernGuide(true);
+      await storage.setUiMode(AppUiMode.modern);
+      final audio = AudioService();
+      final vm = CounterViewModel(storage: storage, audio: audio);
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider<CounterViewModel>.value(
+          value: vm,
+          child: const MaterialApp(
+            home: ModernCounterScreen(),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // 點擊下方小型播放器彈出下半部音樂播控面板
+      ModernFloatingPlayer.openExpandedPlayer(
+        tester.element(find.byType(ModernFloatingPlayer)),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump();
+
+      final cueFinder = find.text('上滑展開佛曲選單（共 31 首）');
+      expect(cueFinder, findsOneWidget);
+
+      // 驗證播控主按鈕與上滑提示之間緊湊無大面積空白
+      final playRect = tester.getRect(find.byIcon(Icons.play_arrow_rounded));
+      final cueRect = tester.getRect(cueFinder);
+      expect(cueRect.top - playRect.bottom, lessThan(40.0));
+      expect(cueRect.bottom, lessThanOrEqualTo(915.0));
+
+      // 往上滑動同一個面板，無縫展開標籤分類選單
+      await tester.drag(
+        cueFinder,
+        const Offset(0, -340),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.text('佛曲選單（共 31 首） · 點擊收合'), findsOneWidget);
+      final tagLabel =
+          '${ChantTags.pilgrimage} (${ChantConstants.countSongsByTag(ChantTags.pilgrimage)})';
+      expect(find.text(tagLabel), findsOneWidget);
+
+      // 點擊「朝山聖號」標籤進行分類篩選
+      await tester.ensureVisible(find.text(tagLabel));
+      await tester.tap(find.text(tagLabel));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      expect(find.textContaining('朝山聖號'), findsWidgets);
+
+      // 點擊置頂收合按鈕回下半部音樂播放器
+      await tester.tap(find.byTooltip('收合回播放器'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('上滑展開佛曲選單（共 31 首）'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets(
+        'Selecting songs in song list never triggers microtask ping-pong loop in Manual or Auto-Count mode',
+        (tester) async {
+      final storage = await StorageService.init();
+      await storage.setSeenModernGuide(true);
+      await storage.setUiMode(AppUiMode.modern);
+      final countingHandler = _CountingAudioHandler();
+      final audio = AudioService(handler: countingHandler);
+      final vm = CounterViewModel(storage: storage, audio: audio);
+
+      // 1. 現代模式【自動計數】分頁：點擊佛曲（無論尚未開始或正在計數中）皆只呼叫一次 playSong，絕不陷入無限微任務迴圈
+      vm.setUiMode(AppUiMode.modern);
+      vm.setActiveTabIndex(1);
+      vm.selectAndPlaySong(11); // #12 南無阿彌陀佛-思鄉佛號
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(countingHandler.playSongCalls, 1);
+      expect(vm.currentSongId, 11);
+      expect(vm.isAutoCounting, isTrue);
+      expect(vm.isChantPlaying, isTrue);
+
+      // 自動計數進行中再次點擊另一首佛曲（#28 南無地藏王菩薩）
+      vm.selectAndPlaySong(27);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(countingHandler.playSongCalls, 2);
+      expect(vm.currentSongId, 27);
+      expect(vm.isAutoCounting, isTrue);
+      expect(vm.isChantPlaying, isTrue);
+
+      // 透過 toggleChant 點擊另一首不同佛曲（#05）應直接切換播放而非誤暫停
+      vm.toggleChant(4);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(countingHandler.playSongCalls, 3);
+      expect(vm.currentSongId, 4);
+      expect(vm.isAutoCounting, isTrue);
+      expect(vm.isChantPlaying, isTrue);
+
+      // 停止後切回【手動計數】分頁並實際在展開的佛曲清單 UI 中點擊曲目
+      vm.stopAutoCount();
+      await tester.pump();
+      vm.setActiveTabIndex(0);
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider<CounterViewModel>.value(
+          value: vm,
+          child: const MaterialApp(
+            home: ModernCounterScreen(),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+
+      ModernFloatingPlayer.openSongPicker(
+        tester.element(find.byType(ModernFloatingPlayer)),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      await tester.tap(find.byType(SongListTile).first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(countingHandler.playSongCalls, 4);
+      expect(vm.currentSongId, 0);
+      expect(vm.isChantPlaying, isTrue);
+      expect(vm.isAutoCounting, isFalse);
+
+      vm.stopChant();
+      vm.dispose();
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 1));
+    });
+
+    testWidgets(
+        'Directly selecting song from stopped state properly starts playback and populates duration/position streams',
+        (tester) async {
+      final storage = await StorageService.init();
+      final handler = _CountingAudioHandler();
+      final audio = AudioService(handler: handler);
+      final vm = CounterViewModel(storage: storage, audio: audio);
+
+      vm.setUiMode(AppUiMode.modern);
+      vm.setActiveTabIndex(0);
+      expect(vm.isChantPlaying, isFalse);
+
+      vm.selectAndPlaySong(3);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(vm.isChantPlaying, isTrue);
+      expect(vm.currentSongId, 3);
+      expect(handler.playSongCalls, 1);
+
+      vm.stopChant();
+      vm.dispose();
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 1));
+    });
   });
+}
+
+class _CountingAudioHandler extends ChantAudioHandler {
+  int playSongCalls = 0;
+
+  @override
+  Future<void> playSong(int songId) {
+    playSongCalls++;
+    return super.playSong(songId);
+  }
 }

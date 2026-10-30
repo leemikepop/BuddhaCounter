@@ -81,7 +81,12 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<CounterViewModel>();
+    // 僅監聽 AppBar 圖示所需狀態，避免播放佛曲、計時或點擊計數時重建整頁 Scaffold 與 PageView
+    final (isOrientationLocked, isCurrentScreenAwake) =
+        context.select<CounterViewModel, (bool, bool)>(
+      (vm) => (vm.isOrientationLocked, vm.isCurrentScreenAwake),
+    );
+    final vm = context.read<CounterViewModel>();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
@@ -97,11 +102,11 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
           IconButton(
             visualDensity: VisualDensity.compact,
             icon: Icon(
-              vm.isOrientationLocked
+              isOrientationLocked
                   ? Icons.screen_lock_rotation_rounded
                   : Icons.screen_rotation_rounded,
             ),
-            tooltip: vm.isOrientationLocked ? '解除方向鎖定' : '鎖定螢幕方向',
+            tooltip: isOrientationLocked ? '解除方向鎖定' : '鎖定螢幕方向',
             onPressed: () {
               final orientation = MediaQuery.of(context).orientation;
               vm.toggleOrientationLock(orientation);
@@ -115,11 +120,11 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
           IconButton(
             visualDensity: VisualDensity.compact,
             icon: Icon(
-              vm.isCurrentScreenAwake
+              isCurrentScreenAwake
                   ? Icons.remove_red_eye_rounded
                   : Icons.visibility_off_outlined,
             ),
-            tooltip: vm.isCurrentScreenAwake ? '關閉螢幕常亮' : '螢幕常亮',
+            tooltip: isCurrentScreenAwake ? '關閉螢幕常亮' : '螢幕常亮',
             onPressed: () {
               vm.toggleCurrentScreenAwake();
               AppToast.show(

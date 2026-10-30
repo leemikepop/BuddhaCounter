@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -48,12 +49,40 @@ class CounterViewModel extends ChangeNotifier {
   Duration get audioPosition => _audioPosition;
   Duration get audioDuration => _audioDuration;
 
+  /// 獨立輕量音訊進度通知器：僅局部重繪進度條/滑桿，避免播放期間每秒多次重建整棵 App Widget 樹
+  final ValueNotifier<Duration> _audioPositionNotifier =
+      ValueNotifier<Duration>(Duration.zero);
+  final ValueNotifier<Duration> _audioDurationNotifier =
+      ValueNotifier<Duration>(Duration.zero);
+
+  ValueListenable<Duration> get audioPositionListenable =>
+      _audioPositionNotifier;
+  ValueListenable<Duration> get audioDurationListenable =>
+      _audioDurationNotifier;
+
+  void _setAudioPosition(Duration pos) {
+    _audioPosition = pos;
+    if (_audioPositionNotifier.value != pos) {
+      _audioPositionNotifier.value = pos;
+    }
+  }
+
+  void _setAudioDuration(Duration dur) {
+    _audioDuration = dur;
+    if (_audioDurationNotifier.value != dur) {
+      _audioDurationNotifier.value = dur;
+    }
+  }
+
   // 節拍目標位置（毫秒，對應原版 ss = bb）
   int _targetNextBeatMs = 0;
+  int _nextMarkerIndex = 0; // 當前等待跨過的佛號標記索引（phraseMarkersMs 模式）
   int _lastPositionMs = 0;
   bool _isWaitingForAudioRestart = false;
   int _lastProgressNotifyMs = 0;
   int _lastPositionUpdateTimestamp = 0;
+  bool _isScrubbing = false; // 是否正在手動拖曳進度條（防誤觸發計數）
+  bool get isScrubbing => _isScrubbing;
 
   StreamSubscription<bool>? _playStateSubscription;
 
@@ -133,6 +162,9 @@ class CounterViewModel extends ChangeNotifier {
   bool _hasSeenModernGuide = false;
   bool get hasSeenModernGuide => _hasSeenModernGuide;
 
+  int _huiXiangIndex = 0;
+  int get huiXiangIndex => _huiXiangIndex;
+
   int _currentSongId = 0;
   int get currentSongId => _currentSongId;
 
@@ -169,23 +201,28 @@ class CounterViewModel extends ChangeNotifier {
     _targetCount = _storage.getTargetCount();
     _fullscreenTap = _storage.getFullscreenTap();
     _hasSeenModernGuide = _storage.getSeenModernGuide();
+    final maxHxIdx = ChantConstants.huiXiangItems.length - 1;
+    _huiXiangIndex = _storage.getHuiXiangIndex().clamp(0, maxHxIdx);
 
-    // 監聽音訊時長變化
+    // 監聽音訊時長變化（透過獨立 ValueListenable 更新進度條，不觸發全頁重建）
     _durationSubscription = _audio.onDurationChanged.listen((dur) {
-      _audioDuration = dur;
-      notifyListeners();
+      _setAudioDuration(dur);
+      if (_showAudioPosition) {
+        notifyListeners();
+      }
     });
 
-    // 監聽播放進度推播 (節流優化：每 200ms 最多通知一次，消弭高頻重繪造成的掉幀與滑動卡頓)
+    // 監聽播放進度推播：僅更新獨立進度 ValueListenable，非計數跳動時絕不呼叫全體 notifyListeners()
     _positionSubscription = _audio.onPositionChanged.listen((pos) {
-      _audioPosition = pos;
+      if (_isScrubbing) return; // 拖動進度條期間不覆蓋指針與觸發計數
+      _setAudioPosition(pos);
       _lastPositionUpdateTimestamp = DateTime.now().millisecondsSinceEpoch;
       if (_isAutoCounting) {
         final song = ChantConstants.getSongById(_currentSongId);
-        _processAudioPosition(pos, song.beatIntervalMs);
-      } else {
+        _processAudioPosition(pos, song.effectiveBeatIntervalMs);
+      } else if (_showAudioPosition) {
         final now = DateTime.now().millisecondsSinceEpoch;
-        if (now - _lastProgressNotifyMs >= 200) {
+        if (now - _lastProgressNotifyMs >= 250) {
           _lastProgressNotifyMs = now;
           notifyListeners();
         }
@@ -194,7 +231,8 @@ class CounterViewModel extends ChangeNotifier {
 
     // 監聽播放狀態變化（用以即時更新首頁念佛按鈕顏色等）
     _playerStateSubscription = _audio.onPlayerStateChanged.listen((state) {
-      if (state == PlayerState.paused && _isAutoCounting) {
+      if (_audio.handler.isSwitchingTrack) return;
+      if (state == PlayerState.paused && _isAutoCounting && !_audio.isPlaying) {
         pauseAutoCount();
       } else {
         notifyListeners();
@@ -203,6 +241,10 @@ class CounterViewModel extends ChangeNotifier {
 
     // 監聽外部媒體控制播放/暫停事件（支援系統通知欄、鎖定畫面、耳機線控、音訊焦點丟失）
     _playStateSubscription = _audio.onPlayStateChanged.listen((playing) {
+      // 關鍵防重入保護：若非同步廣播事件已落後於目前真實播放狀態（例如切歌瞬間過時的 false），
+      // 必須直接忽略，徹底杜絕 false <-> true 微任務無限乒乓迴圈導致 mmap 耗盡與 OOM 閃退
+      if (playing != _audio.isPlaying) return;
+
       if (!playing) {
         if (_isAutoCounting) {
           pauseAutoCount();
@@ -218,18 +260,23 @@ class CounterViewModel extends ChangeNotifier {
       }
     });
 
-    // 監聽播放完成（浮動播放器非單曲循環時自動播放下一首）
-    _completeSubscription = _audio.onPlayerComplete.listen((_) {
-      if (_audio.releaseMode != ReleaseMode.loop) {
-        playNextSong();
-      }
-    });
+    // 監聽播放完成（清單切歌已由 ChantAudioHandler.onPlayerComplete 統一推進並透過 onCurrentSongChanged 同步，避免雙重跳首）
+    _completeSubscription = _audio.onPlayerComplete.listen((_) {});
 
     // 監聽外部（系統通知欄/鎖定螢幕）切換曲目事件
     _currentSongSubscription = _audio.onCurrentSongChanged.listen((songId) {
       if (_currentSongId != songId) {
         _currentSongId = songId;
         _storage.setLastSongId(songId);
+        if (_isAutoCounting) {
+          final song = ChantConstants.getSongById(songId);
+          _setAudioPosition(Duration.zero);
+          _setAudioDuration(Duration.zero);
+          _targetNextBeatMs = song.effectiveBeatIntervalMs;
+          _nextMarkerIndex = 0;
+          _lastPositionMs = 0;
+          _isWaitingForAudioRestart = true;
+        }
         notifyListeners();
       }
     });
@@ -337,33 +384,7 @@ class CounterViewModel extends ChangeNotifier {
     resumeOrStartAutoCount(fromBeginning: true);
   }
 
-  /// 恢復或啟動自動計數與佛曲播放
-  void resumeOrStartAutoCount({bool fromBeginning = false}) {
-    if (_isAutoCounting) return;
-    _isAutoCounting = true;
-
-    final song = ChantConstants.getSongById(_currentSongId);
-    final bb = song.beatIntervalMs;
-
-    if (fromBeginning || _audioPosition == Duration.zero) {
-      _targetNextBeatMs = bb;
-      _lastPositionMs = 0;
-      _isWaitingForAudioRestart = true;
-
-      // 重設音訊至開頭並播放，保證計數與佛曲旋律精準同步，避免從非零跳計
-      _audio.seek(Duration.zero);
-      _audio.playChant(_currentSongId);
-    } else {
-      // 從目前暫停點平順恢復
-      final posMs = _audioPosition.inMilliseconds;
-      _targetNextBeatMs = ((posMs ~/ bb) + 1) * bb;
-      _lastPositionMs = posMs;
-      _isWaitingForAudioRestart = false;
-      if (!_audio.isPlaying) {
-        _audio.resumeChant();
-      }
-    }
-
+  void _ensureAutoTimersRunning() {
     // 1 秒計時器 (計算總時長與自動停止)
     _autoElapsedTimer?.cancel();
     _autoElapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -381,24 +402,83 @@ class CounterViewModel extends ChangeNotifier {
 
     // 備援輪詢計時器：每 300ms 檢查一次，僅在逾時 (超過 300ms 未收到音訊推播) 時發起 IPC 查詢，避免常態佔用 Android 主線程
     _autoBeatPollingTimer?.cancel();
-    _autoBeatPollingTimer = Timer.periodic(const Duration(milliseconds: 300), (_) async {
-      if (!_isAutoCounting) return;
+    _autoBeatPollingTimer =
+        Timer.periodic(const Duration(milliseconds: 300), (_) async {
+      if (!_isAutoCounting || _isScrubbing) return;
       final now = DateTime.now().millisecondsSinceEpoch;
       if (now - _lastPositionUpdateTimestamp >= 300) {
         final pos = await _audio.getCurrentPosition();
-        if (pos != null) {
-          _processAudioPosition(pos, bb);
+        if (pos != null && _isAutoCounting && !_isScrubbing) {
+          final currentSong = ChantConstants.getSongById(_currentSongId);
+          _processAudioPosition(pos, currentSong.effectiveBeatIntervalMs);
         }
       }
     });
+  }
 
+  /// 恢復或啟動自動計數與佛曲播放
+  void resumeOrStartAutoCount({bool fromBeginning = false}) {
+    if (_isAutoCounting) return;
+    _isAutoCounting = true;
+
+    final song = ChantConstants.getSongById(_currentSongId);
+    final bb = song.effectiveBeatIntervalMs;
+
+    if (fromBeginning || _audioPosition == Duration.zero) {
+      _setAudioPosition(Duration.zero);
+      _targetNextBeatMs = bb;
+      _nextMarkerIndex = 0;
+      _lastPositionMs = 0;
+      _isWaitingForAudioRestart = true;
+
+      // 直接載入並播放當前佛曲（playChant 內部即從 0ms 開始，避免對未準備完成之播放器預先呼叫 seek）
+      _audio.playChant(_currentSongId);
+    } else {
+      // 從目前暫停點平順恢復
+      final posMs = _audioPosition.inMilliseconds;
+      if (song.hasMarkers) {
+        final nextIdx = song.phraseMarkersMs.indexWhere((m) => m > posMs);
+        _nextMarkerIndex =
+            (nextIdx != -1) ? nextIdx : song.phraseMarkersMs.length;
+      } else {
+        _targetNextBeatMs = ((posMs ~/ bb) + 1) * bb;
+      }
+      _lastPositionMs = posMs;
+      _isWaitingForAudioRestart = false;
+      if (!_audio.isPlaying) {
+        _audio.resumeChant();
+      }
+    }
+
+    _ensureAutoTimersRunning();
     notifyListeners();
   }
 
-  /// 音訊節拍同步計數處理演算法
+  /// 於自動計數模式下直接無縫切換佛曲並從頭對齊標記（不經過 stopAutoCount，避免 false->true 非同步狀態震盪）
+  void _restartAutoCountWithSong(int songId) {
+    _currentSongId = songId;
+    _storage.setLastSongId(songId);
+    _isAutoCounting = true;
+
+    final song = ChantConstants.getSongById(songId);
+    _setAudioPosition(Duration.zero);
+    _setAudioDuration(Duration.zero);
+    _targetNextBeatMs = song.effectiveBeatIntervalMs;
+    _nextMarkerIndex = 0;
+    _lastPositionMs = 0;
+    _isWaitingForAudioRestart = true;
+
+    _ensureAutoTimersRunning();
+    _audio.playChant(songId);
+    notifyListeners();
+  }
+
+  /// 音訊節拍同步計數處理演算法 (支援精確標記點與固定週期雙模式，具備防拖曳跳躍保護)
   void _processAudioPosition(Duration pos, int bb) {
+    if (_isScrubbing) return; // 拖動進度條期間忽略進度推播，防誤算
+
     final posMs = pos.inMilliseconds;
-    _audioPosition = pos;
+    _setAudioPosition(pos);
     _lastPositionUpdateTimestamp = DateTime.now().millisecondsSinceEpoch;
 
     // 若正在等待音訊重新回到開頭，忽略重啟前的舊進度推播，避免從半途位置累加
@@ -408,31 +488,64 @@ class CounterViewModel extends ChangeNotifier {
       }
       _isWaitingForAudioRestart = false;
       _targetNextBeatMs = bb;
+      _nextMarkerIndex = 0;
       _lastPositionMs = posMs;
       return;
     }
 
-    // 當音樂循環回到開頭時 (進度倒退或小於 200ms)，重設目標節拍位置為第一拍
-    if (posMs < _lastPositionMs - 500 || posMs < 200) {
+    final song = ChantConstants.getSongById(_currentSongId);
+
+    // 當音樂循環回到開頭時 (進度倒退 800ms 以上或小於 250ms 且之前位置較大)，重設指針為開頭
+    final isLoopedBack = (posMs < _lastPositionMs - 800) || (posMs < 250 && _lastPositionMs > 1000);
+    if (isLoopedBack) {
       _targetNextBeatMs = bb;
+      _nextMarkerIndex = 0;
     }
 
     var beatChanged = false;
-    // 當播放進度跨過目標節拍點時遞增計數
-    while (posMs >= _targetNextBeatMs) {
-      _autoCount++;
-      _storage.setAutoCounter(_autoCount);
-      _targetNextBeatMs += bb;
-      beatChanged = true;
+
+    if (song.hasMarkers) {
+      // --- 模式 A：精準標記點 (Phrase Markers / Cue Points) 模式 ---
+      while (_nextMarkerIndex < song.phraseMarkersMs.length &&
+          posMs >= song.phraseMarkersMs[_nextMarkerIndex]) {
+        final markerMs = song.phraseMarkersMs[_nextMarkerIndex];
+        // 防跳躍安全機制：只有進度正常流過（與標記差距小於 3 秒）時才累加，避免因跳轉未攔截而暴增
+        if (posMs - markerMs <= 3000) {
+          _autoCount++;
+          _storage.setAutoCounter(_autoCount);
+          beatChanged = true;
+        }
+        _nextMarkerIndex++;
+      }
+    } else {
+      // --- 模式 B：向下相容之固定週期 (bb) 模式 ---
+      if (posMs >= _targetNextBeatMs) {
+        final jump = (posMs - _targetNextBeatMs) ~/ bb;
+        if (jump <= 1) {
+          while (posMs >= _targetNextBeatMs) {
+            _autoCount++;
+            _storage.setAutoCounter(_autoCount);
+            _targetNextBeatMs += bb;
+            beatChanged = true;
+          }
+        } else {
+          // 跳轉過大（例如 seek 遺留），對齊至下一拍但不累加跳過的時間
+          _targetNextBeatMs = ((posMs ~/ bb) + 1) * bb;
+        }
+      }
     }
 
     _lastPositionMs = posMs;
 
-    // 關鍵效能提升：當計數遞增時立即零延遲通知 UI；計數未變時節流至每 200ms 通知一次供進度條滑動
-    final now = DateTime.now().millisecondsSinceEpoch;
-    if (beatChanged || now - _lastProgressNotifyMs >= 200) {
-      _lastProgressNotifyMs = now;
+    // 關鍵效能提升：進度條已由獨立 audioPositionListenable 局部驅動，此處僅在計數遞增（或經典模式開啟秒數顯示）時才通知主樹
+    if (beatChanged) {
       notifyListeners();
+    } else if (_showAudioPosition) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now - _lastProgressNotifyMs >= 250) {
+        _lastProgressNotifyMs = now;
+        notifyListeners();
+      }
     }
   }
 
@@ -489,7 +602,7 @@ class CounterViewModel extends ChangeNotifier {
     stopAutoCount();
     _autoCount = 0;
     _autoElapsedSeconds = 0;
-    _audioPosition = Duration.zero;
+    _setAudioPosition(Duration.zero);
     _storage.setAutoCounter(0);
     _storage.setAutoElapsedSeconds(0);
     notifyListeners();
@@ -497,34 +610,39 @@ class CounterViewModel extends ChangeNotifier {
 
   // --- 佛曲選擇與播放 ---
   void selectSong(int songId) {
-    _currentSongId = songId;
-    _storage.setLastSongId(songId);
-
     if (_isAutoCounting) {
-      // 若正在計數播放中，切換歌曲後自動以新曲目的速度重新開始
-      stopAutoCount();
-      resumeOrStartAutoCount(fromBeginning: true);
+      // 若正在計數播放中，直接無縫切換至新曲目的速度重新開始（不呼叫 stopAutoCount 造成狀態震盪）
+      _restartAutoCountWithSong(songId);
     } else {
+      _currentSongId = songId;
+      _storage.setLastSongId(songId);
+      _setAudioPosition(Duration.zero);
+      _setAudioDuration(Duration.zero);
       notifyListeners();
     }
   }
 
   void selectAndPlaySong(int songId) {
     if (isInAutoCountMode) {
+      _restartAutoCountWithSong(songId);
+    } else {
       _currentSongId = songId;
       _storage.setLastSongId(songId);
-      stopAutoCount();
-      resumeOrStartAutoCount(fromBeginning: true);
-    } else {
-      selectSong(songId);
-      if (!_isAutoCounting) {
-        _audio.playChant(songId);
-      }
+      _setAudioPosition(Duration.zero);
+      _setAudioDuration(Duration.zero);
+      _audio.playChant(songId);
+      notifyListeners();
     }
   }
 
   /// 佛曲播放/暫停切換（核心連動：自動計數模式下連動自動計數與碼表，非自動計數模式則作為背景音效）
   void toggleChant(int songId) {
+    if (_currentSongId != songId) {
+      // 點擊清單中另一首不同佛曲時，直接切換並播放該首新佛曲
+      selectAndPlaySong(songId);
+      return;
+    }
+
     _currentSongId = songId;
     _storage.setLastSongId(songId);
 
@@ -575,48 +693,57 @@ class CounterViewModel extends ChangeNotifier {
   void playNextSong() {
     final total = ChantConstants.allSongs.length;
     final nextId = (_currentSongId + 1) % total;
-    if (isInAutoCountMode && _isAutoCounting) {
-      selectSong(nextId);
-    } else {
-      _currentSongId = nextId;
-      _storage.setLastSongId(nextId);
-      _audio.playChant(nextId);
-      notifyListeners();
-    }
+    selectAndPlaySong(nextId);
   }
 
   void playPreviousSong() {
     final total = ChantConstants.allSongs.length;
     final prevId = (_currentSongId - 1 + total) % total;
-    if (isInAutoCountMode && _isAutoCounting) {
-      selectSong(prevId);
-    } else {
-      _currentSongId = prevId;
-      _storage.setLastSongId(prevId);
-      _audio.playChant(prevId);
+    selectAndPlaySong(prevId);
+  }
+
+  /// 開始手動拖動進度條（暫停進度推播與節拍比對，防高頻抖動）
+  void beginScrubbing() {
+    _isScrubbing = true;
+  }
+
+  /// 結束手動拖動進度條並跳至指定時間點
+  void endScrubbing(Duration position) {
+    _isScrubbing = false;
+    seekAudio(position);
+  }
+
+  /// 跳至指定播放位置（精準重定位下一個計數標記點，絕不誤加跳過之次數）
+  void seekAudio(Duration position) {
+    _audio.seek(position);
+    _setAudioPosition(position);
+    final posMs = position.inMilliseconds;
+    _lastPositionMs = posMs;
+    _isWaitingForAudioRestart = false;
+
+    if (_isAutoCounting) {
+      final song = ChantConstants.getSongById(_currentSongId);
+      if (song.hasMarkers) {
+        // 精準將指針重新定位到 seek 目標時間之後的第一個標記點
+        final nextIdx = song.phraseMarkersMs.indexWhere((m) => m > posMs);
+        _nextMarkerIndex = (nextIdx != -1) ? nextIdx : song.phraseMarkersMs.length;
+      } else {
+        final bb = song.effectiveBeatIntervalMs;
+        _targetNextBeatMs = ((posMs ~/ bb) + 1) * bb;
+      }
+    }
+    if (_showAudioPosition) {
       notifyListeners();
     }
   }
 
-  void seekAudio(Duration position) {
-    _audio.seek(position);
-    _audioPosition = position;
-    if (_isAutoCounting) {
-      final song = ChantConstants.getSongById(_currentSongId);
-      final bb = song.beatIntervalMs;
-      final posMs = position.inMilliseconds;
-      _targetNextBeatMs = ((posMs ~/ bb) + 1) * bb;
-      _lastPositionMs = posMs;
-      _isWaitingForAudioRestart = false;
-    }
-    notifyListeners();
-  }
-
   void seekAudioRelative(int seconds) {
     final cur = _audioPosition;
-    final target = cur + Duration(seconds: seconds);
-    final clampedTarget = target < Duration.zero ? Duration.zero : target;
-    seekAudio(clampedTarget);
+    final dur = _audioDuration;
+    var target = cur + Duration(seconds: seconds);
+    if (target < Duration.zero) target = Duration.zero;
+    if (dur > Duration.zero && target > dur) target = dur;
+    seekAudio(target);
   }
 
   ReleaseMode get releaseMode => _audio.releaseMode;
@@ -719,6 +846,15 @@ class CounterViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setHuiXiangIndex(int index) async {
+    final maxIdx = ChantConstants.huiXiangItems.length - 1;
+    final clamped = index.clamp(0, maxIdx);
+    if (_huiXiangIndex == clamped) return;
+    _huiXiangIndex = clamped;
+    await _storage.setHuiXiangIndex(clamped);
+    notifyListeners();
+  }
+
   void setKeepScreenHome(bool val) {
     _keepScreenHome = val;
     _storage.setKeepScreenOnHome(val);
@@ -785,6 +921,8 @@ class CounterViewModel extends ChangeNotifier {
     _playStateSubscription?.cancel();
     _completeSubscription?.cancel();
     _currentSongSubscription?.cancel();
+    _audioPositionNotifier.dispose();
+    _audioDurationNotifier.dispose();
     _audio.dispose();
     super.dispose();
   }

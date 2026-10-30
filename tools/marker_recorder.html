@@ -1,0 +1,3170 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>佛曲全方位整合工作站（剪輯・轉檔・Metadata・節拍打點） - Buddha Counter</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #F6F3EC;
+      --card-bg: #FFFFFF;
+      --panel-bg: #FAF8F4;
+      --primary: #8C5E2A;
+      --primary-hover: #724B1F;
+      --primary-soft: #F5EBDD;
+      --text: #282420;
+      --text-sub: #6B655E;
+      --border: #DDD5C7;
+      --border-strong: #C4B8A5;
+      --accent: #2D6E4E;
+      --accent-soft: #E9F5EE;
+      --danger: #B03A3A;
+      --danger-soft: #FDF0F0;
+      --warn: #9A6700;
+      --warn-soft: #FFF8E6;
+      --focus-ring: #0B57D0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      accent-color: var(--primary);
+      line-height: 1.5;
+      padding: 24px 16px 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Canonical accessible visually-hidden utility */
+    .visually-hidden {
+      position: absolute !important;
+      clip-path: inset(50%) !important;
+      overflow: hidden !important;
+      width: 1px !important;
+      height: 1px !important;
+      margin: -1px !important;
+      padding: 0 !important;
+      border: 0 !important;
+      white-space: nowrap !important;
+    }
+
+    /* Progressive enhancement fallback when accent-color is unsupported */
+    @supports not (accent-color: #8C5E2A) {
+      input[type="checkbox"],
+      input[type="radio"] {
+        outline-offset: 2px;
+      }
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 8px;
+        background: linear-gradient(to right, var(--primary) var(--progress, 50%), #ccc var(--progress, 50%));
+        border-radius: 4px;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: var(--primary);
+        cursor: pointer;
+        margin-top: -4px;
+      }
+      input[type="range"]::-moz-range-track {
+        width: 100%;
+        height: 8px;
+        background: #ccc;
+        border-radius: 4px;
+      }
+      input[type="range"]::-moz-range-thumb {
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: var(--primary);
+        cursor: pointer;
+      }
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1040px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 32px rgba(40, 36, 32, 0.06);
+      padding: 28px;
+    }
+
+    .top-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+    }
+
+    .engine-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .engine-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel-bg);
+      color: var(--text-sub);
+    }
+
+    .engine-badge.online {
+      background: var(--accent-soft);
+      border-color: #A3D4B8;
+      color: var(--accent);
+    }
+
+    .engine-badge.offline {
+      background: var(--warn-soft);
+      border-color: #E6CB8A;
+      color: var(--warn);
+    }
+
+    /* Load section */
+    .load-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 760px) {
+      .load-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .file-drop-label {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border: 2px dashed var(--border-strong);
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--panel-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+      min-height: 112px;
+    }
+
+    .file-drop-label:hover,
+    .file-drop-label.dragover {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    input[type="file"]:focus-visible + .file-drop-label {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .file-name {
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    .project-browser-box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: var(--panel-bg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* Info & Metadata Inspector Bar */
+    .info-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 18px;
+      font-size: 0.85rem;
+    }
+
+    .info-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .metric-pill {
+      background: #FFF;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .meta-tags-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--text-sub);
+      padding-top: 6px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .garbled-alert {
+      margin-top: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: var(--warn-soft);
+      border: 1px solid #E6CB8A;
+      color: #7A5000;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.84rem;
+    }
+
+    .garbled-alert.visible {
+      display: flex;
+    }
+
+    /* Waveform & Player Deck */
+    .waveform-deck {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: #1E2128;
+      color: #F1F5F9;
+      margin-bottom: 22px;
+    }
+
+    .waveform-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 0.82rem;
+    }
+
+    .waveform-scroll {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 10px;
+      background: #14161B;
+      border: 1px solid #2E3440;
+      position: relative;
+    }
+
+    #waveformCanvas {
+      display: block;
+      height: 150px;
+      cursor: crosshair;
+    }
+
+    .deck-controls {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    audio {
+      width: 100%;
+      height: 40px;
+      border-radius: 20px;
+    }
+
+    .transport-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .transport-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-readout {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.88rem;
+      color: #E2E8F0;
+      background: #282C34;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Workspace Mode Switcher */
+    .workspace-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 10px 18px;
+      min-height: 44px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-bg);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover {
+      background: var(--primary-soft);
+    }
+
+    .tab-btn[aria-selected="true"] {
+      background: var(--primary);
+      color: #FFF;
+      border-color: var(--primary);
+    }
+
+    .workspace-panel[hidden] {
+      display: none !important;
+    }
+
+    /* Semantic Form & Fieldsets (following Gestalt proximity rules) */
+    fieldset {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+      background: var(--panel-bg);
+    }
+
+    legend {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--primary);
+      padding: 0 8px;
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 760px) {
+      .form-grid-2,
+      .form-grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-field {
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field-label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px; /* Smaller than group gap (16px) per Gestalt Proximity */
+    }
+
+    .field-hint {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+
+    .field-error {
+      font-size: 0.8rem;
+      color: var(--danger);
+      font-weight: 600;
+      margin-top: 4px;
+      min-height: 1.1em;
+    }
+
+    input[type="text"],
+    select {
+      font-size: 1rem;
+      padding: 9px 12px;
+      min-height: 44px;
+      border-radius: 8px;
+      border: 1px solid #B5ABA0;
+      background: #FFF;
+      color: var(--text);
+      width: 100%;
+    }
+
+    input[type="text"][aria-invalid="true"] {
+      border-color: var(--danger);
+      background: var(--danger-soft);
+    }
+
+    .radio-group,
+    .checkbox-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .choice-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.92rem;
+      cursor: pointer;
+      min-height: 38px;
+      padding: 4px 6px;
+      border-radius: 6px;
+    }
+
+    .choice-label:hover {
+      background: rgba(140, 94, 42, 0.07);
+    }
+
+    .inline-nudge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 14px;
+      min-height: 40px;
+      border-radius: 9px;
+      border: 1px solid var(--border-strong);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #FFF;
+      color: var(--text);
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-sm {
+      padding: 4px 9px;
+      min-height: 32px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+    }
+
+    .btn-dark {
+      background: #2D333F;
+      color: #F1F5F9;
+      border-color: #434C5E;
+    }
+
+    .btn-dark:hover:not(:disabled) {
+      background: #3B4252;
+      border-color: #88C0D0;
+    }
+
+    .btn-dark.active {
+      background: var(--primary);
+      border-color: #E6B87D;
+      color: #FFF;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #FFF;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #FFF;
+      border-color: var(--accent);
+    }
+
+    .btn-accent:hover:not(:disabled) {
+      background: #23573D;
+    }
+
+    .btn-danger {
+      color: var(--danger);
+      border-color: #E5BABA;
+      background: #FFF;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: var(--danger-soft);
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin: 18px 0;
+    }
+
+    .btn-lg {
+      padding: 12px 22px;
+      min-height: 48px;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    /* Result Banner */
+    .process-result-box {
+      display: none;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid #A3D4B8;
+      background: var(--accent-soft);
+      color: #1B4D35;
+      margin-bottom: 18px;
+      font-size: 0.9rem;
+    }
+
+    .process-result-box.visible {
+      display: block;
+    }
+
+    .process-result-box.error {
+      border-color: #E5BABA;
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    /* Code / Command Textarea */
+    .code-box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    textarea.code-area {
+      width: 100%;
+      min-height: 92px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.84rem;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #21242B;
+      color: #E2E8F0;
+      resize: vertical;
+    }
+
+    /* Marker Recorder Tap Area */
+    .tap-area {
+      position: relative;
+      background: linear-gradient(135deg, #FFF9F0, #F3E5D0);
+      border: 2px solid #D5BE9F;
+      border-radius: 16px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.08s, box-shadow 0.08s;
+      margin-bottom: 16px;
+    }
+
+    .tap-area:active,
+    .tap-area.flashing {
+      transform: scale(0.985);
+      box-shadow: inset 0 0 18px rgba(140, 94, 42, 0.28);
+      border-color: var(--primary);
+    }
+
+    .tap-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .counter-badge {
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 8px 0 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .markers-list {
+      max-height: 220px;
+      overflow-y: auto;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .marker-chip {
+      background: #FFF;
+      border: 1px solid var(--border-strong);
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .marker-chip.highlight {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .chip-jump-btn {
+      background: none;
+      border: none;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .chip-jump-btn:hover {
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    .chip-mini-btn {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      color: var(--text-sub);
+    }
+
+    .chip-mini-btn:hover {
+      background: var(--primary-soft);
+      color: var(--text);
+    }
+
+    .chip-del-btn {
+      color: var(--danger);
+      border-color: #E8C5C5;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translate(-50%, 12px);
+      background: rgba(34, 30, 27, 0.94);
+      color: #FFF;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.22s, transform 0.22s;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    dialog.help-dialog {
+      margin: auto;
+      max-width: 560px;
+      width: calc(100% - 32px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      background: #FFF;
+      color: var(--text);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    }
+
+    dialog.help-dialog::backdrop {
+      background: rgba(0, 0, 0, 0.45);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 頂部標題與 FFmpeg 本地引擎狀態 -->
+    <header class="top-header">
+      <div>
+        <h1>佛曲全方位整合工作站</h1>
+        <p class="subtitle">視覺化 A-B 無縫剪輯・OGG 轉檔・響度強化・清除亂碼 Metadata・佛號時間戳打點</p>
+      </div>
+      <div class="engine-badge-wrap">
+        <span id="engineStatusBadge" class="engine-badge offline" role="status" aria-live="polite">
+          🟡 偵測本地 FFmpeg 引擎中...
+        </span>
+        <button type="button" class="btn btn-sm" id="checkServerBtn">🔄 重新連線</button>
+        <button type="button" class="btn btn-sm" id="serverHelpBtn">💡 如何啟用網頁直出 OGG？</button>
+      </div>
+    </header>
+
+    <!-- 檔案載入區 -->
+    <section aria-label="音訊檔案載入區">
+      <div class="load-grid">
+        <div>
+          <input type="file" id="audioInput" name="audioFile" accept="audio/*,.mp3,.m4a,.ogg,.wav,.flac,.aac" class="visually-hidden">
+          <label for="audioInput" class="file-drop-label" id="fileDropZone">
+            <span style="font-size: 1.8rem;" aria-hidden="true">🎵</span>
+            <span class="file-name" id="fileNameDisplay">點擊選取或拖曳佛曲音檔至此（.mp3 / .m4a / .ogg / .wav）</span>
+            <span style="font-size: 0.78rem; color: var(--text-sub); margin-top: 4px;">自動解析波形、峰值音量與內嵌 Metadata 標籤</span>
+          </label>
+        </div>
+
+        <div class="project-browser-box">
+          <label for="projectFileSelect" class="field-label">📂 或直接載入專案目錄音檔（需啟動本地引擎）：</label>
+          <div style="display: flex; gap: 8px;">
+            <select id="projectFileSelect" name="projectFileSelect" disabled>
+              <option value="">（尚未連線至本地 FFmpeg 服務）</option>
+            </select>
+            <button type="button" class="btn" id="loadProjectFileBtn" disabled>載入</button>
+          </div>
+          <span class="field-hint">支援直接讀寫 <code>assets/audio/edit/</code> 與 <code>assets/audio/</code></span>
+        </div>
+      </div>
+
+      <!-- 音訊規格與現有 Metadata 檢查卡 -->
+      <div class="info-card" id="audioInfoCard">
+        <div class="info-metrics">
+          <span class="metric-pill" id="metricDuration">總長度：--</span>
+          <span class="metric-pill" id="metricSampleRate">取樣率：--</span>
+          <span class="metric-pill" id="metricChannels">聲道：--</span>
+          <span class="metric-pill" id="metricPeakDb">峰值音量：--</span>
+        </div>
+        <div class="meta-tags-preview" id="existingMetaPreview">
+          <span>現有內嵌標籤：尚未載入音檔</span>
+        </div>
+        <div class="garbled-alert" id="garbledAlert" role="alert">
+          <span id="garbledAlertText">⚠️ 偵測到殘留亂碼或外部廣告標籤！輸出時將自動以 -map_metadata -1 徹底清除。</span>
+          <button type="button" class="btn btn-sm" id="applyDecodedBig5Btn" hidden>🪄 套用解碼還原之舊中文標題</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 共享視覺化波形與無縫循環試聽台 -->
+    <section class="waveform-deck" aria-label="波形剪輯與無縫循環試聽台">
+      <div class="waveform-toolbar">
+        <div class="transport-group">
+          <span style="color: #A3B1C6;">📊 波形檢視（綠線 = 起點 A，紅線 = 終點 B，金線 = 佛號記號點；可直接拖曳 A/B 線）：</span>
+        </div>
+        <div class="transport-group">
+          <span style="color: #A3B1C6;">縮放：</span>
+          <button type="button" class="btn btn-sm btn-dark active" data-zoom="1">1x 全覽</button>
+          <button type="button" class="btn btn-sm btn-dark" data-zoom="2">2x</button>
+          <button type="button" class="btn btn-sm btn-dark" data-zoom="4">4x</button>
+          <button type="button" class="btn btn-sm btn-dark" data-zoom="8">8x 精修</button>
+        </div>
+      </div>
+
+      <div class="waveform-scroll" id="waveformScrollWrap">
+        <canvas id="waveformCanvas" width="980" height="150"></canvas>
+      </div>
+
+      <div class="deck-controls">
+        <audio id="audioPlayer" controls></audio>
+
+        <div class="transport-bar">
+          <div class="transport-group">
+            <button type="button" class="btn btn-sm btn-dark" id="jumpStartABtn" title="跳至起點 A">⏮ 跳至起點 A</button>
+            <button type="button" class="btn btn-sm btn-dark" id="seamlessLoopBtn" title="使用 Web Audio 取樣級零延遲引擎試聽 A→B 無縫循環">
+              🔄 A→B 無縫循環試聽：關
+            </button>
+            <button type="button" class="btn btn-sm btn-accent" id="seamTestBtn" title="直接從終點 B 前 3 秒播到循環回起點 A 後 3 秒，快速檢驗接縫是否順暢">
+              🎧 試聽頭尾接縫 (B前3秒→A)
+            </button>
+          </div>
+
+          <div class="transport-group">
+            <span style="font-size: 0.8rem; color: #CBD5E1;">倍速：</span>
+            <button type="button" class="btn btn-sm btn-dark speed-btn" data-speed="0.5">0.5x</button>
+            <button type="button" class="btn btn-sm btn-dark speed-btn" data-speed="0.75">0.75x</button>
+            <button type="button" class="btn btn-sm btn-dark speed-btn active" data-speed="1">1.0x</button>
+            <button type="button" class="btn btn-sm btn-dark speed-btn" data-speed="1.25">1.25x</button>
+            <span class="time-readout" id="liveTimeReadout">當前: 00:00.000 | 剪輯長度: --</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 工作區模式切換分頁 -->
+    <div class="workspace-tabs" role="tablist" aria-label="工作站功能切換">
+      <button type="button" class="tab-btn" role="tab" id="tabBtnEdit" aria-selected="true" aria-controls="panelEdit" data-tab="edit">
+        ✂️ 步驟一：剪輯・轉檔・音量・Metadata
+      </button>
+      <button type="button" class="tab-btn" role="tab" id="tabBtnMark" aria-selected="false" aria-controls="panelMark" data-tab="mark">
+        🎯 步驟二：佛號尾端打點・Dart 代碼 (<span id="tabMarkerCount">0</span> 句)
+      </button>
+      <button type="button" class="tab-btn" role="tab" id="tabBtnBoth" aria-selected="false" data-tab="both">
+        📐 一頁全部展開
+      </button>
+    </div>
+
+    <!-- ==================== 面板一：剪輯・轉檔・音量・Metadata ==================== -->
+    <section id="panelEdit" class="workspace-panel" aria-labelledby="tabBtnEdit">
+      <form id="studioForm" action="/api/process" method="POST" novalidate>
+        <!-- 1. 剪輯區間 -->
+        <fieldset>
+          <legend>1. 剪輯區間設定（A → B 無縫閉環修剪）</legend>
+
+          <div class="checkbox-row" style="margin-bottom: 14px;">
+            <label for="trimEnabledChk" class="choice-label">
+              <input type="checkbox" id="trimEnabledChk" name="trimEnabled">
+              <span><strong>啟用 A → B 時間區間剪輯</strong>（若音檔已剪好、僅需轉檔或改 Metadata，可取消勾選）</span>
+            </label>
+            <button type="button" class="btn btn-sm" id="resetFullRangeBtn">↺ 重設 A~B 為全曲完整長度</button>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label for="trimStartInput" class="field-label">起點時間 A（秒 或 分:秒.毫秒）：</label>
+              <input type="text" id="trimStartInput" name="trimStart" value="0.000"
+                     autocorrect="off" autocapitalize="off" spellcheck="false" aria-describedby="trimStartHelp trimStartErr">
+              <div class="inline-nudge-bar">
+                <button type="button" class="btn btn-sm btn-primary" id="setCurAsABtn">📍 設當前進度為 A (快捷鍵 I)</button>
+                <button type="button" class="btn btn-sm" data-nudge-a="-0.05">-50ms</button>
+                <button type="button" class="btn btn-sm" data-nudge-a="-0.01">-10ms</button>
+                <button type="button" class="btn btn-sm" data-nudge-a="0.01">+10ms</button>
+                <button type="button" class="btn btn-sm" data-nudge-a="0.05">+50ms</button>
+                <button type="button" class="btn btn-sm" id="snapZeroABtn" title="自動微調至最近的波形零交叉點，消除開頭爆音">⚡ 吸附零交叉點</button>
+              </div>
+              <span id="trimStartHelp" class="field-hint">建議第一句佛號起音直接貼齊 A 點，不留前導空白。</span>
+              <span id="trimStartErr" class="field-error" aria-live="polite"></span>
+            </div>
+
+            <div class="form-field">
+              <label for="trimEndInput" class="field-label">終點時間 B（秒 或 分:秒.毫秒）：</label>
+              <input type="text" id="trimEndInput" name="trimEnd" value="0.000"
+                     autocorrect="off" autocapitalize="off" spellcheck="false" aria-describedby="trimEndHelp trimEndErr">
+              <div class="inline-nudge-bar">
+                <button type="button" class="btn btn-sm btn-primary" id="setCurAsBBtn">📍 設當前進度為 B (快捷鍵 O)</button>
+                <button type="button" class="btn btn-sm" data-nudge-b="-0.05">-50ms</button>
+                <button type="button" class="btn btn-sm" data-nudge-b="-0.01">-10ms</button>
+                <button type="button" class="btn btn-sm" data-nudge-b="0.01">+10ms</button>
+                <button type="button" class="btn btn-sm" data-nudge-b="0.05">+50ms</button>
+                <button type="button" class="btn btn-sm" id="snapZeroBBtn" title="自動微調至最近的波形零交叉點，消除結尾爆音">⚡ 吸附零交叉點</button>
+              </div>
+              <span id="trimEndHelp" class="field-hint">建議落在下一句預計起唱前一刻，並點上方「🎧 試聽頭尾接縫」確認節奏連貫。</span>
+              <span id="trimEndErr" class="field-error" aria-live="polite"></span>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- 2. 轉檔與音量 -->
+        <fieldset>
+          <legend>2. 轉檔格式・取樣率・音量增強</legend>
+
+          <div class="form-field">
+            <span class="field-label">處理模式：</span>
+            <div class="radio-group" role="radiogroup" aria-label="處理模式">
+              <label for="modeEncode" class="choice-label">
+                <input type="radio" id="modeEncode" name="processMode" value="encode" checked>
+                <span><strong>重新編碼輸出</strong>（精準毫秒剪輯、轉 OGG、音量強化、防爆音淡入淡出）</span>
+              </label>
+              <label for="modeCopy" class="choice-label">
+                <input type="radio" id="modeCopy" name="processMode" value="copy">
+                <span><strong>極速無損複製 <code>-c copy</code></strong>（不重編碼、不改音質，適合已轉好 OGG 僅秒改 Metadata 標題）</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="encodeOptionsWrap">
+            <div class="form-grid-2">
+              <div class="form-field">
+                <span class="field-label">目標音訊格式：</span>
+                <div class="radio-group" role="radiogroup" aria-label="目標音訊格式">
+                  <label for="fmtOgg" class="choice-label">
+                    <input type="radio" id="fmtOgg" name="outputFormat" value="ogg" checked>
+                    <span><strong>.ogg</strong>（Vorbis 無縫循環首選）</span>
+                  </label>
+                  <label for="fmtMp3" class="choice-label">
+                    <input type="radio" id="fmtMp3" name="outputFormat" value="mp3">
+                    <span>.mp3（高音質 VBR）</span>
+                  </label>
+                  <label for="fmtM4a" class="choice-label">
+                    <input type="radio" id="fmtM4a" name="outputFormat" value="m4a">
+                    <span>.m4a（AAC）</span>
+                  </label>
+                  <label for="fmtWav" class="choice-label">
+                    <input type="radio" id="fmtWav" name="outputFormat" value="wav">
+                    <span>.wav（PCM 無損）</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-field">
+                <span class="field-label">輸出取樣率（Sample Rate）：</span>
+                <div class="radio-group" role="radiogroup" aria-label="輸出取樣率">
+                  <label for="sr44100" class="choice-label">
+                    <input type="radio" id="sr44100" name="sampleRate" value="44100" checked>
+                    <span><strong>44100 Hz</strong>（標準推薦，防 loudnorm 升頻至 192kHz）</span>
+                  </label>
+                  <label for="sr48000" class="choice-label">
+                    <input type="radio" id="sr48000" name="sampleRate" value="48000">
+                    <span>48000 Hz</span>
+                  </label>
+                  <label for="srKeep" class="choice-label">
+                    <input type="radio" id="srKeep" name="sampleRate" value="keep">
+                    <span>維持原檔</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-field" style="margin-top: 8px;">
+              <span class="field-label">音量調整（切換倍率或 dB 時，「🔄 無縫循環試聽」可即時預聽音量變化）：</span>
+              <div class="radio-group" role="radiogroup" aria-label="音量調整方式">
+                <label for="volNone" class="choice-label">
+                  <input type="radio" id="volNone" name="volumeMode" value="none" checked>
+                  <span>維持原音量</span>
+                </label>
+                <label for="volLoudnorm" class="choice-label">
+                  <input type="radio" id="volLoudnorm" name="volumeMode" value="loudnorm">
+                  <span>⭐ <strong>智慧響度標準化 (<code>loudnorm</code>)</strong>（自動拉滿且防破音）</span>
+                </label>
+                <label for="volMult" class="choice-label">
+                  <input type="radio" id="volMult" name="volumeMode" value="multiplier">
+                  <span>倍數放大</span>
+                </label>
+                <label for="volDb" class="choice-label">
+                  <input type="radio" id="volDb" name="volumeMode" value="db">
+                  <span>分貝增減 (dB)</span>
+                </label>
+              </div>
+
+              <div id="volumeValueRow" style="display: none; align-items: center; gap: 12px; margin-top: 10px; max-width: 420px;">
+                <label for="volumeValueInput" class="field-label" id="volumeValueLabel" style="margin-bottom: 0; white-space: nowrap;">倍率數值：</label>
+                <input type="text" id="volumeValueInput" name="volumeValue" value="1.5"
+                       autocorrect="off" autocapitalize="off" spellcheck="false" style="max-width: 120px;">
+                <span class="field-hint" id="volumeValueHint" style="margin-top: 0;">例如 1.5 代表放大 1.5 倍</span>
+              </div>
+            </div>
+
+            <div class="checkbox-row" style="margin-top: 12px;">
+              <label for="fadeEnabledChk" class="choice-label">
+                <input type="checkbox" id="fadeEnabledChk" name="fadeEnabled" checked>
+                <span>頭尾加入微淡入淡出（消除循環接縫「啵 / 喀」爆音），時長（毫秒）：</span>
+              </label>
+              <label for="fadeMsInput" class="visually-hidden">微淡入淡出毫秒數</label>
+              <input type="text" id="fadeMsInput" name="fadeMs" value="5"
+                     autocorrect="off" autocapitalize="off" spellcheck="false" style="width: 72px; min-height: 36px; padding: 4px 8px;">
+              <span class="field-hint" style="margin-top: 0;">ms（建議 5ms）</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- 3. Metadata 與輸出檔名 -->
+        <fieldset>
+          <legend>3. Metadata 內嵌標籤（徹底防亂碼）與輸出設定</legend>
+
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label for="songPresetSelect" class="field-label">對應 App 31 首佛曲編號（選填，可自動同步 Dart 代碼）：</label>
+              <select id="songPresetSelect" name="songPreset"></select>
+            </div>
+
+            <div class="form-field" style="justify-content: center;">
+              <label for="stripMetaChk" class="choice-label" style="margin-top: 18px;">
+                <input type="checkbox" id="stripMetaChk" name="stripMetadata" checked>
+                <span>🧹 <strong>清空原檔所有舊標籤 (<code>-map_metadata -1</code>)</strong>（根除 Big5 亂碼與廣告）</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-field">
+              <label for="metaTitleInput" class="field-label">音檔內嵌標題 (<code>title</code>)：</label>
+              <input type="text" id="metaTitleInput" name="metaTitle" placeholder="例如：阿彌陀佛-四字四音-引磬慢板">
+              <div class="inline-nudge-bar">
+                <button type="button" class="btn btn-sm" id="titleFromFilenameBtn">由檔名擷取標題</button>
+                <button type="button" class="btn btn-sm" id="titleFromPresetBtn">套用預設曲名</button>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="metaArtistInput" class="field-label">演出者 (<code>artist</code>)：</label>
+              <input type="text" id="metaArtistInput" name="metaArtist" value="三寶弟子" placeholder="可留空或填法師/道場名">
+            </div>
+
+            <div class="form-field">
+              <label for="metaAlbumInput" class="field-label">專輯名稱 (<code>album</code>)：</label>
+              <input type="text" id="metaAlbumInput" name="metaAlbum" value="念佛計數器">
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="margin-top: 8px;">
+            <div class="form-field">
+              <label for="outputFilenameInput" class="field-label">輸出檔案名稱：</label>
+              <input type="text" id="outputFilenameInput" name="outputFilename" value="bb01.ogg"
+                     autocorrect="off" autocapitalize="off" spellcheck="false" required aria-describedby="outFileErr">
+              <div class="inline-nudge-bar">
+                <button type="button" class="btn btn-sm" id="nameStyleDescriptiveBtn">命名為 bbXX-標題.副檔名</button>
+                <button type="button" class="btn btn-sm" id="nameStyleAppAssetBtn">命名為 App 正式檔名 (如 bb1.ogg)</button>
+              </div>
+              <span id="outFileErr" class="field-error" aria-live="polite"></span>
+            </div>
+
+            <div class="form-field">
+              <span class="field-label">本地引擎儲存目錄：</span>
+              <div class="radio-group" role="radiogroup" aria-label="儲存目錄">
+                <label for="dirEdit" class="choice-label">
+                  <input type="radio" id="dirEdit" name="outputDir" value="edit" checked>
+                  <span><code>assets/audio/edit/</code></span>
+                </label>
+                <label for="dirAudio" class="choice-label">
+                  <input type="radio" id="dirAudio" name="outputDir" value="audio">
+                  <span><code>assets/audio/</code>（正式區）</span>
+                </label>
+                <label for="dirDownload" class="choice-label">
+                  <input type="radio" id="dirDownload" name="outputDir" value="downloadOnly">
+                  <span>僅瀏覽器下載</span>
+                </label>
+              </div>
+              <label for="autoLoadProcessedChk" class="choice-label" style="margin-top: 6px;">
+                <input type="checkbox" id="autoLoadProcessedChk" name="autoLoadProcessed" checked>
+                <span>處理完成後，自動載入新音檔至播放器並前往「步驟二：打點」</span>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- 執行按鈕列 -->
+        <div class="cta-row">
+          <button type="submit" class="btn btn-primary btn-lg" id="runFfmpegBtn">
+            ⚡ 一鍵執行 FFmpeg 剪輯・轉檔・寫入 Metadata
+          </button>
+          <button type="button" class="btn btn-lg" id="exportBrowserWavBtn" title="不需啟動本地服務，直接由瀏覽器裁切 A→B 並套用倍率音量匯出 .wav">
+            💾 瀏覽器離線匯出剪輯 WAV
+          </button>
+        </div>
+
+        <!-- 執行結果回饋區 -->
+        <div class="process-result-box" id="processResultBox" role="status" aria-live="polite"></div>
+
+        <!-- 即時生成的 PowerShell FFmpeg 指令 -->
+        <div>
+          <div class="code-box-header">
+            <label for="ffmpegCmdPreview" class="field-label" style="margin-bottom: 0;">
+              💻 即時產生之 PowerShell FFmpeg 指令（若未啟動本地服務，也可一鍵複製貼至終端機執行）：
+            </label>
+            <button type="button" class="btn btn-sm btn-primary" id="copyFfmpegCmdBtn">📋 複製 FFmpeg 指令</button>
+          </div>
+          <textarea id="ffmpegCmdPreview" class="code-area" readonly></textarea>
+        </div>
+      </form>
+    </section>
+
+    <!-- ==================== 面板二：佛號尾端打點・Dart 代碼生成 ==================== -->
+    <section id="panelMark" class="workspace-panel" aria-labelledby="tabBtnMark" hidden>
+      <fieldset>
+        <legend>佛號尾端時間標記打點（經過記號點自動 +1）</legend>
+
+        <div class="checkbox-row" style="justify-content: space-between; margin-bottom: 14px;">
+          <label for="subtractTrimStartChk" class="choice-label">
+            <input type="checkbox" id="subtractTrimStartChk" checked>
+            <span id="subtractTrimLabel">自動扣除剪輯起點 A（以剪輯後音檔 0.000 秒為基準記錄毫秒）</span>
+          </label>
+          <span class="field-hint" id="avgBeatReadout">平均每句週期：尚無標記</span>
+        </div>
+
+        <!-- 核心打點按鈕 -->
+        <div class="tap-area" id="tapArea" tabindex="0" role="button" aria-label="敲擊此處或按空白鍵記錄佛號尾端時間點">
+          <div class="tap-title">敲擊此處 或 按鍵盤【空白鍵 Space】打點</div>
+          <div style="font-size: 0.86rem; color: var(--text-sub);">每唱完一句佛號尾音時敲一下（支援上方 0.75x / 0.5x 慢速播放抓準尾音）</div>
+          <div class="counter-badge" id="countDisplay">0 句</div>
+          <div style="font-size: 0.82rem; color: var(--text-sub);" id="lastMarkTime">當前時間：0.00 秒</div>
+        </div>
+
+        <!-- 操作按鈕列 -->
+        <div class="transport-group" style="justify-content: center; margin-bottom: 16px;">
+          <button type="button" class="btn" id="undoMarkerBtn">↩ 復原上一句 (快捷鍵 Z)</button>
+          <button type="button" class="btn btn-accent" id="verifyModeBtn">▶ 驗證試聽模式（從頭播放並同步計數）</button>
+          <button type="button" class="btn" id="manualAddMarkerBtn">➕ 手動輸入毫秒點</button>
+          <button type="button" class="btn btn-danger" id="clearMarkersBtn">🗑 清空全部重來</button>
+        </div>
+
+        <!-- 標記清單預覽（支援單點點擊試聽、±50ms 微調、單獨刪除） -->
+        <div class="markers-list" id="markersList">
+          <span style="color: var(--text-sub); font-size: 0.85rem;">尚未記錄標記，播放音訊並敲擊空白鍵開始打點...（點擊任一標記可跳至該句前 1.5 秒試聽，亦可微調 ±50ms）</span>
+        </div>
+
+        <!-- Dart 代碼生成區 -->
+        <div>
+          <div class="code-box-header">
+            <div class="radio-group" role="radiogroup" aria-label="Dart 代碼輸出格式">
+              <span class="field-label" style="margin-bottom: 0;">輸出格式：</span>
+              <label for="dartOutArrayOnly" class="choice-label">
+                <input type="radio" id="dartOutArrayOnly" name="dartOutMode" value="array" checked>
+                <span>僅 <code>phraseMarkersMs</code> 陣列</span>
+              </label>
+              <label for="dartOutFullSong" class="choice-label">
+                <input type="radio" id="dartOutFullSong" name="dartOutMode" value="full">
+                <span>完整 <code>ChantSong(...)</code> 區塊</span>
+              </label>
+            </div>
+            <button type="button" class="btn btn-primary" id="copyDartBtn">📋 一鍵複製 Dart 代碼</button>
+          </div>
+          <label for="outputArea" class="visually-hidden">產生的 Dart 程式碼</label>
+          <textarea id="outputArea" class="code-area" style="min-height: 160px;" readonly></textarea>
+        </div>
+      </fieldset>
+    </section>
+  </div>
+
+  <!-- 啟用本地 FFmpeg 服務說明視窗 -->
+  <dialog class="help-dialog" id="serverHelpDialog">
+    <h2 style="font-size: 1.2rem; color: var(--primary); margin-bottom: 10px;">⚡ 如何在網頁內一鍵直出 .ogg 與寫入專案？</h2>
+    <p style="font-size: 0.92rem; margin-bottom: 12px;">
+      由於瀏覽器安全沙盒限制純靜態網頁直接呼叫電腦裡的 <code>ffmpeg.exe</code>，我們已為您在 <code>tools</code> 資料夾內建好零依賴橋接服務：
+    </p>
+    <ol style="padding-left: 20px; font-size: 0.9rem; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px;">
+      <li>直接雙擊執行 <strong><code>tools\啟動佛曲工作站.bat</code></strong>；或</li>
+      <li>在專案終端機執行：<code>node tools/studio_server.js</code></li>
+    </ol>
+    <p style="font-size: 0.86rem; color: var(--text-sub); margin-bottom: 16px;">
+      啟動後點擊右上角「🔄 重新連線」（或直接開啟 <code>http://127.0.0.1:8765</code>），狀態燈會變為綠燈 🟢，即可在網頁內一鍵執行 FFmpeg 轉檔、<code>loudnorm</code> 響度強化、清除 Big5 亂碼並直接存入 <code>assets/audio/</code>！
+    </p>
+    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+      <button type="button" class="btn btn-primary" id="closeHelpDialogBtn">我知道了</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      'use strict';
+
+      const API_BASE = 'http://127.0.0.1:8765';
+
+      // 內建 31 首佛曲預設清單 (與 lib/core/constants/chant_songs.dart 同步)
+      const SONG_PRESETS = [
+        { id: 0, bbNum: 1, title: '阿彌陀佛-四字四音-華藏淨宗-悟道法師', beatMs: 3846 },
+        { id: 1, bbNum: 2, title: '阿彌陀佛-四字四音配樂-華藏淨宗', beatMs: 3429 },
+        { id: 2, bbNum: 3, title: '阿彌陀佛-四字四音-引磬慢板', beatMs: 5559 },
+        { id: 3, bbNum: 4, title: '阿彌陀佛-四字四音-女眾慢版', beatMs: 5400 },
+        { id: 4, bbNum: 5, title: '阿彌陀佛-四字四音-女眾快版-靈巖山寺', beatMs: 1925 },
+        { id: 5, bbNum: 6, title: '阿彌陀佛-四字中速-淨空法師', beatMs: 1348 },
+        { id: 6, bbNum: 7, title: '阿彌陀佛-四字快速-淨空法師', beatMs: 747 },
+        { id: 7, bbNum: 8, title: '阿彌陀佛-純人聲慢版-淨空法師', beatMs: 5979 },
+        { id: 8, bbNum: 9, title: '阿彌陀佛-地鐘念佛慢版-悟行法師', beatMs: 3434 },
+        { id: 9, bbNum: 10, title: '阿彌陀佛-唱誦-佛光山', beatMs: 2692 },
+        { id: 10, bbNum: 11, title: '阿彌陀佛-十念法', beatMs: 5863 },
+        { id: 11, bbNum: 12, title: '南無阿彌陀佛-思鄉佛號-祥林精舍-開松法師', beatMs: 7279 },
+        { id: 12, bbNum: 13, title: '南無阿彌陀佛-六字四音-歸鄉佛號', beatMs: 9046 },
+        { id: 13, bbNum: 14, title: '南無阿彌陀佛-六字四音-華樂版', beatMs: 7874 },
+        { id: 14, bbNum: 15, title: '南無阿彌陀佛-六字二音-慢速-靈巖山寺', beatMs: 8648 },
+        { id: 15, bbNum: 16, title: '南無阿彌陀佛-六字唱誦慢速-印光大師版', beatMs: 6797 },
+        { id: 16, bbNum: 17, title: '南無阿彌陀佛-六字唱誦中速-印光大師版', beatMs: 5338 },
+        { id: 17, bbNum: 18, title: '南無阿彌陀佛-唱誦-佛光山', beatMs: 5365 },
+        { id: 18, bbNum: 19, title: '南無阿彌陀佛-六字四字-男女對唱', beatMs: 4791 },
+        { id: 19, bbNum: 20, title: '南無阿彌陀佛-呼吸五段配樂', beatMs: 4062 },
+        { id: 20, bbNum: 21, title: '南無阿彌陀佛-慢速念誦-淨宗法師', beatMs: 3879 },
+        { id: 21, bbNum: 22, title: '南無阿彌陀佛-台語慢速-沙鹿彌陀念佛堂-陳有宏居士', beatMs: 4684 },
+        { id: 22, bbNum: 23, title: '南無阿彌陀佛-夏蓮居老居士', beatMs: 3332 },
+        { id: 23, bbNum: 24, title: '南無阿彌陀佛-六度彌陀-靈巖梵唄-沙彌師父', beatMs: 12906 },
+        { id: 24, bbNum: 25, title: '南無阿彌陀佛-懷念恩師-靈巖梵唄-沙彌師父', beatMs: 7608 },
+        { id: 25, bbNum: 26, title: '南無阿彌陀佛-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 9276 },
+        { id: 26, bbNum: 27, title: '南無釋迦牟尼佛-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 8660 },
+        { id: 27, bbNum: 28, title: '南無地藏王菩薩-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 7672 },
+        { id: 28, bbNum: 29, title: '南無觀世音菩薩-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 9199 },
+        { id: 29, bbNum: 30, title: '南無觀世音菩薩-七字五音-莊嚴樂曲', beatMs: 6456 },
+        { id: 30, bbNum: 31, title: '六字大明咒-女聲唱誦', beatMs: 3653 }
+      ];
+
+      // DOM References
+      const engineStatusBadge = document.getElementById('engineStatusBadge');
+      const checkServerBtn = document.getElementById('checkServerBtn');
+      const serverHelpBtn = document.getElementById('serverHelpBtn');
+      const serverHelpDialog = document.getElementById('serverHelpDialog');
+      const closeHelpDialogBtn = document.getElementById('closeHelpDialogBtn');
+
+      const audioInput = document.getElementById('audioInput');
+      const fileDropZone = document.getElementById('fileDropZone');
+      const fileNameDisplay = document.getElementById('fileNameDisplay');
+      const projectFileSelect = document.getElementById('projectFileSelect');
+      const loadProjectFileBtn = document.getElementById('loadProjectFileBtn');
+
+      const metricDuration = document.getElementById('metricDuration');
+      const metricSampleRate = document.getElementById('metricSampleRate');
+      const metricChannels = document.getElementById('metricChannels');
+      const metricPeakDb = document.getElementById('metricPeakDb');
+      const existingMetaPreview = document.getElementById('existingMetaPreview');
+      const garbledAlert = document.getElementById('garbledAlert');
+      const garbledAlertText = document.getElementById('garbledAlertText');
+      const applyDecodedBig5Btn = document.getElementById('applyDecodedBig5Btn');
+
+      const waveformScrollWrap = document.getElementById('waveformScrollWrap');
+      const waveformCanvas = document.getElementById('waveformCanvas');
+      const audioPlayer = document.getElementById('audioPlayer');
+      const jumpStartABtn = document.getElementById('jumpStartABtn');
+      const seamlessLoopBtn = document.getElementById('seamlessLoopBtn');
+      const seamTestBtn = document.getElementById('seamTestBtn');
+      const liveTimeReadout = document.getElementById('liveTimeReadout');
+
+      const tabBtnEdit = document.getElementById('tabBtnEdit');
+      const tabBtnMark = document.getElementById('tabBtnMark');
+      const tabBtnBoth = document.getElementById('tabBtnBoth');
+      const tabMarkerCount = document.getElementById('tabMarkerCount');
+      const panelEdit = document.getElementById('panelEdit');
+      const panelMark = document.getElementById('panelMark');
+
+      const studioForm = document.getElementById('studioForm');
+      const trimEnabledChk = document.getElementById('trimEnabledChk');
+      const resetFullRangeBtn = document.getElementById('resetFullRangeBtn');
+      const trimStartInput = document.getElementById('trimStartInput');
+      const trimEndInput = document.getElementById('trimEndInput');
+      const trimStartErr = document.getElementById('trimStartErr');
+      const trimEndErr = document.getElementById('trimEndErr');
+      const setCurAsABtn = document.getElementById('setCurAsABtn');
+      const setCurAsBBtn = document.getElementById('setCurAsBBtn');
+      const snapZeroABtn = document.getElementById('snapZeroABtn');
+      const snapZeroBBtn = document.getElementById('snapZeroBBtn');
+
+      const encodeOptionsWrap = document.getElementById('encodeOptionsWrap');
+      const volumeValueRow = document.getElementById('volumeValueRow');
+      const volumeValueLabel = document.getElementById('volumeValueLabel');
+      const volumeValueInput = document.getElementById('volumeValueInput');
+      const volumeValueHint = document.getElementById('volumeValueHint');
+      const fadeEnabledChk = document.getElementById('fadeEnabledChk');
+      const fadeMsInput = document.getElementById('fadeMsInput');
+
+      const songPresetSelect = document.getElementById('songPresetSelect');
+      const stripMetaChk = document.getElementById('stripMetaChk');
+      const metaTitleInput = document.getElementById('metaTitleInput');
+      const titleFromFilenameBtn = document.getElementById('titleFromFilenameBtn');
+      const titleFromPresetBtn = document.getElementById('titleFromPresetBtn');
+      const metaArtistInput = document.getElementById('metaArtistInput');
+      const metaAlbumInput = document.getElementById('metaAlbumInput');
+      const outputFilenameInput = document.getElementById('outputFilenameInput');
+      const outFileErr = document.getElementById('outFileErr');
+      const nameStyleDescriptiveBtn = document.getElementById('nameStyleDescriptiveBtn');
+      const nameStyleAppAssetBtn = document.getElementById('nameStyleAppAssetBtn');
+      const autoLoadProcessedChk = document.getElementById('autoLoadProcessedChk');
+
+      const runFfmpegBtn = document.getElementById('runFfmpegBtn');
+      const exportBrowserWavBtn = document.getElementById('exportBrowserWavBtn');
+      const processResultBox = document.getElementById('processResultBox');
+      const ffmpegCmdPreview = document.getElementById('ffmpegCmdPreview');
+      const copyFfmpegCmdBtn = document.getElementById('copyFfmpegCmdBtn');
+
+      const subtractTrimStartChk = document.getElementById('subtractTrimStartChk');
+      const avgBeatReadout = document.getElementById('avgBeatReadout');
+      const tapArea = document.getElementById('tapArea');
+      const countDisplay = document.getElementById('countDisplay');
+      const lastMarkTime = document.getElementById('lastMarkTime');
+      const undoMarkerBtn = document.getElementById('undoMarkerBtn');
+      const verifyModeBtn = document.getElementById('verifyModeBtn');
+      const manualAddMarkerBtn = document.getElementById('manualAddMarkerBtn');
+      const clearMarkersBtn = document.getElementById('clearMarkersBtn');
+      const markersList = document.getElementById('markersList');
+      const copyDartBtn = document.getElementById('copyDartBtn');
+      const outputArea = document.getElementById('outputArea');
+      const toast = document.getElementById('toast');
+
+      // Application State
+      let serverOnline = false;
+      let currentSource = {
+        type: 'none', // 'local' | 'project' | 'tempOut'
+        filename: '',
+        localFile: null,
+        tempId: null,
+        projectDir: 'edit',
+        projectName: ''
+      };
+
+      let audioCtx = null;
+      let decodedBuffer = null;
+      let peakLinear = 0;
+      let peakDb = -Infinity;
+      let audioDuration = 0;
+      let trimStartSec = 0;
+      let trimEndSec = 0;
+      let waveformZoom = 1;
+      let waveformPeaks = null;
+      let draggingHandle = null; // 'A' | 'B' | 'seek' | null
+
+      // Web Audio Seamless Loop Engine State
+      let loopSourceNode = null;
+      let loopGainNode = null;
+      let isLoopPlaying = false;
+      let loopStartCtxTime = 0;
+      let loopStartOffsetSec = 0;
+      let currentPlaybackRate = 1.0;
+      let rafId = null;
+
+      // Decoded Big5 Recovery State
+      let recoveredBig5Title = '';
+
+      // Marker State
+      let markers = [];
+      let isVerifyMode = false;
+      let nextVerifyIdx = 0;
+      let toastTimer = null;
+
+      // Initialize Song Preset Select
+      function initSongPresets() {
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '-1';
+        defaultOpt.textContent = '-- 自動推斷或自訂曲目 --';
+        songPresetSelect.appendChild(defaultOpt);
+
+        SONG_PRESETS.forEach((s) => {
+          const opt = document.createElement('option');
+          opt.value = String(s.id);
+          const numStr = String(s.bbNum).padStart(2, '0');
+          opt.textContent = `#${numStr} (bb${s.bbNum}) · ${s.title}`;
+          songPresetSelect.appendChild(opt);
+        });
+      }
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+      }
+
+      function getAudioContext() {
+        if (!audioCtx) {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new Ctx();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return audioCtx;
+      }
+
+      // Time formatting & parsing helpers
+      function formatSecPrecise(sec) {
+        if (!Number.isFinite(sec) || sec < 0) sec = 0;
+        const m = Math.floor(sec / 60);
+        const s = (sec % 60).toFixed(3).padStart(6, '0');
+        return `${String(m).padStart(2, '0')}:${s}`;
+      }
+
+      function parseTimeInput(raw) {
+        const str = String(raw || '').trim();
+        if (!str) return NaN;
+        if (/^\d+(\.\d+)?$/.test(str)) {
+          return parseFloat(str);
+        }
+        const parts = str.split(':');
+        if (parts.length === 2) {
+          const m = parseFloat(parts[0]);
+          const s = parseFloat(parts[1]);
+          if (Number.isFinite(m) && Number.isFinite(s) && m >= 0 && s >= 0) {
+            return m * 60 + s;
+          }
+        } else if (parts.length === 3) {
+          const h = parseFloat(parts[0]);
+          const m = parseFloat(parts[1]);
+          const s = parseFloat(parts[2]);
+          if (Number.isFinite(h) && Number.isFinite(m) && Number.isFinite(s)) {
+            return h * 3600 + m * 60 + s;
+          }
+        }
+        return NaN;
+      }
+
+      function getRadioValue(name) {
+        const checked = studioForm.querySelector(`input[name="${name}"]:checked`)
+          || document.querySelector(`input[name="${name}"]:checked`);
+        return checked ? checked.value : '';
+      }
+
+      // Check if user is typing in a text/form input (so Space/Z/I/O don't hijack typing!)
+      function isTypingInField(target) {
+        if (!target) return false;
+        const tag = target.tagName;
+        if (tag === 'INPUT') {
+          const t = (target.type || 'text').toLowerCase();
+          return !['button', 'checkbox', 'radio', 'file', 'submit'].includes(t);
+        }
+        return tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
+      }
+
+      // ==================== Local FFmpeg Server Status & File List ====================
+      async function checkServerStatus(silent = true) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 1800);
+          const res = await fetch(`${API_BASE}/api/status`, { signal: controller.signal });
+          clearTimeout(timer);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+          if (data.ok && data.ffmpegReady) {
+            serverOnline = true;
+            engineStatusBadge.className = 'engine-badge online';
+            engineStatusBadge.textContent = '🟢 本地 FFmpeg 引擎已連線（支援網頁直出 .ogg 與寫入專案）';
+            populateProjectFiles(data.files);
+            if (!silent) showToast('✅ 已成功連線至本地 FFmpeg 引擎！');
+            return;
+          }
+        } catch (_) {
+          // Offline mode
+        }
+        serverOnline = false;
+        engineStatusBadge.className = 'engine-badge offline';
+        engineStatusBadge.textContent = '🟡 離線網頁模式（可剪輯試聽 / 匯出 WAV / 複製 FFmpeg 指令）';
+        projectFileSelect.innerHTML = '<option value="">（啟動 studio_server.js 後可直接選取專案音檔）</option>';
+        projectFileSelect.disabled = true;
+        loadProjectFileBtn.disabled = true;
+        if (!silent) {
+          serverHelpDialog.showModal();
+        }
+      }
+
+      function populateProjectFiles(filesObj) {
+        const prevVal = projectFileSelect.value;
+        projectFileSelect.innerHTML = '';
+
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = '-- 選擇專案內音檔直接載入 --';
+        projectFileSelect.appendChild(placeholder);
+
+        const addGroup = (label, dirKey, list) => {
+          if (!Array.isArray(list) || list.length === 0) return;
+          const grp = document.createElement('optgroup');
+          grp.label = label;
+          list.forEach((f) => {
+            const opt = document.createElement('option');
+            opt.value = `${dirKey}::${f.name}`;
+            const kb = Math.round(f.size / 1024);
+            opt.textContent = `${f.name} (${kb} KB)`;
+            grp.appendChild(opt);
+          });
+          projectFileSelect.appendChild(grp);
+        };
+
+        addGroup('✂️ 剪輯工作區 (assets/audio/edit/)', 'edit', filesObj?.edit);
+        addGroup('📦 App 正式音檔區 (assets/audio/)', 'audio', filesObj?.audio);
+
+        if (prevVal && [...projectFileSelect.options].some((o) => o.value === prevVal)) {
+          projectFileSelect.value = prevVal;
+        }
+        projectFileSelect.disabled = false;
+        loadProjectFileBtn.disabled = false;
+      }
+
+      // ==================== Metadata Binary Fallback & Big5 Recovery ====================
+      function tryDecodeLatin1AsBig5(str) {
+        if (!str || typeof str !== 'string') return null;
+        let highByteCount = 0;
+        const bytes = new Uint8Array(str.length);
+        for (let i = 0; i < str.length; i++) {
+          const code = str.charCodeAt(i);
+          if (code > 0xFF) return null; // Already real Unicode (not Latin-1 wrapped bytes)
+          if (code >= 0x80) highByteCount++;
+          bytes[i] = code;
+        }
+        if (highByteCount < 2) return null;
+        try {
+          const decoded = new TextDecoder('big5', { fatal: false }).decode(bytes);
+          if (/[\u4E00-\u9FFF]/.test(decoded)) {
+            return decoded.trim();
+          }
+        } catch (_) {}
+        return null;
+      }
+
+      function parseBinaryTagsOffline(arrayBuffer, filename) {
+        const bytes = new Uint8Array(arrayBuffer, 0, Math.min(arrayBuffer.byteLength, 131072));
+        const tags = {};
+        const ext = (filename.split('.').pop() || '').toLowerCase();
+
+        // 1. OGG Vorbis Comment Header (\x03vorbis)
+        if (ext === 'ogg') {
+          for (let i = 0; i < bytes.length - 16; i++) {
+            if (bytes[i] === 0x03 && bytes[i + 1] === 0x76 && bytes[i + 2] === 0x6F &&
+                bytes[i + 3] === 0x72 && bytes[i + 4] === 0x62 && bytes[i + 5] === 0x69 && bytes[i + 6] === 0x73) {
+              const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+              let pos = i + 7;
+              if (pos + 4 > bytes.length) break;
+              const vendorLen = dv.getUint32(pos, true);
+              pos += 4 + vendorLen;
+              if (pos + 4 > bytes.length) break;
+              const count = Math.min(64, dv.getUint32(pos, true));
+              pos += 4;
+              const utf8 = new TextDecoder('utf-8');
+              for (let c = 0; c < count; c++) {
+                if (pos + 4 > bytes.length) break;
+                const cLen = dv.getUint32(pos, true);
+                pos += 4;
+                if (pos + cLen > bytes.length) break;
+                const item = utf8.decode(bytes.subarray(pos, pos + cLen));
+                pos += cLen;
+                const eq = item.indexOf('=');
+                if (eq > 0) {
+                  const k = item.slice(0, eq).toLowerCase();
+                  const v = item.slice(eq + 1);
+                  tags[k] = v;
+                }
+              }
+              break;
+            }
+          }
+        }
+        // 2. MP3 ID3v2 Header
+        else if (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) {
+          const ver = bytes[3];
+          const tagSize = ((bytes[6] & 0x7F) << 21) | ((bytes[7] & 0x7F) << 14) | ((bytes[8] & 0x7F) << 7) | (bytes[9] & 0x7F);
+          const limit = Math.min(bytes.length, 10 + tagSize);
+          let pos = 10;
+          const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+          while (pos + 10 < limit) {
+            const fId = String.fromCharCode(bytes[pos], bytes[pos + 1], bytes[pos + 2], bytes[pos + 3]);
+            if (!/^[A-Z0-9]{4}$/.test(fId)) break;
+            const fSize = ver === 4
+              ? (((bytes[pos + 4] & 0x7F) << 21) | ((bytes[pos + 5] & 0x7F) << 14) | ((bytes[pos + 6] & 0x7F) << 7) | (bytes[pos + 7] & 0x7F))
+              : dv.getUint32(pos + 4, false);
+            pos += 10;
+            if (fSize <= 1 || pos + fSize > limit) break;
+            const enc = bytes[pos];
+            const payload = bytes.subarray(pos + 1, pos + fSize);
+            let text = '';
+            try {
+              if (enc === 0) {
+                text = Array.from(payload).map((b) => String.fromCharCode(b)).join('');
+              } else if (enc === 1 || enc === 2) {
+                text = new TextDecoder(enc === 2 ? 'utf-16be' : 'utf-16le').decode(payload);
+              } else {
+                text = new TextDecoder('utf-8').decode(payload);
+              }
+            } catch (_) {}
+            text = text.replace(/\0/g, '').trim();
+            if (fId === 'TIT2') tags.title = text;
+            else if (fId === 'TPE1') tags.artist = text;
+            else if (fId === 'TALB') tags.album = text;
+            else if (fId === 'COMM') tags.comment = text;
+            pos += fSize;
+          }
+        }
+        return tags;
+      }
+
+      function renderMetadataInspection(tagsObj) {
+        const merged = {};
+        if (tagsObj) {
+          for (const [k, v] of Object.entries(tagsObj)) {
+            if (v !== undefined && v !== null && String(v).trim() !== '') {
+              merged[k.toLowerCase()] = String(v).trim();
+            }
+          }
+        }
+
+        const keysToShow = ['title', 'artist', 'album', 'comment', 'description'];
+        const parts = [];
+        let hasSpamOrGarbled = false;
+        recoveredBig5Title = '';
+
+        for (const k of keysToShow) {
+          if (merged[k]) {
+            parts.push(`${k}: 「${merged[k]}」`);
+            const big5 = tryDecodeLatin1AsBig5(merged[k]);
+            if (big5) {
+              hasSpamOrGarbled = true;
+              if (k === 'title') recoveredBig5Title = big5;
+            }
+            if (/peggo|youtube|converter|download/i.test(merged[k])) {
+              hasSpamOrGarbled = true;
+            }
+          }
+        }
+
+        if (parts.length === 0) {
+          existingMetaPreview.textContent = '現有內嵌標籤：（無內嵌標籤）';
+        } else {
+          existingMetaPreview.textContent = `現有內嵌標籤：${parts.join(' ｜ ')}`;
+        }
+
+        if (hasSpamOrGarbled) {
+          garbledAlert.classList.add('visible');
+          stripMetaChk.checked = true;
+          if (recoveredBig5Title) {
+            garbledAlertText.textContent = `⚠️ 偵測到舊 Big5 亂碼標籤！自動解碼原文為：「${recoveredBig5Title}」。輸出時將以 -map_metadata -1 徹底清除舊標籤。`;
+            applyDecodedBig5Btn.hidden = false;
+          } else {
+            garbledAlertText.textContent = '⚠️ 偵測到殘留亂碼或外部廣告註解（如 Peggo）！輸出時將自動以 -map_metadata -1 徹底清除。';
+            applyDecodedBig5Btn.hidden = true;
+          }
+        } else {
+          garbledAlert.classList.remove('visible');
+          applyDecodedBig5Btn.hidden = true;
+        }
+      }
+
+      function extractMergedTagsFromProbe(probe) {
+        const tags = {};
+        if (probe?.streams) {
+          for (const st of probe.streams) {
+            if (st.tags) Object.assign(tags, st.tags);
+          }
+        }
+        if (probe?.format?.tags) {
+          // If stream still has garbled title, keep visibility of stream title if different
+          const fmtTags = probe.format.tags;
+          for (const [k, v] of Object.entries(fmtTags)) {
+            const lk = k.toLowerCase();
+            if (!tags[lk]) tags[lk] = v;
+          }
+        }
+        return tags;
+      }
+
+      // ==================== Auto Filename & Song Matching ====================
+      function autoPopulateFieldsFromFilename(filename) {
+        const stem = filename.replace(/\.[^.]+$/, '');
+        // Match bb01-標題 or bb1
+        const match = /^bb0*(\d{1,2})(?:[-_\s]+(.+))?$/i.exec(stem);
+        const targetExt = getTargetOutputExt();
+
+        if (match) {
+          const bbNum = parseInt(match[1], 10);
+          const customTitle = match[2] ? match[2].trim() : '';
+          const preset = SONG_PRESETS.find((s) => s.bbNum === bbNum);
+          if (preset) {
+            songPresetSelect.value = String(preset.id);
+          }
+          if (customTitle) {
+            metaTitleInput.value = customTitle;
+            const numPad = String(bbNum).padStart(2, '0');
+            outputFilenameInput.value = `bb${numPad}-${customTitle}.${targetExt}`;
+          } else if (preset) {
+            metaTitleInput.value = preset.title;
+            outputFilenameInput.value = `bb${bbNum}.${targetExt}`;
+          }
+        } else {
+          metaTitleInput.value = stem;
+          outputFilenameInput.value = `${stem}.${targetExt}`;
+        }
+        updateFfmpegCommandPreview();
+        updateDartCodeOutput();
+      }
+
+      function getTargetOutputExt() {
+        const mode = getRadioValue('processMode');
+        if (mode === 'copy' && currentSource.filename) {
+          const m = /\.([^.]+)$/.exec(currentSource.filename);
+          if (m) return m[1].toLowerCase();
+        }
+        return getRadioValue('outputFormat') || 'ogg';
+      }
+
+      function syncOutputFilenameExtension() {
+        const cur = outputFilenameInput.value.trim();
+        if (!cur) return;
+        const ext = getTargetOutputExt();
+        const stem = cur.replace(/\.[^.]+$/, '');
+        outputFilenameInput.value = `${stem}.${ext}`;
+      }
+
+      // ==================== Loading Audio Buffer & Waveform ====================
+      async function loadAudioFromBlobOrBuffer(arrayBuffer, filename, probeData = null) {
+        stopSeamlessLoop();
+        fileNameDisplay.textContent = `已載入：${filename}`;
+
+        const blob = new Blob([arrayBuffer]);
+        audioPlayer.src = URL.createObjectURL(blob);
+        audioPlayer.playbackRate = currentPlaybackRate;
+
+        // Metadata inspection
+        if (probeData) {
+          renderMetadataInspection(extractMergedTagsFromProbe(probeData));
+        } else {
+          renderMetadataInspection(parseBinaryTagsOffline(arrayBuffer, filename));
+        }
+
+        autoPopulateFieldsFromFilename(filename);
+
+        try {
+          const ctx = getAudioContext();
+          const copyBuf = arrayBuffer.slice(0);
+          decodedBuffer = await ctx.decodeAudioData(copyBuf);
+          audioDuration = decodedBuffer.duration;
+
+          // Calculate peak amplitude & dBFS
+          let maxAbs = 0;
+          for (let ch = 0; ch < decodedBuffer.numberOfChannels; ch++) {
+            const data = decodedBuffer.getChannelData(ch);
+            for (let i = 0; i < data.length; i++) {
+              const v = Math.abs(data[i]);
+              if (v > maxAbs) maxAbs = v;
+            }
+          }
+          peakLinear = maxAbs;
+          peakDb = maxAbs > 0 ? 20 * Math.log10(maxAbs) : -Infinity;
+
+          metricDuration.textContent = `總長度：${formatSecPrecise(audioDuration)} (${audioDuration.toFixed(2)}s)`;
+          const sr = probeData?.streams?.find((s) => s.codec_type === 'audio')?.sample_rate || decodedBuffer.sampleRate;
+          metricSampleRate.textContent = `取樣率：${sr} Hz`;
+          metricChannels.textContent = `聲道：${decodedBuffer.numberOfChannels === 1 ? '單聲道 (Mono)' : '立體聲 (Stereo)'}`;
+
+          if (Number.isFinite(peakDb)) {
+            const dbStr = peakDb.toFixed(1);
+            const hint = peakDb < -4.5 ? ' (偏小，建議選 loudnorm)' : (peakDb > -0.3 ? ' (接近滿載)' : ' (適中)');
+            metricPeakDb.textContent = `峰值：${dbStr} dBFS${hint}`;
+          } else {
+            metricPeakDb.textContent = '峰值：靜音';
+          }
+
+          trimStartSec = 0;
+          trimEndSec = Number(audioDuration.toFixed(3));
+          trimStartInput.value = trimStartSec.toFixed(3);
+          trimEndInput.value = trimEndSec.toFixed(3);
+          trimEnabledChk.checked = false;
+          clearFieldError(trimStartInput, trimStartErr);
+          clearFieldError(trimEndInput, trimEndErr);
+
+          computeWaveformPeaks();
+          renderWaveform();
+          updateLiveReadout();
+          updateFfmpegCommandPreview();
+        } catch (err) {
+          showToast('音訊解碼失敗：' + (err.message || err));
+        }
+      }
+
+      async function handleLocalFileSelected(file) {
+        if (!file) return;
+        currentSource = {
+          type: 'local',
+          filename: file.name,
+          localFile: file,
+          tempId: null,
+          projectDir: 'edit',
+          projectName: ''
+        };
+        markers = [];
+        updateMarkerUI();
+        processResultBox.classList.remove('visible');
+
+        const ab = await file.arrayBuffer();
+        let probeData = null;
+
+        if (serverOnline) {
+          try {
+            const upRes = await fetch(`${API_BASE}/api/upload`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/octet-stream',
+                'X-Filename': encodeURIComponent(file.name)
+              },
+              body: ab
+            });
+            const upJson = await upRes.json();
+            if (upJson.ok) {
+              currentSource.tempId = upJson.tempId;
+              probeData = upJson.probe;
+            }
+          } catch (_) {}
+        }
+
+        await loadAudioFromBlobOrBuffer(ab, file.name, probeData);
+      }
+
+      async function handleLoadProjectFile() {
+        const val = projectFileSelect.value;
+        if (!val || !serverOnline) return;
+        const [dir, name] = val.split('::');
+        if (!name) return;
+
+        try {
+          loadProjectFileBtn.disabled = true;
+          const [fileRes, probeRes] = await Promise.all([
+            fetch(`${API_BASE}/api/project-file?dir=${encodeURIComponent(dir)}&name=${encodeURIComponent(name)}`),
+            fetch(`${API_BASE}/api/probe-project-file?dir=${encodeURIComponent(dir)}&name=${encodeURIComponent(name)}`)
+          ]);
+          if (!fileRes.ok) throw new Error('讀取專案音檔失敗');
+          const ab = await fileRes.arrayBuffer();
+          const probeJson = await probeRes.json();
+
+          currentSource = {
+            type: 'project',
+            filename: name,
+            localFile: null,
+            tempId: null,
+            projectDir: dir,
+            projectName: name
+          };
+          dir === 'audio'
+            ? (document.getElementById('dirAudio').checked = true)
+            : (document.getElementById('dirEdit').checked = true);
+
+          markers = [];
+          updateMarkerUI();
+          processResultBox.classList.remove('visible');
+
+          await loadAudioFromBlobOrBuffer(ab, name, probeJson.probe);
+          showToast(`已載入專案音檔：${name}`);
+        } catch (err) {
+          showToast(err.message || '載入失敗');
+        } finally {
+          loadProjectFileBtn.disabled = false;
+        }
+      }
+
+      // ==================== Waveform Rendering & Zero-Crossing ====================
+      function computeWaveformPeaks() {
+        if (!decodedBuffer) {
+          waveformPeaks = null;
+          return;
+        }
+        const baseWidth = Math.max(940, waveformScrollWrap.clientWidth || 940);
+        const totalCols = Math.floor(baseWidth * waveformZoom);
+        const ch0 = decodedBuffer.getChannelData(0);
+        const ch1 = decodedBuffer.numberOfChannels > 1 ? decodedBuffer.getChannelData(1) : null;
+        const step = Math.max(1, Math.floor(ch0.length / totalCols));
+        const mins = new Float32Array(totalCols);
+        const maxs = new Float32Array(totalCols);
+
+        for (let i = 0; i < totalCols; i++) {
+          const start = i * step;
+          const end = Math.min(ch0.length, start + step);
+          let min = 0;
+          let max = 0;
+          for (let j = start; j < end; j++) {
+            const s = ch1 ? (ch0[j] + ch1[j]) * 0.5 : ch0[j];
+            if (s < min) min = s;
+            if (s > max) max = s;
+          }
+          mins[i] = min;
+          maxs[i] = max;
+        }
+        waveformPeaks = { totalCols, mins, maxs };
+      }
+
+      function getCurrentPlayheadSec() {
+        if (isLoopPlaying && audioCtx) {
+          const effA = getEffectiveTrimStart();
+          const effB = getEffectiveTrimEnd();
+          const span = Math.max(0.05, effB - effA);
+          const elapsed = (audioCtx.currentTime - loopStartCtxTime) * currentPlaybackRate;
+          const rel = (loopStartOffsetSec - effA + elapsed) % span;
+          return effA + (rel < 0 ? rel + span : rel);
+        }
+        return audioPlayer.currentTime || 0;
+      }
+
+      function getEffectiveTrimStart() {
+        return trimEnabledChk.checked ? Math.max(0, Math.min(trimStartSec, audioDuration)) : 0;
+      }
+
+      function getEffectiveTrimEnd() {
+        if (!trimEnabledChk.checked) return audioDuration;
+        return trimEndSec > trimStartSec ? Math.min(trimEndSec, audioDuration) : audioDuration;
+      }
+
+      function renderWaveform() {
+        const dpr = window.devicePixelRatio || 1;
+        const baseW = Math.max(940, waveformScrollWrap.clientWidth || 940);
+        const cssW = Math.floor(baseW * waveformZoom);
+        const cssH = 150;
+
+        if (waveformCanvas.width !== Math.floor(cssW * dpr) || waveformCanvas.height !== Math.floor(cssH * dpr)) {
+          waveformCanvas.width = Math.floor(cssW * dpr);
+          waveformCanvas.height = Math.floor(cssH * dpr);
+          waveformCanvas.style.width = `${cssW}px`;
+          waveformCanvas.style.height = `${cssH}px`;
+        }
+
+        const ctx = waveformCanvas.getContext('2d');
+        ctx.save();
+        ctx.scale(dpr, dpr);
+
+        ctx.fillStyle = '#14161B';
+        ctx.fillRect(0, 0, cssW, cssH);
+
+        const midY = cssH / 2;
+        ctx.strokeStyle = '#2A303C';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, midY);
+        ctx.lineTo(cssW, midY);
+        ctx.stroke();
+
+        if (!decodedBuffer || !waveformPeaks || audioDuration <= 0) {
+          ctx.fillStyle = '#64748B';
+          ctx.font = '13px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('載入音檔後將在此顯示高解析度互動式波形', cssW / 2, midY + 5);
+          ctx.restore();
+          return;
+        }
+
+        // Draw waveform peaks
+        const { totalCols, mins, maxs } = waveformPeaks;
+        ctx.strokeStyle = '#63B3ED';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let x = 0; x < totalCols; x++) {
+          const px = (x / totalCols) * cssW;
+          const y1 = midY - maxs[x] * (midY - 12);
+          const y2 = midY - mins[x] * (midY - 12);
+          ctx.moveTo(px, y1);
+          ctx.lineTo(px, Math.max(y1 + 1, y2));
+        }
+        ctx.stroke();
+
+        // Draw Trim A & B overlays
+        const xA = (trimStartSec / audioDuration) * cssW;
+        const xB = (trimEndSec / audioDuration) * cssW;
+
+        if (trimEnabledChk.checked) {
+          ctx.fillStyle = 'rgba(10, 12, 16, 0.68)';
+          if (xA > 0) ctx.fillRect(0, 0, xA, cssH);
+          if (xB < cssW) ctx.fillRect(xB, 0, cssW - xB, cssH);
+        }
+
+        // Marker lines (phraseMarkersMs)
+        const baseOffsetSec = subtractTrimStartChk.checked ? getEffectiveTrimStart() : 0;
+        ctx.strokeStyle = '#F6AD55';
+        ctx.fillStyle = '#F6AD55';
+        ctx.font = '10px sans-serif';
+        markers.forEach((ms, idx) => {
+          const absSec = baseOffsetSec + ms / 1000;
+          if (absSec >= 0 && absSec <= audioDuration) {
+            const mx = (absSec / audioDuration) * cssW;
+            ctx.beginPath();
+            ctx.moveTo(mx, 16);
+            ctx.lineTo(mx, cssH);
+            ctx.stroke();
+            ctx.fillText(`#${idx + 1}`, mx + 3, 26);
+          }
+        });
+
+        // Handle A (Green)
+        ctx.strokeStyle = '#38A169';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(xA, 0);
+        ctx.lineTo(xA, cssH);
+        ctx.stroke();
+        ctx.fillStyle = '#38A169';
+        ctx.fillRect(xA, 0, 22, 18);
+        ctx.fillStyle = '#FFF';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('A', xA + 6, 13);
+
+        // Handle B (Red)
+        ctx.strokeStyle = '#E53E3E';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(xB, 0);
+        ctx.lineTo(xB, cssH);
+        ctx.stroke();
+        ctx.fillStyle = '#E53E3E';
+        ctx.fillRect(Math.max(0, xB - 22), 0, 22, 18);
+        ctx.fillStyle = '#FFF';
+        ctx.fillText('B', Math.max(0, xB - 22) + 7, 13);
+
+        // Playhead (White)
+        const curSec = getCurrentPlayheadSec();
+        const xPlay = (curSec / audioDuration) * cssW;
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(xPlay, 0);
+        ctx.lineTo(xPlay, cssH);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Snap time to nearest upward zero-crossing within ±15ms
+      function snapToZeroCrossing(targetSec) {
+        if (!decodedBuffer) return targetSec;
+        const sr = decodedBuffer.sampleRate;
+        const data = decodedBuffer.getChannelData(0);
+        const centerIdx = Math.max(1, Math.min(data.length - 2, Math.round(targetSec * sr)));
+        const windowSamples = Math.round(sr * 0.015);
+        const lo = Math.max(1, centerIdx - windowSamples);
+        const hi = Math.min(data.length - 2, centerIdx + windowSamples);
+
+        let bestIdx = centerIdx;
+        let bestDist = Infinity;
+
+        for (let i = lo; i <= hi; i++) {
+          // Upward zero-crossing so both A and B share identical phase slope!
+          if (data[i - 1] <= 0 && data[i] >= 0) {
+            const dist = Math.abs(i - centerIdx);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestIdx = i;
+            }
+          }
+        }
+        return bestIdx / sr;
+      }
+
+      // ==================== Web Audio Seamless Loop Audition ====================
+      function getPreviewLinearGain() {
+        const mode = getRadioValue('volumeMode');
+        const val = parseFloat(volumeValueInput.value);
+        if (mode === 'multiplier' && Number.isFinite(val) && val > 0) {
+          return Math.min(4.0, val);
+        }
+        if (mode === 'db' && Number.isFinite(val)) {
+          return Math.min(4.0, Math.pow(10, val / 20));
+        }
+        if (mode === 'loudnorm' && peakLinear > 0 && peakLinear < 0.85) {
+          // Approximate preview boost up to -1.5 dBFS ceiling
+          return Math.min(3.0, 0.84 / peakLinear);
+        }
+        return 1.0;
+      }
+
+      function stopSeamlessLoop() {
+        if (loopSourceNode) {
+          try { loopSourceNode.stop(); } catch (_) {}
+          try { loopSourceNode.disconnect(); } catch (_) {}
+          loopSourceNode = null;
+        }
+        isLoopPlaying = false;
+        seamlessLoopBtn.classList.remove('active');
+        seamlessLoopBtn.textContent = '🔄 A→B 無縫循環試聽：關';
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+        renderWaveform();
+      }
+
+      function startSeamlessLoopAt(startFromSec) {
+        if (!decodedBuffer) {
+          showToast('請先載入佛曲音檔！');
+          return;
+        }
+        audioPlayer.pause();
+        stopSeamlessLoop();
+
+        const ctx = getAudioContext();
+        const effA = getEffectiveTrimStart();
+        const effB = getEffectiveTrimEnd();
+        if (effB - effA < 0.1) {
+          showToast('剪輯區間 A→B 太短，無法循環試聽');
+          return;
+        }
+
+        const clampedOffset = Math.max(effA, Math.min(effB - 0.05, startFromSec));
+
+        loopGainNode = ctx.createGain();
+        loopGainNode.gain.value = getPreviewLinearGain();
+        loopGainNode.connect(ctx.destination);
+
+        loopSourceNode = ctx.createBufferSource();
+        loopSourceNode.buffer = decodedBuffer;
+        loopSourceNode.loop = true;
+        loopSourceNode.loopStart = effA;
+        loopSourceNode.loopEnd = effB;
+        loopSourceNode.playbackRate.value = currentPlaybackRate;
+        loopSourceNode.connect(loopGainNode);
+
+        loopStartCtxTime = ctx.currentTime;
+        loopStartOffsetSec = clampedOffset;
+        loopSourceNode.start(0, clampedOffset);
+
+        isLoopPlaying = true;
+        seamlessLoopBtn.classList.add('active');
+        seamlessLoopBtn.textContent = '⏹ 停止 A→B 無縫循環試聽';
+
+        const tick = () => {
+          if (!isLoopPlaying) return;
+          renderWaveform();
+          updateLiveReadout();
+          checkVerifyModeProgress();
+          rafId = requestAnimationFrame(tick);
+        };
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function updateLiveGainIfLooping() {
+        if (isLoopPlaying && loopGainNode && audioCtx) {
+          loopGainNode.gain.setTargetAtTime(getPreviewLinearGain(), audioCtx.currentTime, 0.03);
+        }
+      }
+
+      // ==================== Form Validation & Live FFmpeg Command ====================
+      function setFieldError(inputEl, errEl, message) {
+        inputEl.setAttribute('aria-invalid', 'true');
+        errEl.textContent = message;
+      }
+
+      function clearFieldError(inputEl, errEl) {
+        inputEl.removeAttribute('aria-invalid');
+        errEl.textContent = '';
+      }
+
+      function validateTrimInputs() {
+        let valid = true;
+        const a = parseTimeInput(trimStartInput.value);
+        const b = parseTimeInput(trimEndInput.value);
+
+        if (!Number.isFinite(a) || a < 0) {
+          setFieldError(trimStartInput, trimStartErr, '請輸入有效的起點秒數（如 12.5 或 01:12.500）');
+          valid = false;
+        } else if (audioDuration > 0 && a >= audioDuration) {
+          setFieldError(trimStartInput, trimStartErr, '起點 A 不可超過音檔總長度');
+          valid = false;
+        } else {
+          clearFieldError(trimStartInput, trimStartErr);
+          trimStartSec = a;
+        }
+
+        if (!Number.isFinite(b) || b < 0) {
+          setFieldError(trimEndInput, trimEndErr, '請輸入有效的終點秒數');
+          valid = false;
+        } else if (trimEnabledChk.checked && Number.isFinite(a) && b <= a) {
+          setFieldError(trimEndInput, trimEndErr, '終點 B 必須大於起點 A');
+          valid = false;
+        } else {
+          clearFieldError(trimEndInput, trimEndErr);
+          trimEndSec = audioDuration > 0 ? Math.min(b, audioDuration) : b;
+        }
+
+        renderWaveform();
+        updateLiveReadout();
+        updateFfmpegCommandPreview();
+        return valid;
+      }
+
+      function updateLiveReadout() {
+        const cur = getCurrentPlayheadSec();
+        const effA = getEffectiveTrimStart();
+        const effB = getEffectiveTrimEnd();
+        const clipLen = Math.max(0, effB - effA);
+        liveTimeReadout.textContent = `當前: ${formatSecPrecise(cur)} | 輸出長度: ${ clipLen > 0 ? clipLen.toFixed(2) + 's (' + formatSecPrecise(clipLen) + ')' : '--' }`;
+      }
+
+      function quotePsArg(str) {
+        return `"${String(str).replace(/"/g, '`"')}"`;
+      }
+
+      function updateFfmpegCommandPreview() {
+        const inName = currentSource.filename || 'input.m4a';
+        const outName = outputFilenameInput.value.trim() || 'output.ogg';
+        const sameFile = inName.toLowerCase() === outName.toLowerCase();
+        const actualOutTarget = sameFile ? `_temp_${outName}` : outName;
+
+        const mode = getRadioValue('processMode');
+        const fmt = getRadioValue('outputFormat') || 'ogg';
+        const sr = getRadioValue('sampleRate') || '44100';
+        const volMode = getRadioValue('volumeMode') || 'none';
+        const volVal = parseFloat(volumeValueInput.value);
+        const trimOn = trimEnabledChk.checked;
+
+        const parts = ['ffmpeg'];
+        if (trimOn && trimStartSec > 0) {
+          parts.push(`-ss ${trimStartSec.toFixed(3)}`);
+        }
+        if (trimOn && trimEndSec > trimStartSec) {
+          parts.push(`-to ${trimEndSec.toFixed(3)}`);
+        }
+        parts.push(`-i ${quotePsArg(inName)}`);
+
+        if (stripMetaChk.checked) {
+          parts.push('-map_metadata -1');
+        }
+        parts.push('-vn');
+
+        if (mode === 'copy') {
+          parts.push('-c:a copy');
+        } else {
+          const filters = [];
+          if (volMode === 'loudnorm') {
+            filters.push('loudnorm=I=-16:TP=-1.5:LRA=11');
+          } else if (volMode === 'multiplier' && Number.isFinite(volVal) && volVal > 0 && volVal !== 1) {
+            filters.push(`volume=${volVal}`);
+          } else if (volMode === 'db' && Number.isFinite(volVal) && volVal !== 0) {
+            filters.push(`volume=${volVal}dB`);
+          }
+
+          const effDur = getEffectiveTrimEnd() - getEffectiveTrimStart();
+          const fadeMs = fadeEnabledChk.checked ? parseFloat(fadeMsInput.value) : 0;
+          if (fadeMs > 0 && effDur > (fadeMs * 2.5) / 1000) {
+            const dSec = (fadeMs / 1000).toFixed(4);
+            const outSt = Math.max(0, effDur - fadeMs / 1000).toFixed(4);
+            filters.push(`afade=t=in:st=0:d=${dSec}`);
+            filters.push(`afade=t=out:st=${outSt}:d=${dSec}`);
+          }
+
+          if (filters.length > 0) {
+            parts.push(`-af "${filters.join(',')}"`);
+          }
+
+          if (sr === '44100' || sr === '48000') {
+            parts.push(`-ar ${sr}`);
+          } else if (volMode === 'loudnorm') {
+            parts.push('-ar 44100');
+          }
+
+          if (fmt === 'ogg') parts.push('-c:a libvorbis -q:a 5');
+          else if (fmt === 'mp3') parts.push('-c:a libmp3lame -q:a 2 -id3v2_version 3');
+          else if (fmt === 'm4a') parts.push('-c:a aac -b:a 192k');
+          else if (fmt === 'wav') parts.push('-c:a pcm_s16le');
+        }
+
+        const title = metaTitleInput.value.trim();
+        const artist = metaArtistInput.value.trim();
+        const album = metaAlbumInput.value.trim();
+        if (title) parts.push(`-metadata title=${quotePsArg(title)} -metadata:s:a:0 title=${quotePsArg(title)}`);
+        if (artist) parts.push(`-metadata artist=${quotePsArg(artist)} -metadata:s:a:0 artist=${quotePsArg(artist)}`);
+        if (album) parts.push(`-metadata album=${quotePsArg(album)} -metadata:s:a:0 album=${quotePsArg(album)}`);
+
+        parts.push(`-y ${quotePsArg(actualOutTarget)}`);
+
+        let cmd = parts.join(' ');
+        if (sameFile) {
+          cmd += `; if ($?) { Move-Item -Force ${quotePsArg(actualOutTarget)} ${quotePsArg(outName)} }`;
+        }
+        ffmpegCmdPreview.value = cmd;
+      }
+
+      // ==================== Execute FFmpeg via Local Studio Server ====================
+      async function handleStudioFormSubmit(e) {
+        e.preventDefault();
+        if (!validateTrimInputs()) {
+          trimStartInput.focus();
+          return;
+        }
+        if (!outputFilenameInput.value.trim()) {
+          setFieldError(outputFilenameInput, outFileErr, '請填寫輸出檔案名稱');
+          outputFilenameInput.focus();
+          return;
+        }
+        clearFieldError(outputFilenameInput, outFileErr);
+
+        if (currentSource.type === 'none') {
+          showToast('請先選取或載入來源佛曲音檔！');
+          return;
+        }
+
+        if (!serverOnline) {
+          await checkServerStatus(true);
+          if (!serverOnline) {
+            serverHelpDialog.showModal();
+            return;
+          }
+        }
+
+        try {
+          runFfmpegBtn.disabled = true;
+          runFfmpegBtn.textContent = '⏳ FFmpeg 處理中...';
+          processResultBox.classList.remove('visible', 'error');
+
+          // Ensure local file is uploaded if server came online after file selection
+          if (currentSource.type === 'local' && !currentSource.tempId && currentSource.localFile) {
+            const ab = await currentSource.localFile.arrayBuffer();
+            const upRes = await fetch(`${API_BASE}/api/upload`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/octet-stream',
+                'X-Filename': encodeURIComponent(currentSource.localFile.name)
+              },
+              body: ab
+            });
+            const upJson = await upRes.json();
+            if (upJson.ok) currentSource.tempId = upJson.tempId;
+          }
+
+          const payload = {
+            sourceType: currentSource.type === 'project' ? 'project' : 'temp',
+            tempId: currentSource.tempId,
+            projectDir: currentSource.projectDir,
+            projectName: currentSource.projectName,
+            trimEnabled: trimEnabledChk.checked,
+            trimStart: trimStartSec,
+            trimEnd: trimEndSec,
+            mode: getRadioValue('processMode'),
+            format: getRadioValue('outputFormat'),
+            sampleRate: getRadioValue('sampleRate'),
+            volumeMode: getRadioValue('volumeMode'),
+            volumeValue: parseFloat(volumeValueInput.value),
+            fadeMs: fadeEnabledChk.checked ? parseFloat(fadeMsInput.value) : 0,
+            stripMetadata: stripMetaChk.checked,
+            metadata: {
+              title: metaTitleInput.value.trim(),
+              artist: metaArtistInput.value.trim(),
+              album: metaAlbumInput.value.trim()
+            },
+            outputDir: getRadioValue('outputDir'),
+            outputFilename: outputFilenameInput.value.trim()
+          };
+
+          const res = await fetch(`${API_BASE}/api/process`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+
+          if (!res.ok || !data.ok) {
+            throw new Error(data.error || 'FFmpeg 轉換失敗');
+          }
+
+          if (data.files) populateProjectFiles(data.files);
+
+          const dlUrl = `${API_BASE}/api/temp-file?id=${encodeURIComponent(data.outTempId)}&download=1`;
+          const kb = Math.round((data.outputSize || 0) / 1024);
+          const savedNote = data.savedRelPath
+            ? `已直接寫入專案：<strong><code>${data.savedRelPath}</code></strong>`
+            : '已產生輸出暫存檔';
+
+          processResultBox.className = 'process-result-box visible';
+          processResultBox.innerHTML = `
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+              <div>
+                ✅ <strong>FFmpeg 處理成功！</strong>（${data.outputFilename}，${kb} KB）— ${savedNote}
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <a href="${dlUrl}" class="btn btn-sm" download="${data.outputFilename}" style="text-decoration: none;">📥 下載此檔案</a>
+                <button type="button" class="btn btn-sm btn-primary" id="loadNewOutBtn">🎯 載入新音檔去打點</button>
+              </div>
+            </div>
+          `;
+
+          const loadOutToPlayer = async () => {
+            const streamRes = await fetch(`${API_BASE}/api/temp-file?id=${encodeURIComponent(data.outTempId)}`);
+            const outAb = await streamRes.arrayBuffer();
+            if (payload.outputDir === 'edit' || payload.outputDir === 'audio') {
+              currentSource = {
+                type: 'project',
+                filename: data.outputFilename,
+                localFile: null,
+                tempId: data.outTempId,
+                projectDir: payload.outputDir,
+                projectName: data.outputFilename
+              };
+            } else {
+              currentSource = {
+                type: 'local',
+                filename: data.outputFilename,
+                localFile: null,
+                tempId: data.outTempId,
+                projectDir: 'edit',
+                projectName: ''
+              };
+            }
+            markers = [];
+            updateMarkerUI();
+            await loadAudioFromBlobOrBuffer(outAb, data.outputFilename, data.probe);
+            switchWorkspaceTab('mark');
+            showToast('🎯 新音檔已載入！現在可按空白鍵開始打點');
+          };
+
+          document.getElementById('loadNewOutBtn')?.addEventListener('click', loadOutToPlayer);
+
+          if (payload.outputDir === 'downloadOnly') {
+            const a = document.createElement('a');
+            a.href = dlUrl;
+            a.download = data.outputFilename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          }
+
+          if (autoLoadProcessedChk.checked) {
+            await loadOutToPlayer();
+          } else {
+            showToast('✅ FFmpeg 處理完成！');
+          }
+        } catch (err) {
+          processResultBox.className = 'process-result-box visible error';
+          processResultBox.textContent = `❌ 處理失敗：${err.message || err}`;
+        } finally {
+          runFfmpegBtn.disabled = false;
+          runFfmpegBtn.textContent = '⚡ 一鍵執行 FFmpeg 剪輯・轉檔・寫入 Metadata';
+        }
+      }
+
+      // ==================== Pure-Browser Offline WAV Exporter ====================
+      function exportTrimmedWavInBrowser() {
+        if (!decodedBuffer) {
+          showToast('請先載入音檔！');
+          return;
+        }
+        if (!validateTrimInputs()) return;
+
+        const sr = decodedBuffer.sampleRate;
+        const numCh = decodedBuffer.numberOfChannels;
+        const startSample = Math.max(0, Math.floor(getEffectiveTrimStart() * sr));
+        const endSample = Math.min(decodedBuffer.length, Math.floor(getEffectiveTrimEnd() * sr));
+        const frameCount = endSample - startSample;
+        if (frameCount <= 0) {
+          showToast('無效的剪輯範圍');
+          return;
+        }
+
+        const gain = getPreviewLinearGain();
+        const fadeMs = fadeEnabledChk.checked ? Math.max(0, parseFloat(fadeMsInput.value) || 0) : 0;
+        const fadeSamples = Math.min(Math.floor(frameCount / 3), Math.floor((fadeMs / 1000) * sr));
+
+        const bytesPerSample = 2;
+        const blockAlign = numCh * bytesPerSample;
+        const dataSize = frameCount * blockAlign;
+        const buffer = new ArrayBuffer(44 + dataSize);
+        const view = new DataView(buffer);
+
+        const writeStr = (offset, str) => {
+          for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+        };
+
+        writeStr(0, 'RIFF');
+        view.setUint32(4, 36 + dataSize, true);
+        writeStr(8, 'WAVE');
+        writeStr(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true); // PCM
+        view.setUint16(22, numCh, true);
+        view.setUint32(24, sr, true);
+        view.setUint32(28, sr * blockAlign, true);
+        view.setUint16(32, blockAlign, true);
+        view.setUint16(34, 16, true);
+        writeStr(36, 'data');
+        view.setUint32(40, dataSize, true);
+
+        const channels = [];
+        for (let c = 0; c < numCh; c++) channels.push(decodedBuffer.getChannelData(c));
+
+        let offset = 44;
+        for (let i = 0; i < frameCount; i++) {
+          let env = 1.0;
+          if (fadeSamples > 0) {
+            if (i < fadeSamples) env = i / fadeSamples;
+            else if (i >= frameCount - fadeSamples) env = (frameCount - 1 - i) / fadeSamples;
+          }
+          for (let c = 0; c < numCh; c++) {
+            let s = channels[c][startSample + i] * gain * env;
+            s = Math.max(-1, Math.min(1, s));
+            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            offset += 2;
+          }
+        }
+
+        const stem = (outputFilenameInput.value.trim() || 'trimmed').replace(/\.[^.]+$/, '');
+        const wavBlob = new Blob([buffer], { type: 'audio/wav' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(wavBlob);
+        a.download = `${stem}.wav`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast(`✅ 已匯出剪輯後 WAV：${stem}.wav`);
+      }
+
+      // ==================== Phrase Marker Recorder & Dart Generator ====================
+      function recordMarker() {
+        if (!audioPlayer.src && !decodedBuffer) {
+          showToast('請先選取或載入佛曲音檔！');
+          return;
+        }
+        if (!isLoopPlaying && audioPlayer.paused) {
+          audioPlayer.play();
+        }
+        const curSec = getCurrentPlayheadSec();
+        const baseSec = subtractTrimStartChk.checked ? getEffectiveTrimStart() : 0;
+        const relMs = Math.round((curSec - baseSec) * 1000);
+        if (relMs <= 50) {
+          showToast('時間點需在起點 A 之後');
+          return;
+        }
+        if (markers.some((m) => Math.abs(m - relMs) < 280)) {
+          return; // 防連擊抖動
+        }
+
+        markers.push(relMs);
+        markers.sort((a, b) => a - b);
+        tapArea.classList.add('flashing');
+        setTimeout(() => tapArea.classList.remove('flashing'), 110);
+        updateMarkerUI();
+        renderWaveform();
+      }
+
+      function undoLastMarker() {
+        if (markers.length > 0) {
+          markers.pop();
+          updateMarkerUI();
+          renderWaveform();
+          showToast('已復原最後一個標記點');
+        }
+      }
+
+      function clearMarkers() {
+        markers = [];
+        isVerifyMode = false;
+        updateMarkerUI();
+        renderWaveform();
+      }
+
+      function computeAverageBeatMs() {
+        if (markers.length === 0) return 3850;
+        if (markers.length === 1) return markers[0];
+        return Math.round(markers[markers.length - 1] / markers.length);
+      }
+
+      function updateMarkerUI() {
+        tabMarkerCount.textContent = String(markers.length);
+        countDisplay.textContent = `${markers.length} 句`;
+
+        if (markers.length > 0) {
+          const lastMs = markers[markers.length - 1];
+          lastMarkTime.textContent = `最後標記點：${(lastMs / 1000).toFixed(2)} 秒 (${lastMs} ms)`;
+          const avgMs = computeAverageBeatMs();
+          avgBeatReadout.textContent = `平均每句週期：${(avgMs / 1000).toFixed(2)} 秒 (${avgMs} ms，共 ${markers.length} 句)`;
+        } else {
+          lastMarkTime.textContent = '當前時間：0.00 秒';
+          avgBeatReadout.textContent = '平均每句週期：尚無標記';
+        }
+
+        markersList.innerHTML = '';
+        if (markers.length === 0) {
+          const empty = document.createElement('span');
+          empty.style.color = 'var(--text-sub)';
+          empty.style.fontSize = '0.85rem';
+          empty.textContent = '尚未記錄標記，播放音訊並敲擊空白鍵開始打點...（點擊任一標記可跳至該句前 1.5 秒試聽，亦可微調 ±50ms）';
+          markersList.appendChild(empty);
+        } else {
+          markers.forEach((m, idx) => {
+            const chip = document.createElement('div');
+            chip.className = 'marker-chip';
+            chip.id = `chip-${idx}`;
+
+            const jumpBtn = document.createElement('button');
+            jumpBtn.type = 'button';
+            jumpBtn.className = 'chip-jump-btn';
+            jumpBtn.title = '點擊跳至此標記前 1.5 秒試聽';
+            jumpBtn.textContent = `#${idx + 1}: ${(m / 1000).toFixed(2)}s (${m}ms)`;
+            jumpBtn.addEventListener('click', () => {
+              stopSeamlessLoop();
+              const baseSec = subtractTrimStartChk.checked ? getEffectiveTrimStart() : 0;
+              audioPlayer.currentTime = Math.max(0, baseSec + m / 1000 - 1.5);
+              audioPlayer.play();
+            });
+
+            const minusBtn = document.createElement('button');
+            minusBtn.type = 'button';
+            minusBtn.className = 'chip-mini-btn';
+            minusBtn.textContent = '-50';
+            minusBtn.title = '提前 50ms';
+            minusBtn.addEventListener('click', () => {
+              markers[idx] = Math.max(50, markers[idx] - 50);
+              markers.sort((a, b) => a - b);
+              updateMarkerUI();
+              renderWaveform();
+            });
+
+            const plusBtn = document.createElement('button');
+            plusBtn.type = 'button';
+            plusBtn.className = 'chip-mini-btn';
+            plusBtn.textContent = '+50';
+            plusBtn.title = '延後 50ms';
+            plusBtn.addEventListener('click', () => {
+              markers[idx] += 50;
+              markers.sort((a, b) => a - b);
+              updateMarkerUI();
+              renderWaveform();
+            });
+
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'chip-mini-btn chip-del-btn';
+            delBtn.textContent = '×';
+            delBtn.title = '刪除此標記點';
+            delBtn.addEventListener('click', () => {
+              markers.splice(idx, 1);
+              updateMarkerUI();
+              renderWaveform();
+            });
+
+            chip.append(jumpBtn, minusBtn, plusBtn, delBtn);
+            markersList.appendChild(chip);
+          });
+        }
+
+        updateDartCodeOutput();
+      }
+
+      function updateDartCodeOutput() {
+        const outMode = getRadioValue('dartOutMode');
+        const presetId = parseInt(songPresetSelect.value, 10);
+        const preset = SONG_PRESETS.find((s) => s.id === presetId);
+
+        if (outMode === 'full') {
+          const id = preset ? preset.id : 0;
+          const title = (metaTitleInput.value.trim() || preset?.title || '佛曲標題').replace(/'/g, "\\'");
+          const defaultFile = preset
+            ? `bb${String(preset.bbNum).padStart(2, '0')}-${preset.title}.ogg`
+            : 'bb01.ogg';
+          const outFile = outputFilenameInput.value.trim() || defaultFile;
+          const markersLines = markers.map((m) => `        ${m},`).join('\n');
+          outputArea.value =
+`    ChantSong(
+      id: ${id},
+      title: '${title}',
+      assetPath: 'audio/${outFile}',
+      phraseMarkersMs: [
+${markersLines}
+      ],
+    ),`;
+        } else {
+          if (markers.length === 0) {
+            outputArea.value = '// 尚未標記';
+          } else {
+            const formatted = markers.map((m) => `        ${m},`).join('\n');
+            outputArea.value = `      phraseMarkersMs: [\n${formatted}\n      ],`;
+          }
+        }
+      }
+
+      function checkVerifyModeProgress() {
+        if (!isVerifyMode || markers.length === 0) return;
+        const baseSec = subtractTrimStartChk.checked ? getEffectiveTrimStart() : 0;
+        const curRelMs = Math.round((getCurrentPlayheadSec() - baseSec) * 1000);
+        while (nextVerifyIdx < markers.length && curRelMs >= markers[nextVerifyIdx]) {
+          const chip = document.getElementById(`chip-${nextVerifyIdx}`);
+          if (chip) {
+            chip.classList.add('highlight');
+            chip.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }
+          nextVerifyIdx++;
+          countDisplay.textContent = `${nextVerifyIdx} 句 (試聽驗證中)`;
+        }
+      }
+
+      function startVerifyMode() {
+        if (markers.length === 0) {
+          showToast('請先完成打點後再啟動驗證試聽！');
+          return;
+        }
+        stopSeamlessLoop();
+        isVerifyMode = true;
+        nextVerifyIdx = 0;
+        document.querySelectorAll('.marker-chip').forEach((c) => c.classList.remove('highlight'));
+        const startSec = subtractTrimStartChk.checked ? getEffectiveTrimStart() : 0;
+        audioPlayer.currentTime = startSec;
+        audioPlayer.play();
+        showToast('▶ 已開啟試聽驗證：從起點播放並即時高亮計數');
+      }
+
+      // ==================== Workspace Tabs ====================
+      function switchWorkspaceTab(mode) {
+        tabBtnEdit.setAttribute('aria-selected', String(mode === 'edit'));
+        tabBtnMark.setAttribute('aria-selected', String(mode === 'mark'));
+        tabBtnBoth.setAttribute('aria-selected', String(mode === 'both'));
+
+        panelEdit.hidden = mode === 'mark';
+        panelMark.hidden = mode === 'edit';
+      }
+
+      // ==================== Event Bindings ====================
+      checkServerBtn.addEventListener('click', () => checkServerStatus(false));
+      serverHelpBtn.addEventListener('click', () => serverHelpDialog.showModal());
+      closeHelpDialogBtn.addEventListener('click', () => serverHelpDialog.close());
+
+      audioInput.addEventListener('change', (e) => {
+        if (e.target.files?.[0]) handleLocalFileSelected(e.target.files[0]);
+      });
+
+      fileDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileDropZone.classList.add('dragover');
+      });
+      fileDropZone.addEventListener('dragleave', () => fileDropZone.classList.remove('dragover'));
+      fileDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileDropZone.classList.remove('dragover');
+        if (e.dataTransfer?.files?.[0]) handleLocalFileSelected(e.dataTransfer.files[0]);
+      });
+
+      loadProjectFileBtn.addEventListener('click', handleLoadProjectFile);
+
+      applyDecodedBig5Btn.addEventListener('click', () => {
+        if (recoveredBig5Title) {
+          metaTitleInput.value = recoveredBig5Title;
+          updateFfmpegCommandPreview();
+          updateDartCodeOutput();
+          showToast('已套用解碼還原之標題！');
+        }
+      });
+
+      // Waveform Zoom & Mouse Dragging
+      document.querySelectorAll('[data-zoom]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          waveformZoom = Number(btn.dataset.zoom) || 1;
+          document.querySelectorAll('[data-zoom]').forEach((b) => b.classList.toggle('active', b === btn));
+          computeWaveformPeaks();
+          renderWaveform();
+        });
+      });
+
+      waveformCanvas.addEventListener('mousedown', (e) => {
+        if (!decodedBuffer || audioDuration <= 0) return;
+        const rect = waveformCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const xA = (trimStartSec / audioDuration) * rect.width;
+        const xB = (trimEndSec / audioDuration) * rect.width;
+
+        if (Math.abs(x - xA) <= 14) {
+          draggingHandle = 'A';
+        } else if (Math.abs(x - xB) <= 14) {
+          draggingHandle = 'B';
+        } else {
+          draggingHandle = 'seek';
+          const sec = Math.max(0, Math.min(audioDuration, (x / rect.width) * audioDuration));
+          if (isLoopPlaying) {
+            startSeamlessLoopAt(sec);
+          } else {
+            audioPlayer.currentTime = sec;
+            renderWaveform();
+            updateLiveReadout();
+          }
+        }
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!draggingHandle || !decodedBuffer || audioDuration <= 0) return;
+        const rect = waveformCanvas.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const sec = ratio * audioDuration;
+
+        if (draggingHandle === 'A') {
+          trimStartSec = Math.min(sec, trimEndSec - 0.05);
+          trimStartSec = Math.max(0, trimStartSec);
+          trimStartInput.value = trimStartSec.toFixed(3);
+          trimEnabledChk.checked = true;
+          updateFfmpegCommandPreview();
+        } else if (draggingHandle === 'B') {
+          trimEndSec = Math.max(sec, trimStartSec + 0.05);
+          trimEndSec = Math.min(audioDuration, trimEndSec);
+          trimEndInput.value = trimEndSec.toFixed(3);
+          trimEnabledChk.checked = true;
+          updateFfmpegCommandPreview();
+        } else if (draggingHandle === 'seek' && !isLoopPlaying) {
+          audioPlayer.currentTime = sec;
+        }
+        renderWaveform();
+        updateLiveReadout();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (draggingHandle === 'A' || draggingHandle === 'B') {
+          if (isLoopPlaying) startSeamlessLoopAt(getEffectiveTrimStart());
+        }
+        draggingHandle = null;
+      });
+
+      // Transport Controls
+      audioPlayer.addEventListener('play', () => {
+        if (isLoopPlaying) stopSeamlessLoop();
+      });
+
+      audioPlayer.addEventListener('timeupdate', () => {
+        renderWaveform();
+        updateLiveReadout();
+        checkVerifyModeProgress();
+      });
+
+      jumpStartABtn.addEventListener('click', () => {
+        const effA = getEffectiveTrimStart();
+        if (isLoopPlaying) {
+          startSeamlessLoopAt(effA);
+        } else {
+          audioPlayer.currentTime = effA;
+          renderWaveform();
+          updateLiveReadout();
+        }
+      });
+
+      seamlessLoopBtn.addEventListener('click', () => {
+        if (isLoopPlaying) stopSeamlessLoop();
+        else startSeamlessLoopAt(getEffectiveTrimStart());
+      });
+
+      seamTestBtn.addEventListener('click', () => {
+        if (!decodedBuffer) {
+          showToast('請先載入佛曲音檔！');
+          return;
+        }
+        const effB = getEffectiveTrimEnd();
+        const effA = getEffectiveTrimStart();
+        startSeamlessLoopAt(Math.max(effA, effB - 3.0));
+        showToast('🎧 正在試聽終點 B 前 3 秒 → 無縫接回起點 A');
+      });
+
+      document.querySelectorAll('.speed-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          currentPlaybackRate = Number(btn.dataset.speed) || 1.0;
+          audioPlayer.playbackRate = currentPlaybackRate;
+          if (loopSourceNode) loopSourceNode.playbackRate.value = currentPlaybackRate;
+          document.querySelectorAll('.speed-btn').forEach((b) => b.classList.toggle('active', b === btn));
+        });
+      });
+
+      // Workspace Tab Clicks
+      [tabBtnEdit, tabBtnMark, tabBtnBoth].forEach((btn) => {
+        btn.addEventListener('click', () => switchWorkspaceTab(btn.dataset.tab));
+      });
+
+      // Trim Controls (Validation on blur, clear error on input per Forms Guidance)
+      trimStartInput.addEventListener('input', () => clearFieldError(trimStartInput, trimStartErr));
+      trimEndInput.addEventListener('input', () => clearFieldError(trimEndInput, trimEndErr));
+      trimStartInput.addEventListener('blur', validateTrimInputs);
+      trimEndInput.addEventListener('blur', validateTrimInputs);
+      trimEnabledChk.addEventListener('change', () => {
+        renderWaveform();
+        updateLiveReadout();
+        updateFfmpegCommandPreview();
+      });
+
+      resetFullRangeBtn.addEventListener('click', () => {
+        trimStartSec = 0;
+        trimEndSec = audioDuration > 0 ? Number(audioDuration.toFixed(3)) : 0;
+        trimStartInput.value = trimStartSec.toFixed(3);
+        trimEndInput.value = trimEndSec.toFixed(3);
+        trimEnabledChk.checked = false;
+        clearFieldError(trimStartInput, trimStartErr);
+        clearFieldError(trimEndInput, trimEndErr);
+        renderWaveform();
+        updateLiveReadout();
+        updateFfmpegCommandPreview();
+      });
+
+      function setPointA(sec) {
+        trimStartSec = Math.max(0, Math.min(sec, (audioDuration || sec) - 0.05));
+        if (trimEndSec <= trimStartSec && audioDuration > 0) trimEndSec = audioDuration;
+        trimStartInput.value = trimStartSec.toFixed(3);
+        trimEndInput.value = trimEndSec.toFixed(3);
+        trimEnabledChk.checked = true;
+        validateTrimInputs();
+      }
+
+      function setPointB(sec) {
+        trimEndSec = Math.max(trimStartSec + 0.05, audioDuration > 0 ? Math.min(sec, audioDuration) : sec);
+        trimEndInput.value = trimEndSec.toFixed(3);
+        trimEnabledChk.checked = true;
+        validateTrimInputs();
+      }
+
+      setCurAsABtn.addEventListener('click', () => setPointA(getCurrentPlayheadSec()));
+      setCurAsBBtn.addEventListener('click', () => setPointB(getCurrentPlayheadSec()));
+
+      document.querySelectorAll('[data-nudge-a]').forEach((btn) => {
+        btn.addEventListener('click', () => setPointA(trimStartSec + parseFloat(btn.dataset.nudgeA)));
+      });
+      document.querySelectorAll('[data-nudge-b]').forEach((btn) => {
+        btn.addEventListener('click', () => setPointB(trimEndSec + parseFloat(btn.dataset.nudgeB)));
+      });
+
+      snapZeroABtn.addEventListener('click', () => {
+        setPointA(snapToZeroCrossing(trimStartSec));
+        showToast(`⚡ 起點 A 已吸附至零交叉點：${trimStartSec.toFixed(4)}s`);
+      });
+      snapZeroBBtn.addEventListener('click', () => {
+        setPointB(snapToZeroCrossing(trimEndSec));
+        showToast(`⚡ 終點 B 已吸附至零交叉點：${trimEndSec.toFixed(4)}s`);
+      });
+
+      // Encode / Volume / Metadata Form Listeners
+      studioForm.querySelectorAll('input[name="processMode"]').forEach((r) => {
+        r.addEventListener('change', () => {
+          encodeOptionsWrap.style.opacity = getRadioValue('processMode') === 'copy' ? '0.45' : '1';
+          syncOutputFilenameExtension();
+          updateFfmpegCommandPreview();
+        });
+      });
+
+      studioForm.querySelectorAll('input[name="outputFormat"], input[name="sampleRate"]').forEach((r) => {
+        r.addEventListener('change', () => {
+          syncOutputFilenameExtension();
+          updateFfmpegCommandPreview();
+          updateDartCodeOutput();
+        });
+      });
+
+      studioForm.querySelectorAll('input[name="volumeMode"]').forEach((r) => {
+        r.addEventListener('change', () => {
+          const vm = getRadioValue('volumeMode');
+          if (vm === 'multiplier') {
+            volumeValueRow.style.display = 'flex';
+            volumeValueLabel.textContent = '放大倍率：';
+            if (parseFloat(volumeValueInput.value) <= 0 || volumeValueInput.value === '3') {
+              volumeValueInput.value = '1.5';
+            }
+            volumeValueHint.textContent = '例如 1.5 代表音量放大 1.5 倍';
+          } else if (vm === 'db') {
+            volumeValueRow.style.display = 'flex';
+            volumeValueLabel.textContent = '分貝增減 (dB)：';
+            if (volumeValueInput.value === '1.5') volumeValueInput.value = '3';
+            volumeValueHint.textContent = '例如 3 代表 +3dB，6 約等於音量加倍';
+          } else {
+            volumeValueRow.style.display = 'none';
+          }
+          updateLiveGainIfLooping();
+          updateFfmpegCommandPreview();
+        });
+      });
+
+      [volumeValueInput, fadeEnabledChk, fadeMsInput, stripMetaChk, metaTitleInput, metaArtistInput, metaAlbumInput, outputFilenameInput].forEach((el) => {
+        el.addEventListener('input', () => {
+          clearFieldError(outputFilenameInput, outFileErr);
+          updateLiveGainIfLooping();
+          updateFfmpegCommandPreview();
+          updateDartCodeOutput();
+        });
+        el.addEventListener('change', () => {
+          updateLiveGainIfLooping();
+          updateFfmpegCommandPreview();
+          updateDartCodeOutput();
+        });
+      });
+
+      songPresetSelect.addEventListener('change', () => {
+        updateDartCodeOutput();
+      });
+
+      titleFromFilenameBtn.addEventListener('click', () => {
+        if (!currentSource.filename) return;
+        const stem = currentSource.filename.replace(/\.[^.]+$/, '');
+        const cleaned = stem.replace(/^bb0*\d{1,2}[-_\s]*/i, '').trim();
+        metaTitleInput.value = cleaned || stem;
+        updateFfmpegCommandPreview();
+        updateDartCodeOutput();
+      });
+
+      titleFromPresetBtn.addEventListener('click', () => {
+        const presetId = parseInt(songPresetSelect.value, 10);
+        const preset = SONG_PRESETS.find((s) => s.id === presetId);
+        if (!preset) {
+          showToast('請先在上方下拉選單選擇對應的佛曲編號');
+          return;
+        }
+        metaTitleInput.value = preset.title;
+        updateFfmpegCommandPreview();
+        updateDartCodeOutput();
+      });
+
+      nameStyleDescriptiveBtn.addEventListener('click', () => {
+        const presetId = parseInt(songPresetSelect.value, 10);
+        const preset = SONG_PRESETS.find((s) => s.id === presetId);
+        const bbPad = preset ? String(preset.bbNum).padStart(2, '0') : '01';
+        const title = metaTitleInput.value.trim() || preset?.title || '佛曲';
+        const ext = getTargetOutputExt();
+        outputFilenameInput.value = `bb${bbPad}-${title}.${ext}`;
+        updateFfmpegCommandPreview();
+        updateDartCodeOutput();
+      });
+
+      nameStyleAppAssetBtn.addEventListener('click', () => {
+        const presetId = parseInt(songPresetSelect.value, 10);
+        const preset = SONG_PRESETS.find((s) => s.id === presetId);
+        const bbNum = preset ? preset.bbNum : 1;
+        const ext = getTargetOutputExt();
+        outputFilenameInput.value = `bb${bbNum}.${ext}`;
+        updateFfmpegCommandPreview();
+        updateDartCodeOutput();
+      });
+
+      studioForm.addEventListener('submit', handleStudioFormSubmit);
+      exportBrowserWavBtn.addEventListener('click', exportTrimmedWavInBrowser);
+
+      copyFfmpegCmdBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(ffmpegCmdPreview.value).then(() => {
+          showToast('📋 已複製 PowerShell FFmpeg 指令！');
+        });
+      });
+
+      // Marker Controls
+      tapArea.addEventListener('click', recordMarker);
+      tapArea.addEventListener('keydown', (e) => {
+        if (e.code === 'Enter') {
+          e.preventDefault();
+          recordMarker();
+        }
+      });
+
+      subtractTrimStartChk.addEventListener('change', () => {
+        renderWaveform();
+      });
+
+      undoMarkerBtn.addEventListener('click', undoLastMarker);
+      clearMarkersBtn.addEventListener('click', clearMarkers);
+      verifyModeBtn.addEventListener('click', startVerifyMode);
+
+      manualAddMarkerBtn.addEventListener('click', () => {
+        const raw = window.prompt('請輸入要新增的佛號尾端毫秒數（例如 3850）：');
+        if (!raw) return;
+        const ms = parseInt(raw.trim(), 10);
+        if (!Number.isFinite(ms) || ms <= 0) {
+          showToast('請輸入大於 0 的整數毫秒');
+          return;
+        }
+        markers.push(ms);
+        markers.sort((a, b) => a - b);
+        updateMarkerUI();
+        renderWaveform();
+      });
+
+      document.querySelectorAll('input[name="dartOutMode"]').forEach((r) => {
+        r.addEventListener('change', updateDartCodeOutput);
+      });
+
+      copyDartBtn.addEventListener('click', () => {
+        if (markers.length === 0 && getRadioValue('dartOutMode') === 'array') {
+          showToast('尚無標記代碼可複製！');
+          return;
+        }
+        navigator.clipboard.writeText(outputArea.value).then(() => {
+          showToast('✅ 已複製 Dart 代碼至剪貼簿！');
+        });
+      });
+
+      // Global Keyboard Shortcuts (IME-safe and input-focus-safe!)
+      window.addEventListener('keydown', (e) => {
+        if (e.isComposing || e.keyCode === 229) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        if (isTypingInField(e.target)) return;
+        if (serverHelpDialog.open) return;
+
+        if (e.code === 'Space') {
+          e.preventDefault();
+          recordMarker();
+        } else if (e.key === 'z' || e.key === 'Z') {
+          e.preventDefault();
+          undoLastMarker();
+        } else if (e.key === 'i' || e.key === 'I') {
+          e.preventDefault();
+          setPointA(getCurrentPlayheadSec());
+          showToast(`📍 起點 A 設為 ${trimStartSec.toFixed(3)}s`);
+        } else if (e.key === 'o' || e.key === 'O') {
+          e.preventDefault();
+          setPointB(getCurrentPlayheadSec());
+          showToast(`📍 終點 B 設為 ${trimEndSec.toFixed(3)}s`);
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        if (decodedBuffer) {
+          computeWaveformPeaks();
+          renderWaveform();
+        }
+      });
+
+      // Bootstrap
+      initSongPresets();
+      updateMarkerUI();
+      updateFfmpegCommandPreview();
+      renderWaveform();
+      checkServerStatus(true);
+    })();
+  </script>
+</body>
+</html>
