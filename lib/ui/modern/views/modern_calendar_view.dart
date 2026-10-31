@@ -280,41 +280,6 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
     }
   }
 
-  Future<void> _showClearConfirmDialog(CounterViewModel vm) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('清空功課記錄'),
-          content: Text(
-            '確定要將 ${_selectedDate.year}年${_selectedDate.month}月${_selectedDate.day}日 的功課紀錄歸零嗎？',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('取消'),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(ctx).colorScheme.error,
-              ),
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('確認清空'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed == true && mounted) {
-      await vm.clearPracticeDate(_selectedDate);
-      if (mounted) {
-        setState(() {});
-        AppToast.show(context, '已清空該日功課紀錄');
-      }
-    }
-  }
-
   Future<void> _pickReminderTime(CounterViewModel vm) async {
     final initialTime = TimeOfDay(
       hour: vm.reminderHour,
@@ -994,30 +959,6 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
     );
   }
 
-  Widget _buildDeltaChip(
-      CounterViewModel vm, String label, int delta, Color color) {
-    return ActionChip(
-      label: Text(
-        label,
-        style: TextStyle(
-          color: delta > 0 ? color : null,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
-      ),
-      onPressed: () async {
-        await vm.adjustPracticeCount(_selectedDate, delta);
-        if (mounted) {
-          setState(() {});
-          AppToast.show(
-            context,
-            delta > 0 ? '已增加 $delta 聲' : '已減少 ${delta.abs()} 聲',
-          );
-        }
-      },
-    );
-  }
-
   /// 每日提醒通知與桌面小工具卡片
   Widget _buildNotificationAndWidgetCard({
     required CounterViewModel vm,
@@ -1134,6 +1075,34 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                           fontSize: 12,
                           color: isDark ? Colors.white70 : Colors.black54,
                           height: 1.35,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          side: BorderSide(
+                            color: primary.withValues(alpha: 0.5),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () async {
+                          await vm.refreshWidgetData();
+                          if (mounted) {
+                            AppToast.show(context, '已同步最新數據至桌面小工具');
+                          }
+                        },
+                        icon: Icon(Icons.sync_rounded, size: 16, color: primary),
+                        label: Text(
+                          '立即同步桌面小工具',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                            color: primary,
+                          ),
                         ),
                       ),
                     ],

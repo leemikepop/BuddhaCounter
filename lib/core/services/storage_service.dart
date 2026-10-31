@@ -64,6 +64,7 @@ class StorageService {
   static const String keyReminderEnabled = 'pref_reminder_enabled';
   static const String keyReminderHour = 'pref_reminder_hour';
   static const String keyReminderMinute = 'pref_reminder_minute';
+  static const String keyLastActiveDate = 'pref_last_active_date';
 
   final SharedPreferences _prefs;
 
@@ -183,4 +184,8 @@ class StorageService {
   int getReminderMinute() => _prefs.getInt(keyReminderMinute) ?? 0;
   Future<void> setReminderMinute(int min) =>
       _prefs.setInt(keyReminderMinute, min);
+
+  String getLastActiveDate() => _prefs.getString(keyLastActiveDate) ?? '';
+  Future<void> setLastActiveDate(String dateStr) =>
+      _prefs.setString(keyLastActiveDate, dateStr);
 }

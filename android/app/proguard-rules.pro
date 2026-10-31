@@ -19,6 +19,7 @@
 
 # Keep HomeWidget and WidgetProvider
 -keep class com.yichung.lee.buddha_counter.BuddhaCounterWidgetProvider { *; }
+-keep class com.yichung.lee.count4.BuddhaCounterWidgetProvider { *; }
 -keep class es.antonborri.home_widget.** { *; }
 
 # Suppress missing Play Core references from Flutter deferred components

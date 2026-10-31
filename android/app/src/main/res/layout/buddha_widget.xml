@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- 頂部標題與連續修持徽章 -->
+    <!-- 頂部標題與連續修持徽章 + 重新整理按鈕 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -36,6 +36,15 @@
             android:textColor="#FFFFFF"
             android:textSize="10sp"
             android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/widget_refresh_button"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="6dp"
+            android:padding="3dp"
+            android:src="@drawable/buddha_widget_refresh"
+            android:contentDescription="重新整理" />
     </LinearLayout>
 
     <!-- 中間今日功課聲數 -->

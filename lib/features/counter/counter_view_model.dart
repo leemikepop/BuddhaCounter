@@ -302,15 +302,82 @@ class CounterViewModel extends ChangeNotifier {
         notifyListeners();
       }
     });
+
+    // 初始化時即時同步一次桌面 Widget 數據
+    _practiceRecords.syncWidget();
+
+    // 啟動換日檢查 (若跨日則歸零或恢復今日紀錄)
+    checkDateRollover();
+  }
+
+  /// 檢查跨日 (午夜 12 點換日) 邏輯：
+  /// 1. 若系統日期已跨入新的一天，今日計數自動歸零，昨日及過往計數妥善保留於功課月曆中。
+  /// 2. 若今日已有獨立計數記錄（例如今日稍早開啟過），則恢復今日的計數。
+  /// 3. 自我修復舊版本將昨日計數錯誤複製播種至今日的歷史污染資料。
+  void checkDateRollover() {
+    final now = DateTime.now();
+    final todayKey = PracticeRecordService.formatDateKey(now);
+    final lastActiveDate = _storage.getLastActiveDate();
+
+    if (lastActiveDate.isEmpty) {
+      // 若歷史庫已有其他日期的記錄，但今日尚無記錄，代表目前暫存之計數實為舊日殘留，應予以重設歸零
+      final hasOtherDays =
+          _practiceRecords.records.keys.any((k) => k != todayKey);
+      if (hasOtherDays && !_practiceRecords.hasRecord(todayKey)) {
+        _count = 0;
+        _autoCount = 0;
+        _storage.setCounter(0);
+        _storage.setAutoCounter(0);
+      }
+      _storage.setLastActiveDate(todayKey);
+      return;
+    }
+
+    if (lastActiveDate == todayKey) {
+      return;
+    }
+
+    // 換日了 (跨越半夜 12 點，或跨日重新開啟 App)
+    final hasExistingToday = _practiceRecords.hasRecord(todayKey);
+    final lastRecord = _practiceRecords.getRecordByKey(lastActiveDate);
+    final todayRecord = _practiceRecords.getRecord(now);
+
+    // 自我修復：如果今日記錄恰好與最後活躍日（昨日）完全相同且計數大於零，
+    // 說明受到舊版初始化 bug 播種污染，應予以修復歸零
+    if (hasExistingToday &&
+        todayRecord.manualCount == lastRecord.manualCount &&
+        todayRecord.autoCount == lastRecord.autoCount &&
+        lastRecord.totalCount > 0) {
+      _practiceRecords.clearDate(now);
+      _count = 0;
+      _autoCount = 0;
+    } else if (hasExistingToday) {
+      // 今日已有正常記錄（如今日其他時段所念）
+      _count = todayRecord.manualCount;
+      _autoCount = todayRecord.autoCount;
+    } else {
+      // 今日為全新的一天，數字歸零重新開始
+      _count = 0;
+      _autoCount = 0;
+    }
+
+    _storage.setCounter(_count);
+    _storage.setAutoCounter(_autoCount);
+    _storage.setLastActiveDate(todayKey);
+    _practiceRecords.syncWidget();
+    notifyListeners();
   }
 
   bool get isChantPlaying => _audio.isPlaying;
 
   // --- 手動計數 ---
   void increment() {
+    checkDateRollover();
     _count++;
     _storage.setCounter(_count);
     _practiceRecords.addCount(DateTime.now(), manual: 1);
+    _storage.setLastActiveDate(
+        PracticeRecordService.formatDateKey(DateTime.now()));
     _audio.playClickSfx(_soundEffect);
     if (_vibrationEnabled) {
       HapticFeedback.lightImpact();
@@ -319,10 +386,13 @@ class CounterViewModel extends ChangeNotifier {
   }
 
   void decrement() {
+    checkDateRollover();
     if (_count > 0) {
       _count--;
       _storage.setCounter(_count);
       _practiceRecords.adjustCount(DateTime.now(), -1);
+      _storage.setLastActiveDate(
+          PracticeRecordService.formatDateKey(DateTime.now()));
       if (_vibrationEnabled) {
         HapticFeedback.selectionClick();
       }
@@ -333,7 +403,19 @@ class CounterViewModel extends ChangeNotifier {
   void resetCount() {
     _count = 0;
     _storage.setCounter(_count);
+    _practiceRecords.syncWidget();
     notifyListeners();
+  }
+
+  /// 立即手動重新整理並推播最新數據至桌面小工具 (iOS & Android)
+  Future<void> refreshWidgetData() async {
+    await _practiceRecords.syncWidget();
+    notifyListeners();
+  }
+
+  /// 立即強制推播任何待發送之精進數據至桌面小工具 (取消防抖)
+  Future<void> flushPracticeRecords() async {
+    await _practiceRecords.flushWidgetSync();
   }
 
   // --- 功課月曆與記錄操作 ---
@@ -344,6 +426,7 @@ class CounterViewModel extends ChangeNotifier {
         PracticeRecordService.formatDateKey(now)) {
       _count = newCount;
       _storage.setCounter(_count);
+      _storage.setLastActiveDate(PracticeRecordService.formatDateKey(now));
     }
     notifyListeners();
     await future;
@@ -356,6 +439,7 @@ class CounterViewModel extends ChangeNotifier {
         PracticeRecordService.formatDateKey(now)) {
       _count = _practiceRecords.getCount(date);
       _storage.setCounter(_count);
+      _storage.setLastActiveDate(PracticeRecordService.formatDateKey(now));
     }
     notifyListeners();
     await future;
@@ -585,9 +669,12 @@ class CounterViewModel extends ChangeNotifier {
         final markerMs = song.phraseMarkersMs[_nextMarkerIndex];
         // 防跳躍安全機制：只有進度正常流過（與標記差距小於 3 秒）時才累加，避免因跳轉未攔截而暴增
         if (posMs - markerMs <= 3000) {
+          checkDateRollover();
           _autoCount++;
           _storage.setAutoCounter(_autoCount);
           _practiceRecords.addCount(DateTime.now(), auto: 1);
+          _storage.setLastActiveDate(
+              PracticeRecordService.formatDateKey(DateTime.now()));
           beatChanged = true;
         }
         _nextMarkerIndex++;
@@ -598,9 +685,12 @@ class CounterViewModel extends ChangeNotifier {
         final jump = (posMs - _targetNextBeatMs) ~/ bb;
         if (jump <= 1) {
           while (posMs >= _targetNextBeatMs) {
+            checkDateRollover();
             _autoCount++;
             _storage.setAutoCounter(_autoCount);
             _practiceRecords.addCount(DateTime.now(), auto: 1);
+            _storage.setLastActiveDate(
+                PracticeRecordService.formatDateKey(DateTime.now()));
             _targetNextBeatMs += bb;
             beatChanged = true;
           }
@@ -853,6 +943,7 @@ class CounterViewModel extends ChangeNotifier {
   void setTargetCount(int val) {
     _targetCount = val;
     _storage.setTargetCount(val);
+    _practiceRecords.syncWidget();
     notifyListeners();
   }
 
@@ -988,6 +1079,7 @@ class CounterViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    _practiceRecords.dispose();
     _stopwatchTimer?.cancel();
     _autoElapsedTimer?.cancel();
     _autoBeatPollingTimer?.cancel();

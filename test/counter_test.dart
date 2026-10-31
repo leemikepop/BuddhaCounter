@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1248,6 +1249,86 @@ void main() {
       expect(vm.reminderMinute, 30);
     });
 
+    test(
+        'CounterViewModel resets counts to 0 across midnight rollover while preserving yesterday records',
+        () async {
+      final now = DateTime.now();
+      final yesterday = now.subtract(const Duration(days: 1));
+      final yesterdayKey = PracticeRecordService.formatDateKey(yesterday);
+      final todayKey = PracticeRecordService.formatDateKey(now);
+
+      // 模擬昨日操作後儲存的數據
+      SharedPreferences.setMockInitialValues({
+        StorageService.keyCounter: 500,
+        StorageService.keyAutoCounter: 200,
+        StorageService.keyLastActiveDate: yesterdayKey,
+        StorageService.keyDailyRecords: jsonEncode({
+          yesterdayKey: {
+            'manual': 500,
+            'auto': 200,
+            'total': 700,
+          }
+        }),
+      });
+
+      final storage = await StorageService.init();
+      final audio = AudioService();
+      final vm = CounterViewModel(storage: storage, audio: audio);
+
+      // 驗證跨日初始化後：今日計數自動歸零，昨日功課完整保留於月曆中
+      expect(vm.count, 0);
+      expect(vm.autoCount, 0);
+      expect(vm.todayPracticeCount, 0);
+      expect(vm.practiceRecords.getCount(yesterday), 700);
+      expect(vm.practiceRecords.getRecord(yesterday).manualCount, 500);
+      expect(vm.practiceRecords.getRecord(yesterday).autoCount, 200);
+
+      // 今日開始念佛 1 聲
+      vm.increment();
+      expect(vm.count, 1);
+      expect(vm.todayPracticeCount, 1);
+      // 昨日紀錄絲毫不受影響
+      expect(vm.practiceRecords.getCount(yesterday), 700);
+      expect(storage.getLastActiveDate(), todayKey);
+    });
+
+    test(
+        'CounterViewModel self-heals if yesterday counts were accidentally duplicated into today record',
+        () async {
+      final now = DateTime.now();
+      final yesterday = now.subtract(const Duration(days: 1));
+      final yesterdayKey = PracticeRecordService.formatDateKey(yesterday);
+      final todayKey = PracticeRecordService.formatDateKey(now);
+
+      // 模擬舊版初始化 bug：昨日計數被複製播種進了今日記錄
+      SharedPreferences.setMockInitialValues({
+        StorageService.keyCounter: 888,
+        StorageService.keyAutoCounter: 0,
+        StorageService.keyLastActiveDate: yesterdayKey,
+        StorageService.keyDailyRecords: jsonEncode({
+          yesterdayKey: {
+            'manual': 888,
+            'auto': 0,
+            'total': 888,
+          },
+          todayKey: {
+            'manual': 888,
+            'auto': 0,
+            'total': 888,
+          }
+        }),
+      });
+
+      final storage = await StorageService.init();
+      final audio = AudioService();
+      final vm = CounterViewModel(storage: storage, audio: audio);
+
+      // 驗證自我修復機制：成功偵測到舊版污染並將今日歸零，昨日記錄完好
+      expect(vm.count, 0);
+      expect(vm.todayPracticeCount, 0);
+      expect(vm.practiceRecords.getCount(yesterday), 888);
+    });
+
     testWidgets(
         'ModernCounterScreen includes 4th tab 功課月曆 and renders ModernCalendarView',
         (tester) async {
@@ -1285,16 +1366,7 @@ void main() {
       expect(find.text('今日功課'), findsOneWidget);
       expect(find.text('本週累計'), findsOneWidget);
       expect(find.text('本月累計'), findsOneWidget);
-      expect(find.text('快速增減修訂：'), findsOneWidget);
-
-      // 點擊 +108 快捷修訂按鈕
-      final add108Chip = find.widgetWithText(ActionChip, '+108');
-      expect(add108Chip, findsOneWidget);
-      await tester.tap(add108Chip);
-      await tester.pumpAndSettle();
-
-      expect(vm.todayPracticeCount, 108);
-      expect(find.text('108'), findsWidgets);
+      expect(find.text('快速增減修訂：'), findsNothing);
 
       // 點擊「修改數值」按鈕彈出對話框
       final editBtn = find.text('修改數值');
@@ -1330,6 +1402,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('${now.year} 年 1 月'), findsOneWidget);
+
+      // 驗證立即同步桌面小工具按鈕並點擊
+      final syncWidgetBtn = find.text('立即同步桌面小工具');
+      expect(syncWidgetBtn, findsOneWidget);
+      await tester.tap(syncWidgetBtn);
+      await tester.pumpAndSettle();
     });
   });
 }

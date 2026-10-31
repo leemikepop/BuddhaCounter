@@ -3,12 +3,28 @@ package com.yichung.lee.buddha_counter
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetPlugin
 
-class BuddhaCounterWidgetProvider : AppWidgetProvider() {
+open class BuddhaCounterWidgetProvider : AppWidgetProvider() {
+
+    companion object {
+        const val ACTION_REFRESH = "com.yichung.lee.buddha_counter.ACTION_WIDGET_REFRESH"
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == ACTION_REFRESH) {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val thisWidget = ComponentName(context, BuddhaCounterWidgetProvider::class.java)
+            val appWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget)
+            onUpdate(context, appWidgetManager, appWidgetIds)
+        }
+    }
+
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -33,16 +49,29 @@ class BuddhaCounterWidgetProvider : AppWidgetProvider() {
                 setTextViewText(R.id.widget_weekly_count, "本週: ${String.format("%,d", weeklyCount)}聲")
                 setTextViewText(R.id.widget_monthly_count, "本月: ${String.format("%,d", monthlyCount)}聲")
 
-                val intent = Intent(context, MainActivity::class.java).apply {
+                // 點擊卡片開啟 App
+                val openIntent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
-                val pendingIntent = PendingIntent.getActivity(
+                val openPendingIntent = PendingIntent.getActivity(
                     context,
                     0,
-                    intent,
+                    openIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                setOnClickPendingIntent(R.id.widget_container, pendingIntent)
+                setOnClickPendingIntent(R.id.widget_container, openPendingIntent)
+
+                // 點擊重整按鈕：原地廣播更新 Widget
+                val refreshIntent = Intent(context, BuddhaCounterWidgetProvider::class.java).apply {
+                    action = ACTION_REFRESH
+                }
+                val refreshPendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    1,
+                    refreshIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                setOnClickPendingIntent(R.id.widget_refresh_button, refreshPendingIntent)
             }
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:audio_service/audio_service.dart' as bg_audio;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -73,18 +74,60 @@ void main() async {
   );
 }
 
-class BuddhaCounterApp extends StatelessWidget {
+class BuddhaCounterApp extends StatefulWidget {
+  const BuddhaCounterApp({super.key});
+
+  @override
+  State<BuddhaCounterApp> createState() => _BuddhaCounterAppState();
+}
+
+class _BuddhaCounterAppState extends State<BuddhaCounterApp>
+    with WidgetsBindingObserver {
   static final ThemeData _legacyTheme = ThemeData(
     colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0000FF)),
     useMaterial3: true,
   );
 
-  const BuddhaCounterApp({super.key});
+  Timer? _midnightTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // 每 30 秒定期檢查跨日換日（半夜 12 點）
+    _midnightTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) {
+        context.read<CounterViewModel>().checkDateRollover();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _midnightTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // 當 App 切換回前台或喚醒時，檢查跨日重設並同步桌面小工具數據
+      final vm = context.read<CounterViewModel>();
+      vm.checkDateRollover();
+      vm.refreshWidgetData();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      // 當 App 退至背景或鎖定螢幕時，立即強制將最新計數同步至桌面小工具
+      context.read<CounterViewModel>().flushPracticeRecords();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     // 僅訂閱 UI 模式與深淺色主題變化，避免計數或音訊播放時重複重建整棵 MaterialApp
-    final (uiMode, themeMode) = context.select<CounterViewModel, (AppUiMode, ThemeMode)>(
+    final (uiMode, themeMode) =
+        context.select<CounterViewModel, (AppUiMode, ThemeMode)>(
       (vm) => (vm.uiMode, vm.themeMode),
     );
 

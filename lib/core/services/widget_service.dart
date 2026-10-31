@@ -5,6 +5,8 @@ import 'package:home_widget/home_widget.dart';
 class WidgetService {
   static const String appGroupId = 'group.com.yichung.lee.count4';
   static const String androidWidgetName = 'BuddhaCounterWidgetProvider';
+  static const String qualifiedAndroidWidgetName =
+      'com.yichung.lee.buddha_counter.BuddhaCounterWidgetProvider';
   static const String iosWidgetName = 'BuddhaCounterWidget';
 
   static bool _isInitialized = false;
@@ -36,9 +38,13 @@ class WidgetService {
     try {
       final now = DateTime.now();
       final dateDisplay = '${now.month}月${now.day}日';
-      final percent = targetCount > 0
-          ? ((todayCount / targetCount) * 100).toInt()
-          : 0;
+      final String targetText;
+      if (targetCount > 0) {
+        final percent = ((todayCount / targetCount) * 100).toInt();
+        targetText = '目標 $percent% ($todayCount/$targetCount)';
+      } else {
+        targetText = '今日累積 $todayCount 聲 (不限目標)';
+      }
 
       await HomeWidget.saveWidgetData<int>('today_count', todayCount);
       await HomeWidget.saveWidgetData<int>('target_count', targetCount);
@@ -52,11 +58,13 @@ class WidgetService {
       );
       await HomeWidget.saveWidgetData<String>(
         'target_text',
-        '目標 $percent% ($todayCount/$targetCount)',
+        targetText,
       );
 
       await HomeWidget.updateWidget(
         name: androidWidgetName,
+        androidName: androidWidgetName,
+        qualifiedAndroidName: qualifiedAndroidWidgetName,
         iOSName: iosWidgetName,
       );
     } catch (e) {

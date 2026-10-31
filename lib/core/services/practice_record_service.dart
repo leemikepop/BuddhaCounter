@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'storage_service.dart';
 import 'widget_service.dart';
@@ -82,35 +84,83 @@ class PracticeRecordService {
       }
     }
 
-    // 若今日尚無紀錄，但 Storage 有現存計數，進行相容初次播種
-    final todayKey = formatDateKey(DateTime.now());
-    if (!_records.containsKey(todayKey)) {
+    // 僅在記錄庫為完全空白（初次從舊版升級）時，才將舊版既有計數作為歷史起點播種
+    if (_records.isEmpty) {
+      final lastDate = _storage.getLastActiveDate();
+      final targetKey =
+          lastDate.isNotEmpty ? lastDate : formatDateKey(DateTime.now());
       final existingCounter = _storage.getCounter();
       final existingAuto = _storage.getAutoCounter();
       if (existingCounter > 0 || existingAuto > 0) {
-        _records[todayKey] = DailyPracticeRecord(
-          dateKey: todayKey,
+        _records[targetKey] = DailyPracticeRecord(
+          dateKey: targetKey,
           manualCount: existingCounter,
           autoCount: existingAuto,
           totalCount: existingCounter + existingAuto,
         );
+        _storage.setLastActiveDate(targetKey);
         _saveToStorage();
       }
     }
   }
 
-  /// 儲存至 StorageService
-  Future<void> _saveToStorage() async {
+  /// 檢查特定日期是否已存在紀錄
+  bool hasRecord(String dateKey) => _records.containsKey(dateKey);
+
+  /// 取得所有記錄之唯讀映射
+  Map<String, DailyPracticeRecord> get records => Map.unmodifiable(_records);
+
+  /// 取得指定日期的記錄 (依格式化字串鍵值 yyyy-MM-dd)
+  DailyPracticeRecord getRecordByKey(String key) {
+    return _records[key] ??
+        DailyPracticeRecord(
+          dateKey: key,
+          manualCount: 0,
+          autoCount: 0,
+          totalCount: 0,
+        );
+  }
+
+  Timer? _widgetDebounceTimer;
+
+  /// 僅儲存資料記錄至 SharedPreferences 本地快取
+  Future<void> _saveRecordsOnly() async {
     try {
       final map = <String, dynamic>{};
       for (final entry in _records.entries) {
         map[entry.key] = entry.value.toJson();
       }
       await _storage.setDailyRecordsJson(jsonEncode(map));
-      await syncWidget();
     } catch (e) {
       debugPrint('Error saving daily practice records: $e');
     }
+  }
+
+  /// 儲存至 StorageService 並立即同步桌面 Widget (用於手動修訂、清空等操作)
+  Future<void> _saveToStorage() async {
+    await _saveRecordsOnly();
+    await syncWidget();
+  }
+
+  /// 桌面小工具防抖推播 (Debounce 1.5 秒)：避免手動高頻點擊或佛曲快節拍時每秒重複觸發跨行程 IPC
+  void _debounceSyncWidget() {
+    if (kIsWeb || Platform.environment.containsKey('FLUTTER_TEST')) {
+      return;
+    }
+    _widgetDebounceTimer?.cancel();
+    _widgetDebounceTimer = Timer(const Duration(milliseconds: 1500), () {
+      syncWidget();
+    });
+  }
+
+  /// 立即強制推播桌面 Widget (取消待處理的防抖計時)
+  Future<void> flushWidgetSync() async {
+    _widgetDebounceTimer?.cancel();
+    await syncWidget();
+  }
+
+  void dispose() {
+    _widgetDebounceTimer?.cancel();
   }
 
   /// 同步更新桌面 Widget 數據 (今日功課、本週本月累計、連續天數)
@@ -161,7 +211,8 @@ class PracticeRecordService {
     rec.autoCount += auto;
     rec.totalCount = rec.manualCount + rec.autoCount;
     _records[key] = rec;
-    await _saveToStorage();
+    await _saveRecordsOnly();
+    _debounceSyncWidget();
   }
 
   /// 手動直接設定指定日期的總聲數 (提供自由修改能力)
