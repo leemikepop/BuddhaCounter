@@ -142,13 +142,13 @@ class PracticeRecordService {
     await syncWidget();
   }
 
-  /// 桌面小工具防抖推播 (Debounce 1.5 秒)：避免手動高頻點擊或佛曲快節拍時每秒重複觸發跨行程 IPC
+  /// 桌面小工具防抖推播 (Debounce 800ms)：避免手動高頻點擊或佛曲快節拍時每秒重複觸發跨行程 IPC，暫停即快速同步
   void _debounceSyncWidget() {
     if (kIsWeb || Platform.environment.containsKey('FLUTTER_TEST')) {
       return;
     }
     _widgetDebounceTimer?.cancel();
-    _widgetDebounceTimer = Timer(const Duration(milliseconds: 1500), () {
+    _widgetDebounceTimer = Timer(const Duration(milliseconds: 800), () {
       syncWidget();
     });
   }

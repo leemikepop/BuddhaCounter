@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 /// 桌面小工具更新服務 (iOS WidgetKit & Android AppWidget)
 class WidgetService {
@@ -12,53 +13,46 @@ class WidgetService {
 
   static bool _isInitialized = false;
 
-  /// 初始化 Widget 設定（註冊 App Group）
+  /// 動態推導當前環境（原生安裝、TestFlight 或 Sideloadly / AltStore 側載更動 BundleID 時）所有可能的 App Group 清單
+  static Future<List<String>> resolveTargetAppGroups() async {
+    final groups = <String>{
+      appGroupId, // 'group.com.yichung.lee.count4'
+      fallbackAppGroupId, // 'group.app.CountApp'
+    };
+
+    try {
+      final info = await PackageInfo.fromPlatform();
+      final pkg = info.packageName.trim();
+      if (pkg.isNotEmpty) {
+        // 側載工具（如 Sideloadly / AltStore）會將 App Group 重新簽署為 group.<實際PackageName>
+        groups.add('group.$pkg');
+        groups.add('group.$pkg.BuddhaCounterWidgetExtension');
+
+        final parts = pkg.split('.');
+        if (parts.length >= 2) {
+          groups.add('group.${parts.take(2).join('.')}');
+        }
+      }
+    } catch (e) {
+      debugPrint('WidgetService.resolveTargetAppGroups error: $e');
+    }
+
+    return groups.toList();
+  }
+
+  /// 初始化 Widget 設定（向所有候選 App Group 進行註冊）
   static Future<void> init() async {
     if (_isInitialized) return;
     try {
-      await HomeWidget.setAppGroupId(appGroupId);
+      final groups = await resolveTargetAppGroups();
+      for (final gid in groups) {
+        try {
+          await HomeWidget.setAppGroupId(gid);
+        } catch (_) {}
+      }
       _isInitialized = true;
     } catch (e) {
       debugPrint('WidgetService.init error: $e');
-    }
-  }
-
-  /// 向指定的 App Group 寫入小工具數據並請求重繪
-  static Future<void> _writeToGroupId(
-    String groupId,
-    int todayCount,
-    int targetCount,
-    int weeklyCount,
-    int monthlyCount,
-    int streakDays,
-    String dateDisplay,
-    String targetText,
-  ) async {
-    try {
-      await HomeWidget.setAppGroupId(groupId);
-      await HomeWidget.saveWidgetData<int>('today_count', todayCount);
-      await HomeWidget.saveWidgetData<int>('target_count', targetCount);
-      await HomeWidget.saveWidgetData<int>('weekly_count', weeklyCount);
-      await HomeWidget.saveWidgetData<int>('monthly_count', monthlyCount);
-      await HomeWidget.saveWidgetData<int>('streak_days', streakDays);
-      await HomeWidget.saveWidgetData<String>('date_display', dateDisplay);
-      await HomeWidget.saveWidgetData<String>(
-        'streak_text',
-        streakDays > 0 ? '🔥 連續 $streakDays 天' : '今日精進念佛',
-      );
-      await HomeWidget.saveWidgetData<String>(
-        'target_text',
-        targetText,
-      );
-
-      await HomeWidget.updateWidget(
-        name: androidWidgetName,
-        androidName: androidWidgetName,
-        qualifiedAndroidName: qualifiedAndroidWidgetName,
-        iOSName: iosWidgetName,
-      );
-    } catch (e) {
-      debugPrint('WidgetService sync error for $groupId: $e');
     }
   }
 
@@ -85,30 +79,51 @@ class WidgetService {
       } else {
         targetText = '今日累積 $todayCount 聲 (不限目標)';
       }
+      final timestamp = now.millisecondsSinceEpoch.toDouble();
 
-      await _writeToGroupId(
-        appGroupId,
-        todayCount,
-        targetCount,
-        weeklyCount,
-        monthlyCount,
-        streakDays,
-        dateDisplay,
-        targetText,
+      final groups = await resolveTargetAppGroups();
+
+      // 向所有可能的 App Group 同步寫入（保證無論任何憑證或側載簽名，小工具皆能精準取得最新數據）
+      for (final gid in groups) {
+        try {
+          await HomeWidget.setAppGroupId(gid);
+          await HomeWidget.saveWidgetData<int>('today_count', todayCount, appGroupId: gid);
+          await HomeWidget.saveWidgetData<int>('target_count', targetCount, appGroupId: gid);
+          await HomeWidget.saveWidgetData<int>('weekly_count', weeklyCount, appGroupId: gid);
+          await HomeWidget.saveWidgetData<int>('monthly_count', monthlyCount, appGroupId: gid);
+          await HomeWidget.saveWidgetData<int>('streak_days', streakDays, appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>('date_display', dateDisplay, appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>(
+            'streak_text',
+            streakDays > 0 ? '🔥 連續 $streakDays 天' : '今日精進念佛',
+            appGroupId: gid,
+          );
+          await HomeWidget.saveWidgetData<String>(
+            'target_text',
+            targetText,
+            appGroupId: gid,
+          );
+          await HomeWidget.saveWidgetData<double>(
+            'widget_update_timestamp',
+            timestamp,
+            appGroupId: gid,
+          );
+        } catch (e) {
+          debugPrint('WidgetService sync error for $gid: $e');
+        }
+      }
+
+      // 通知原生系統刷新小工具
+      await HomeWidget.updateWidget(
+        name: androidWidgetName,
+        androidName: androidWidgetName,
+        qualifiedAndroidName: qualifiedAndroidWidgetName,
+        iOSName: iosWidgetName,
       );
 
-      // iOS 雙保險：若開發者憑證之 App Group 指向 group.app.CountApp，亦同步寫入
+      // iOS 額外防護：呼叫無指定名稱的 updateWidget() 觸發 reloadAllTimelines()，避免名稱字串比對落差
       if (defaultTargetPlatform == TargetPlatform.iOS) {
-        await _writeToGroupId(
-          fallbackAppGroupId,
-          todayCount,
-          targetCount,
-          weeklyCount,
-          monthlyCount,
-          streakDays,
-          dateDisplay,
-          targetText,
-        );
+        await HomeWidget.updateWidget();
       }
     } catch (e) {
       // 桌面小工具更新失敗不影響主 App 運行

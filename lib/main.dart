@@ -117,8 +117,9 @@ class _BuddhaCounterAppState extends State<BuddhaCounterApp>
       vm.checkDateRollover();
       vm.refreshWidgetData();
     } else if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      // 當 App 退至背景或鎖定螢幕時，立即強制將最新計數同步至桌面小工具
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      // 當 App 退至背景、切換視窗或鎖定螢幕時，立即強制將最新計數同步至桌面小工具
       context.read<CounterViewModel>().flushPracticeRecords();
     }
   }

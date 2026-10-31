@@ -14,7 +14,37 @@ struct BuddhaWidgetEntry: TimelineEntry {
 }
 
 struct BuddhaWidgetProvider: TimelineProvider {
-    let appGroupIds = ["group.com.yichung.lee.count4", "group.app.CountApp"]
+    /// 動態推導所有可能存在的候選 App Group ID（相容 Sideloadly、AltStore、TrollStore、原生開發與 TestFlight）
+    private var candidateGroupIds: [String] {
+        var groups = [
+            "group.com.yichung.lee.count4",
+            "group.app.CountApp"
+        ]
+
+        if let extBundleId = Bundle.main.bundleIdentifier {
+            // 例: "app.CountApp.M4LWC77CK3.BuddhaCounterWidgetExtension"
+            let cleanMainId = extBundleId
+                .replacingOccurrences(of: ".BuddhaCounterWidgetExtension", with: "")
+                .replacingOccurrences(of: ".WidgetExtension", with: "")
+
+            groups.append("group.\(cleanMainId)")
+            groups.append("group.\(extBundleId)")
+
+            let parts = cleanMainId.split(separator: ".")
+            if parts.count >= 2 {
+                groups.append("group.\(parts[0]).\(parts[1])")
+            }
+        }
+
+        // 去除重複值
+        var uniqueGroups: [String] = []
+        for g in groups {
+            if !uniqueGroups.contains(g) && !g.isEmpty {
+                uniqueGroups.append(g)
+            }
+        }
+        return uniqueGroups
+    }
 
     func placeholder(in context: Context) -> BuddhaWidgetEntry {
         BuddhaWidgetEntry(
@@ -36,25 +66,35 @@ struct BuddhaWidgetProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<BuddhaWidgetEntry>) -> Void) {
         let entry = loadEntry()
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 30, to: Date()) ?? Date()
+        // 縮短排程更新頻率至 15 分鐘，確保跨時段與背景同步
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date()) ?? Date()
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
     }
 
     private func loadEntry() -> BuddhaWidgetEntry {
-        var prefs: UserDefaults? = nil
-        for groupId in appGroupIds {
-            if let userDefaults = UserDefaults(suiteName: groupId) {
-                if userDefaults.object(forKey: "today_count") != nil {
-                    prefs = userDefaults
-                    break
-                }
-                if prefs == nil {
-                    prefs = userDefaults
-                }
+        var selectedPrefs: UserDefaults? = nil
+        var bestTimestamp: Double = -1
+        var fallbackPrefsWithData: UserDefaults? = nil
+
+        for groupId in candidateGroupIds {
+            guard let prefs = UserDefaults(suiteName: groupId) else { continue }
+            // 強制從磁碟同步最新數據，防範跨進程 CFPreferences 記憶體快取延遲
+            prefs.synchronize()
+
+            let hasTodayCount = prefs.object(forKey: "today_count") != nil
+            let timestamp = prefs.double(forKey: "widget_update_timestamp")
+
+            if timestamp > bestTimestamp && hasTodayCount {
+                bestTimestamp = timestamp
+                selectedPrefs = prefs
+            } else if fallbackPrefsWithData == nil && hasTodayCount {
+                fallbackPrefsWithData = prefs
             }
         }
-        let activePrefs = prefs ?? UserDefaults.standard
+
+        let activePrefs = selectedPrefs ?? fallbackPrefsWithData ?? UserDefaults.standard
+        activePrefs.synchronize()
 
         let todayCount = activePrefs.integer(forKey: "today_count")
         let targetCount = activePrefs.integer(forKey: "target_count")
@@ -62,7 +102,8 @@ struct BuddhaWidgetProvider: TimelineProvider {
         let monthlyCount = activePrefs.integer(forKey: "monthly_count")
         let streakDays = activePrefs.integer(forKey: "streak_days")
         let streakText = activePrefs.string(forKey: "streak_text") ?? (streakDays > 0 ? "🔥 連續 \(streakDays) 天" : "今日精進念佛")
-        let targetText = activePrefs.string(forKey: "target_text") ?? "今日功課"
+        let defaultTargetText = targetCount > 0 ? "今日功課" : "今日累積 \(todayCount) 聲"
+        let targetText = activePrefs.string(forKey: "target_text") ?? defaultTargetText
         let dateDisplay = activePrefs.string(forKey: "date_display") ?? ""
 
         return BuddhaWidgetEntry(
