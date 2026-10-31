@@ -1,8 +1,11 @@
-name: Build Android Release
+name: Android CI - Build & Release
 
 on:
   push:
+    branches: [ main, master ]
     tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
   release:
     types: [ published ]
   workflow_dispatch:
@@ -17,13 +20,26 @@ permissions:
   contents: write
 
 jobs:
-  build-android:
+  build-and-release-android:
     name: Build Android APK & App Bundle
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+
+      - name: Extract App Version
+        run: |
+          VERSION=$(grep '^version: ' pubspec.yaml | sed 's/version: //' | tr -d '\r' | tr -d ' ')
+          VERSION_NAME=$(echo "$VERSION" | cut -d '+' -f 1)
+          VERSION_CODE=$(echo "$VERSION" | cut -s -d '+' -f 2)
+          if [ -z "$VERSION_CODE" ]; then
+            VERSION_CODE="1"
+          fi
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+          echo "Extracted App Version: $VERSION (Name: $VERSION_NAME, Code: $VERSION_CODE)"
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -38,8 +54,17 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Verify Flutter & Environment
+        run: flutter doctor -v
+
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Run Static Analysis
+        run: flutter analyze
+
+      - name: Run Automated Tests
+        run: flutter test
 
       - name: Prepare Android Signing & Keystores
         run: |
@@ -61,17 +86,26 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: flutter build appbundle --release
 
+      - name: Prepare Versioned Artifacts
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk "build/app/outputs/flutter-apk/BuddhaCounter-v${VERSION_NAME}+${VERSION_CODE}.apk"
+          cp build/app/outputs/bundle/release/app-release.aab "build/app/outputs/bundle/release/BuddhaCounter-v${VERSION_NAME}+${VERSION_CODE}.aab"
+          echo "APK: build/app/outputs/flutter-apk/BuddhaCounter-v${VERSION_NAME}+${VERSION_CODE}.apk"
+          echo "AAB: build/app/outputs/bundle/release/BuddhaCounter-v${VERSION_NAME}+${VERSION_CODE}.aab"
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: BuddhaCounter-Android-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: BuddhaCounter-v${{ env.VERSION_NAME }}+${{ env.VERSION_CODE }}-Android-APK
+          path: build/app/outputs/flutter-apk/BuddhaCounter-v${{ env.VERSION_NAME }}+${{ env.VERSION_CODE }}.apk
+          retention-days: 14
 
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: BuddhaCounter-GooglePlay-AAB
-          path: build/app/outputs/bundle/release/app-release.aab
+          name: BuddhaCounter-v${{ env.VERSION_NAME }}+${{ env.VERSION_CODE }}-GooglePlay-AAB
+          path: build/app/outputs/bundle/release/BuddhaCounter-v${{ env.VERSION_NAME }}+${{ env.VERSION_CODE }}.aab
+          retention-days: 14
 
       # 只有推送 tag (如 v1.48.0)、發布 Release、或手動勾選 create_release 時，才會發布正式 GitHub Release
       - name: Publish GitHub Release
@@ -79,8 +113,8 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
+            build/app/outputs/flutter-apk/BuddhaCounter-v${{ env.VERSION_NAME }}+${{ env.VERSION_CODE }}.apk
+            build/app/outputs/bundle/release/BuddhaCounter-v${{ env.VERSION_NAME }}+${{ env.VERSION_CODE }}.aab
           generate_release_notes: true
           draft: false
           prerelease: false

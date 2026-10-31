@@ -32,9 +32,9 @@
 BuddhaCounter/
 ├── .github/
 │   └── workflows/
-│       ├── ci_ios.yml                 # GitHub Actions 日常 push 自動靜態檢查與編譯測試
-│       ├── deploy_ios_testflight.yml  # GitHub Actions 手動/Release 發布簽名 IPA 至 TestFlight
-│       └── build_android.yml          # GitHub Actions 自動編譯 Release APK / AAB
+│       ├── ci_android.yml             # GitHub Actions Android CI/CD (編譯 APK / AAB 並發布 Release)
+│       ├── ci_ios.yml                 # GitHub Actions iOS CI (靜態分析、單元測試、未簽名 IPA 封裝)
+│       └── deploy_ios_testflight.yml  # GitHub Actions iOS 發布 (依賴 iOS CI 驗證通過後，發布簽名 IPA 至 TestFlight)
 ├── android/
 │   ├── app/build.gradle.kts       # applicationId: com.yichung.lee.count4, compileSdk 37, targetSdk 37
 │   ├── keystore/                  # 原版 leeyc.jks 簽名金鑰庫與 private_key.pepk
