@@ -14,7 +14,7 @@ struct BuddhaWidgetEntry: TimelineEntry {
 }
 
 struct BuddhaWidgetProvider: TimelineProvider {
-    let appGroupId = "group.com.yichung.lee.count4"
+    let appGroupIds = ["group.com.yichung.lee.count4", "group.app.CountApp"]
 
     func placeholder(in context: Context) -> BuddhaWidgetEntry {
         BuddhaWidgetEntry(
@@ -42,15 +42,28 @@ struct BuddhaWidgetProvider: TimelineProvider {
     }
 
     private func loadEntry() -> BuddhaWidgetEntry {
-        let prefs = UserDefaults(suiteName: appGroupId) ?? UserDefaults.standard
-        let todayCount = prefs.integer(forKey: "today_count")
-        let targetCount = prefs.integer(forKey: "target_count")
-        let weeklyCount = prefs.integer(forKey: "weekly_count")
-        let monthlyCount = prefs.integer(forKey: "monthly_count")
-        let streakDays = prefs.integer(forKey: "streak_days")
-        let streakText = prefs.string(forKey: "streak_text") ?? (streakDays > 0 ? "🔥 連續 \(streakDays) 天" : "今日精進念佛")
-        let targetText = prefs.string(forKey: "target_text") ?? "今日功課"
-        let dateDisplay = prefs.string(forKey: "date_display") ?? ""
+        var prefs: UserDefaults? = nil
+        for groupId in appGroupIds {
+            if let userDefaults = UserDefaults(suiteName: groupId) {
+                if userDefaults.object(forKey: "today_count") != nil {
+                    prefs = userDefaults
+                    break
+                }
+                if prefs == nil {
+                    prefs = userDefaults
+                }
+            }
+        }
+        let activePrefs = prefs ?? UserDefaults.standard
+
+        let todayCount = activePrefs.integer(forKey: "today_count")
+        let targetCount = activePrefs.integer(forKey: "target_count")
+        let weeklyCount = activePrefs.integer(forKey: "weekly_count")
+        let monthlyCount = activePrefs.integer(forKey: "monthly_count")
+        let streakDays = activePrefs.integer(forKey: "streak_days")
+        let streakText = activePrefs.string(forKey: "streak_text") ?? (streakDays > 0 ? "🔥 連續 \(streakDays) 天" : "今日精進念佛")
+        let targetText = activePrefs.string(forKey: "target_text") ?? "今日功課"
+        let dateDisplay = activePrefs.string(forKey: "date_display") ?? ""
 
         return BuddhaWidgetEntry(
             date: Date(),
@@ -70,6 +83,11 @@ struct BuddhaCounterWidgetEntryView: View {
     var entry: BuddhaWidgetProvider.Entry
 
     var body: some View {
+        contentView
+            .applyWidgetBackground()
+    }
+
+    var contentView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text("念佛計數器")
@@ -110,19 +128,31 @@ struct BuddhaCounterWidgetEntryView: View {
             }
         }
         .padding(14)
-        .background(
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.16, green: 0.14, blue: 0.11),
-                    Color(red: 0.09, green: 0.08, blue: 0.07)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
     }
 }
 
+extension View {
+    @ViewBuilder
+    func applyWidgetBackground() -> some View {
+        let gradient = LinearGradient(
+            gradient: Gradient(colors: [
+                Color(red: 0.16, green: 0.14, blue: 0.11),
+                Color(red: 0.09, green: 0.08, blue: 0.07)
+            ]),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        if #available(iOS 17.0, *) {
+            self.containerBackground(for: .widget) {
+                gradient
+            }
+        } else {
+            self.background(gradient)
+        }
+    }
+}
+
+@main
 struct BuddhaCounterWidget: Widget {
     let kind: String = "BuddhaCounterWidget"
 

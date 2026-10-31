@@ -70,7 +70,10 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     ),
     iOS: AudioContextIOS(
       category: AVAudioSessionCategory.playback,
-      options: const {},
+      options: const {
+        AVAudioSessionOptions.mixWithOthers,
+        AVAudioSessionOptions.defaultToSpeaker,
+      },
     ),
   );
 
@@ -80,9 +83,9 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
 
   Future<void> _initAudioPlayer() async {
     // 關鍵效能優化：覆蓋 audioplayers 6.x 預設的 FramePositionUpdater（原本會在 90/120Hz 每一幀跨執行緒呼叫 getCurrentPosition），
-    // 改為 180ms 定時更新，大幅降低 Platform MethodChannel 與 Android 主執行緒負擔
+    // 改為 250ms 定時更新，大幅降低 Platform MethodChannel 與主執行緒負擔
     _musicPlayer.positionUpdater = TimerPositionUpdater(
-      interval: const Duration(milliseconds: 180),
+      interval: const Duration(milliseconds: 250),
       getPosition: _musicPlayer.getCurrentPosition,
     );
 
@@ -92,16 +95,18 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
         // 切歌準備期間忽略底層 MediaPlayer reset/stop 產生的暫態非播放事件，避免誤觸暫停迴圈
         return;
       }
-      final nextPlaying =
-          (state == PlayerState.completed && _releaseMode == ReleaseMode.loop)
-              ? true
-              : (state == PlayerState.playing);
+      if (state == PlayerState.completed && _releaseMode == ReleaseMode.loop) {
+        // 單曲循環模式下原生底層（iOS WrappedMediaPlayer 及 Android MediaPlayer）會自動無縫銜接重播，
+        // 忽略 completed 暫態，避免觸發冗餘的 NowPlayingCenter 廣播或誤切暫停狀態
+        return;
+      }
+      final nextPlaying = (state == PlayerState.playing);
       _setPlayState(nextPlaying);
       _broadcastPlaybackState();
     });
 
-    // 監聽播放進度：Android MediaSession 會依 updatePosition + speed 自動推算系統通知欄進度，
-    // 切勿於每次進度更新都呼叫 _broadcastPlaybackState()，否則會造成 Binder IPC 與主執行緒嚴重阻塞；
+    // 監聽播放進度：Android MediaSession 與 iOS NowPlayingCenter 會依 updatePosition + speed 自動推算系統通知欄進度，
+    // 切勿於每次進度更新都呼叫 _broadcastPlaybackState()，否則會造成 Binder/IPC 與主執行緒嚴重阻塞；
     // 僅在單曲循環回到開頭時同步一次系統進度
     _musicPlayer.onPositionChanged.listen((pos) {
       final prev = _currentPosition;
@@ -111,7 +116,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       }
       if (_isPlaying &&
           prev > const Duration(seconds: 2) &&
-          pos < const Duration(milliseconds: 600)) {
+          pos < const Duration(milliseconds: 800)) {
         _broadcastPlaybackState();
       }
     });
@@ -133,16 +138,11 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     _musicPlayer.onPlayerComplete.listen((_) async {
       if (!_isPlaying || _isSwitchingTrack) return;
       if (_releaseMode == ReleaseMode.loop) {
-        // 原生播放器若正常開啟循環，底層會自動無縫銜接，不進行多餘的 seek(0) 阻斷
-        // 僅在底層未自動重播（狀態變為非 playing）時才啟動備援重啟
-        if (_musicPlayer.state != PlayerState.playing) {
-          try {
-            await _musicPlayer.seek(Duration.zero);
-            await _musicPlayer.resume();
-          } catch (_) {
-            await playSong(_currentSongId);
-          }
-        }
+        // 在單曲循環模式下，底層（iOS WrappedMediaPlayer 及 Android MediaPlayer）
+        // 原生均已自動無縫執行 seek(0) 並繼續 resume() 播放。
+        // 切勿在此重複呼叫 seek(0) 或 resume()，否則在 iOS AVPlayer 上會打斷正在預載的解碼管線，
+        // 造成 1~2 秒的卡頓停頓（Stuttering）。
+        return;
       } else {
         await skipToNext();
       }
