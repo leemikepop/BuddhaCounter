@@ -63,6 +63,7 @@ jobs:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
           BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          BUILD_WIDGET_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_WIDGET_PROVISION_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD || 'buddha-counter-temp-pwd' }}
         run: |
           # 0. 檢查 Secrets 是否正確填入
@@ -100,6 +101,25 @@ jobs:
             cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
             echo "Installed Profile: ${PROFILE_UUID}.mobileprovision"
           fi
+
+          # 6. 若配置有 Widget Extension 描述檔則安裝並寫入 ExportOptions.plist
+          if [ -n "$BUILD_WIDGET_PROVISION_PROFILE_BASE64" ]; then
+            WIDGET_PP_PATH=$RUNNER_TEMP/widget_pp.mobileprovision
+            echo -n "$BUILD_WIDGET_PROVISION_PROFILE_BASE64" | base64 --decode -o $WIDGET_PP_PATH
+            W_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(security cms -D -i $WIDGET_PP_PATH) || true)
+            W_NAME=$(/usr/libexec/PlistBuddy -c "Print Name" /dev/stdin <<< $(security cms -D -i $WIDGET_PP_PATH) || true)
+            if [ -n "$W_UUID" ]; then
+              cp $WIDGET_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${W_UUID}.mobileprovision
+              echo "Installed Widget Profile: ${W_UUID}.mobileprovision ($W_NAME)"
+            fi
+            if [ -n "$W_NAME" ]; then
+              /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:app.CountApp.BuddhaCounterWidgetExtension string '$W_NAME'" ios/ExportOptions.plist || true
+            fi
+          fi
+
+          # 7. 確保 Widget Extension 的 Version 與 Build Number 精確匹配 Runner
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION_NAME" ios/BuddhaCounterWidgetExtension/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSION_CODE" ios/BuddhaCounterWidgetExtension/Info.plist || true
 
       - name: Build iOS IPA (App Store Distribution)
         run: |
