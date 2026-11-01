@@ -4,9 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.yichung.lee.count4</string>
 		<string>group.app.CountApp</string>
 	</array>
 </dict>
 </plist>
-

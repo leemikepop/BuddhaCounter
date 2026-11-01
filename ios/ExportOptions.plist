@@ -14,6 +14,8 @@
 	<dict>
 		<key>app.CountApp</key>
 		<string>CountApp_AppStore</string>
+		<key>app.CountApp.BuddhaCounterWidgetExtension</key>
+		<string>CountApp_Widget_AppStore</string>
 	</dict>
 	<key>stripSwiftSymbols</key>
 	<true/>
@@ -21,4 +23,3 @@
 	<true/>
 </dict>
 </plist>
-

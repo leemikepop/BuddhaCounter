@@ -71,15 +71,21 @@ jobs:
             echo "::error::缺少必要 Secrets！請確認環境 'Apple Store Connect TestFlight' 或 Repository secrets 中是否已正確填入 BUILD_CERTIFICATE_BASE64, BUILD_PROVISION_PROFILE_BASE64, P12_PASSWORD。"
             exit 1
           fi
+          if [ -z "$BUILD_WIDGET_PROVISION_PROFILE_BASE64" ]; then
+            echo "::error::缺少必要 Secret: BUILD_WIDGET_PROVISION_PROFILE_BASE64！請在 GitHub Secrets 中填入 Widget Extension 描述檔之 Base64。"
+            exit 1
+          fi
 
           # 1. 建立暫存路徑
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          WIDGET_PP_PATH=$RUNNER_TEMP/widget_pp.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
           # 2. Base64 解碼還原為檔案
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+          echo -n "$BUILD_WIDGET_PROVISION_PROFILE_BASE64" | base64 --decode -o $WIDGET_PP_PATH
 
           # 3. 建立並解鎖暫存 Keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -91,7 +97,7 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | tr -d '"')
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # 5. 安裝 Provisioning Profile 到系統目錄
+          # 5. 安裝 主 App Provisioning Profile 到系統目錄
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/CountApp_AppStore.mobileprovision
           
@@ -99,22 +105,15 @@ jobs:
           PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(security cms -D -i $PP_PATH) || true)
           if [ -n "$PROFILE_UUID" ]; then
             cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
-            echo "Installed Profile: ${PROFILE_UUID}.mobileprovision"
+            echo "Installed Profile: ${PROFILE_UUID}.mobileprovision (CountApp_AppStore)"
           fi
 
-          # 6. 若配置有 Widget Extension 描述檔則安裝並寫入 ExportOptions.plist
-          if [ -n "$BUILD_WIDGET_PROVISION_PROFILE_BASE64" ]; then
-            WIDGET_PP_PATH=$RUNNER_TEMP/widget_pp.mobileprovision
-            echo -n "$BUILD_WIDGET_PROVISION_PROFILE_BASE64" | base64 --decode -o $WIDGET_PP_PATH
-            W_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(security cms -D -i $WIDGET_PP_PATH) || true)
-            W_NAME=$(/usr/libexec/PlistBuddy -c "Print Name" /dev/stdin <<< $(security cms -D -i $WIDGET_PP_PATH) || true)
-            if [ -n "$W_UUID" ]; then
-              cp $WIDGET_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${W_UUID}.mobileprovision
-              echo "Installed Widget Profile: ${W_UUID}.mobileprovision ($W_NAME)"
-            fi
-            if [ -n "$W_NAME" ]; then
-              /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:app.CountApp.BuddhaCounterWidgetExtension string '$W_NAME'" ios/ExportOptions.plist || true
-            fi
+          # 6. 安裝 Widget Extension Provisioning Profile 到系統目錄
+          cp $WIDGET_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/CountApp_Widget_AppStore.mobileprovision
+          W_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(security cms -D -i $WIDGET_PP_PATH) || true)
+          if [ -n "$W_UUID" ]; then
+            cp $WIDGET_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${W_UUID}.mobileprovision
+            echo "Installed Widget Profile: ${W_UUID}.mobileprovision (CountApp_Widget_AppStore)"
           fi
 
           # 7. 確保 Widget Extension 的 Version 與 Build Number 精確匹配 Runner
