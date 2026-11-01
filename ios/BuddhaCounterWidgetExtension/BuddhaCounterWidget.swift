@@ -78,6 +78,9 @@ struct BuddhaWidgetProvider: TimelineProvider {
         var fallbackPrefsWithData: UserDefaults? = nil
 
         for groupId in candidateGroupIds {
+            // 驗證系統層級是否已為此 App Group 配發共享容器
+            let hasSharedContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupId) != nil
+
             guard let prefs = UserDefaults(suiteName: groupId) else { continue }
             // 強制從磁碟同步最新數據，防範跨進程 CFPreferences 記憶體快取延遲
             prefs.synchronize()
@@ -85,7 +88,7 @@ struct BuddhaWidgetProvider: TimelineProvider {
             let hasTodayCount = prefs.object(forKey: "today_count") != nil
             let timestamp = prefs.double(forKey: "widget_update_timestamp")
 
-            if timestamp > bestTimestamp && hasTodayCount {
+            if hasSharedContainer && hasTodayCount && timestamp > bestTimestamp {
                 bestTimestamp = timestamp
                 selectedPrefs = prefs
             } else if fallbackPrefsWithData == nil && hasTodayCount {
@@ -93,6 +96,7 @@ struct BuddhaWidgetProvider: TimelineProvider {
             }
         }
 
+        let isConnected = (selectedPrefs != nil || fallbackPrefsWithData != nil)
         let activePrefs = selectedPrefs ?? fallbackPrefsWithData ?? UserDefaults.standard
         activePrefs.synchronize()
 
@@ -102,8 +106,12 @@ struct BuddhaWidgetProvider: TimelineProvider {
         let monthlyCount = activePrefs.integer(forKey: "monthly_count")
         let streakDays = activePrefs.integer(forKey: "streak_days")
         let streakText = activePrefs.string(forKey: "streak_text") ?? (streakDays > 0 ? "🔥 連續 \(streakDays) 天" : "今日精進念佛")
-        let defaultTargetText = targetCount > 0 ? "今日功課" : "今日累積 \(todayCount) 聲"
-        let targetText = activePrefs.string(forKey: "target_text") ?? defaultTargetText
+        let defaultTargetText = isConnected
+            ? (targetCount > 0 ? "今日功課" : "今日累積 \(todayCount) 聲")
+            : "未連線 (無共享數據)"
+        let targetText = isConnected
+            ? (activePrefs.string(forKey: "target_text") ?? defaultTargetText)
+            : "未連線 (無共享數據)"
         let dateDisplay = activePrefs.string(forKey: "date_display") ?? ""
 
         return BuddhaWidgetEntry(
@@ -206,4 +214,3 @@ struct BuddhaCounterWidget: Widget {
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
-

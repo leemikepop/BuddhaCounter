@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/practice_record_service.dart';
+import '../../../core/services/widget_service.dart';
 import '../../../features/counter/counter_view_model.dart';
 import '../../common/app_toast.dart';
 
@@ -1095,6 +1096,11 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                             AppToast.show(context, '已同步最新數據至桌面小工具');
                           }
                         },
+                        onLongPress: () async {
+                          final diag = await WidgetService.getDiagnostics();
+                          if (!mounted) return;
+                          _showWidgetDiagnosticsDialog(context, diag, primary, isDark);
+                        },
                         icon: Icon(Icons.sync_rounded, size: 16, color: primary),
                         label: Text(
                           '立即同步桌面小工具',
@@ -1112,6 +1118,118 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 顯示小工具跨進程與 App Group 診斷對話框
+  void _showWidgetDiagnosticsDialog(
+    BuildContext context,
+    Map<String, dynamic> diag,
+    Color primary,
+    bool isDark,
+  ) {
+    final pkg = diag['packageName'] ?? '未知';
+    final ver = '${diag['version']}+${diag['buildNumber']}';
+    final candidateGroups = (diag['candidateGroups'] as List?)?.join('\n') ?? '無';
+    final groupData = diag['groupData'] as Map<String, dynamic>? ?? {};
+    final installedWidgets = (diag['installedWidgets'] as List?) ?? [];
+
+    final buffer = StringBuffer();
+    buffer.writeln('=== 桌面小工具診斷報告 ===');
+    buffer.writeln('應用套件識別碼 (Package ID): $pkg');
+    buffer.writeln('應用版本 (Version): $ver');
+    buffer.writeln('\n[候選 App Group 清單]');
+    buffer.writeln(candidateGroups);
+    buffer.writeln('\n[各群組數據讀取測試]');
+    groupData.forEach((k, v) {
+      buffer.writeln('- $k: $v');
+    });
+    buffer.writeln('\n[系統已安裝小工具]');
+    if (installedWidgets.isEmpty) {
+      buffer.writeln('無 (尚未偵測到主畫面已加入小工具)');
+    } else {
+      for (final w in installedWidgets) {
+        buffer.writeln('- $w');
+      }
+    }
+
+    final diagString = buffer.toString();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.developer_mode_rounded, color: primary, size: 22),
+            const SizedBox(width: 8),
+            const Text(
+              '小工具診斷資訊',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.black26 : const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: SelectableText(
+                    diagString,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 11.5,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: isDark ? 0.15 : 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    '💡 診斷提示：iOS 桌面小工具必須依賴 Apple 官方簽署之 App Group 跨進程共享數據。若透過免費個人 Apple ID 經由 Sideloadly 側載，Apple 會限制該權限導致小工具顯示未連線；若使用付費開發者帳號或 TestFlight 簽署，則可完整即時同步。',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? Colors.amber[200] : Colors.amber[900],
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: diagString));
+              AppToast.show(context, '已複製診斷報告至剪貼簿');
+            },
+            icon: const Icon(Icons.copy_rounded, size: 16),
+            label: const Text('複製報告'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: primary),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('關閉'),
+          ),
+        ],
       ),
     );
   }

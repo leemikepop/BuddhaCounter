@@ -115,20 +115,74 @@ class WidgetService {
 
       // 通知原生系統刷新小工具
       await HomeWidget.updateWidget(
-        name: androidWidgetName,
+        name: defaultTargetPlatform == TargetPlatform.iOS
+            ? iosWidgetName
+            : androidWidgetName,
         androidName: androidWidgetName,
         qualifiedAndroidName: qualifiedAndroidWidgetName,
         iOSName: iosWidgetName,
       );
-
-      // iOS 額外防護：呼叫無指定名稱的 updateWidget() 觸發 reloadAllTimelines()，避免名稱字串比對落差
-      if (defaultTargetPlatform == TargetPlatform.iOS) {
-        await HomeWidget.updateWidget();
-      }
     } catch (e) {
       // 桌面小工具更新失敗不影響主 App 運行
       debugPrint('WidgetService.updateWidgetData error: $e');
     }
   }
-}
 
+  /// 獲取小工具診斷資訊 (用於調試跨進程與 App Group 狀態)
+  static Future<Map<String, dynamic>> getDiagnostics() async {
+    final Map<String, dynamic> diag = {};
+    try {
+      final info = await PackageInfo.fromPlatform();
+      diag['packageName'] = info.packageName;
+      diag['appName'] = info.appName;
+      diag['version'] = info.version;
+      diag['buildNumber'] = info.buildNumber;
+    } catch (e) {
+      diag['packageInfoError'] = e.toString();
+    }
+
+    try {
+      final groups = await resolveTargetAppGroups();
+      diag['candidateGroups'] = groups;
+
+      final groupReads = <String, dynamic>{};
+      for (final gid in groups) {
+        try {
+          final count =
+              await HomeWidget.getWidgetData<int>('today_count', appGroupId: gid);
+          final text =
+              await HomeWidget.getWidgetData<String>('target_text', appGroupId: gid);
+          final ts = await HomeWidget.getWidgetData<double>(
+              'widget_update_timestamp',
+              appGroupId: gid);
+          groupReads[gid] = {
+            'today_count': count,
+            'target_text': text,
+            'timestamp': ts,
+          };
+        } catch (e) {
+          groupReads[gid] = {'error': e.toString()};
+        }
+      }
+      diag['groupData'] = groupReads;
+    } catch (e) {
+      diag['groupsError'] = e.toString();
+    }
+
+    try {
+      final installed = await HomeWidget.getInstalledWidgets();
+      diag['installedWidgets'] = installed
+          .map((w) => {
+                'iOSFamily': w.iOSFamily,
+                'iOSKind': w.iOSKind,
+                'androidWidgetId': w.androidWidgetId,
+                'androidClassName': w.androidClassName,
+              })
+          .toList();
+    } catch (e) {
+      diag['installedError'] = e.toString();
+    }
+
+    return diag;
+  }
+}
