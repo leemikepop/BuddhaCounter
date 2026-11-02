@@ -67,10 +67,29 @@ jobs:
         run: flutter test
 
       - name: Prepare Android Signing & Keystores
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           mkdir -p ~/.android ~/.config/.android
           keytool -genkeypair -alias androiddebugkey -keypass android -keystore ~/.android/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000 || true
           cp -f ~/.android/debug.keystore ~/.config/.android/debug.keystore || true
+
+          # 若存在正式 release 簽署金鑰，還原為 JKS 檔案並建立 key.properties
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "正在從 GitHub Secrets 還原正式 release 金鑰與 key.properties..."
+            mkdir -p android/keystore
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/keystore/leeyc.jks
+            echo "storeFile=../keystore/leeyc.jks" > android/key.properties
+            echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
+            echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+            echo "Release key.properties 還原完成，將使用正式 Google Play 金鑰簽名！"
+          else
+            echo "::warning::未偵測到 KEYSTORE_BASE64，將安全降級為 debug 簽名。"
+          fi
 
       - name: Build APK (Release)
         env:
