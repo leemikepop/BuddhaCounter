@@ -23,6 +23,7 @@ jobs:
   build-and-release-android:
     name: Build Android APK & App Bundle
     runs-on: ubuntu-latest
+    environment: 'Google Play Store'
 
     steps:
       - name: Checkout repository
