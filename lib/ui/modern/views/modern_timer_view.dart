@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/l10n.dart';
 import '../../common/app_toast.dart';
 import '../widgets/goal_picker.dart';
 
@@ -18,9 +19,10 @@ class ModernTimerView extends StatelessWidget {
   void _showStopConditionPicker(BuildContext context, CounterViewModel vm) {
     showGoalSheet(
       context,
-      title: '設定自動停止',
+      title: context.l10n.autoStopSheetTitle,
       builder: (ctx) {
         final theme = Theme.of(ctx);
+        final l10n = ctx.l10n;
         final muted = theme.colorScheme.onSurface.withValues(alpha: 0.6);
         void done(String message) {
           Navigator.pop(ctx);
@@ -49,49 +51,50 @@ class ModernTimerView extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 4, bottom: 14),
               child: Text(
-                '聲數與時間只能擇一，設定其中一項會清空另一項。',
+                l10n.autoStopExclusiveHint,
                 style: TextStyle(fontSize: 12.5, color: muted),
               ),
             ),
-            sectionTitle(Icons.flag_outlined, '念滿聲數停止'),
+            sectionTitle(Icons.flag_outlined, l10n.autoStopByCountTitle),
             PresetValuePicker(
               presets: const [108, 500, 1000, 5000, 10000],
               current: vm.autoTargetCount,
-              chipLabel: (v) => '$v 聲',
-              customChipLabel: (v) => '$v 聲 (自訂)',
-              customPrompt: '或自訂目標聲數：',
-              hintText: '輸入目標 (如 500)',
-              suffixText: '聲',
-              invalidMessage: '請輸入大於 0 的有效目標數字',
+              chipLabel: l10n.autoCountChip,
+              customChipLabel: l10n.autoCountCustomChip,
+              customPrompt: l10n.goalCustomPrompt,
+              hintText: l10n.goalCustomHint,
+              suffixText: l10n.unitRecitationsSuffix,
+              invalidMessage: l10n.goalInvalidNumber,
               onSelected: (v) {
                 vm.setAutoTargetCount(v);
-                done('已設定念滿 $v 聲自動停止');
+                done(l10n.autoCountGoalSetToast(v));
               },
               onDeselected: () {
                 vm.setAutoTargetCount(0);
-                done('已取消聲數目標，持續播放');
+                done(l10n.autoCountGoalClearedToast);
               },
             ),
             const SizedBox(height: 12),
             const Divider(),
             const SizedBox(height: 12),
-            sectionTitle(Icons.hourglass_bottom_rounded, '定時停止'),
+            sectionTitle(
+                Icons.hourglass_bottom_rounded, l10n.autoStopByTimeTitle),
             PresetValuePicker(
               presets: const [15, 30, 45, 60, 90],
               current: vm.autoStopMinutes,
-              chipLabel: (m) => '$m 分鐘',
-              customChipLabel: (m) => '$m 分鐘 (自訂)',
-              customPrompt: '或自訂分鐘數：',
-              hintText: '輸入分鐘數 (如 20)',
-              suffixText: '分鐘',
-              invalidMessage: '請輸入大於 0 的有效分鐘數',
+              chipLabel: l10n.autoMinutesChip,
+              customChipLabel: l10n.autoMinutesCustomChip,
+              customPrompt: l10n.autoMinutesPrompt,
+              hintText: l10n.autoMinutesHint,
+              suffixText: l10n.unitMinutesSuffix,
+              invalidMessage: l10n.autoMinutesInvalid,
               onSelected: (m) {
                 vm.setAutoStopMinutes(m);
-                done('已設定定時停止：$m 分鐘');
+                done(l10n.autoTimerSetToast(m));
               },
               onDeselected: () {
                 vm.setAutoStopMinutes(0);
-                done('已取消定時停止，持續播放');
+                done(l10n.autoTimerClearedToast);
               },
             ),
             if (vm.autoTargetCount > 0 || vm.autoStopMinutes > 0) ...[
@@ -100,10 +103,10 @@ class ModernTimerView extends StatelessWidget {
                 child: TextButton.icon(
                   onPressed: () {
                     vm.clearAutoStopCondition();
-                    done('已清除設定，持續播放');
+                    done(l10n.autoStopClearedToast);
                   },
                   icon: const Icon(Icons.all_inclusive_rounded, size: 18),
-                  label: const Text('清除設定，持續播放'),
+                  label: Text(l10n.autoStopClearAction),
                 ),
               ),
             ],
@@ -115,26 +118,26 @@ class ModernTimerView extends StatelessWidget {
 
   void _confirmResetAutoCount(BuildContext context, CounterViewModel vm) {
     if (vm.autoCount == 0) {
-      AppToast.show(context, '目前計數已為 0');
+      AppToast.show(context, context.l10n.autoAlreadyZeroToast);
       return;
     }
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('重設自動計數？'),
-        content: Text('目前自動計數為 ${vm.autoCount} 聲，確定要歸零重置嗎？\n（計時時間將會保留）'),
+        title: Text(context.l10n.autoResetConfirmTitle),
+        content: Text(context.l10n.autoResetConfirmBody(vm.autoCount)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton.tonal(
             onPressed: () {
               Navigator.pop(ctx);
               vm.resetAutoCount();
-              AppToast.show(context, '自動計數已重置為 0');
+              AppToast.show(context, context.l10n.autoResetDoneToast);
             },
-            child: const Text('確認重置'),
+            child: Text(context.l10n.autoResetConfirmAction),
           ),
         ],
       ),
@@ -149,6 +152,7 @@ class ModernTimerView extends StatelessWidget {
     final primary = theme.colorScheme.primary;
     final surface = theme.colorScheme.surface;
     final song = ChantConstants.getSongById(vm.currentSongId);
+    final l10n = context.l10n;
 
     // 自動停止條件 (念滿聲數 / 定時停止二擇一)
     final countGoal = vm.autoTargetCount;
@@ -162,18 +166,21 @@ class ModernTimerView extends StatelessWidget {
     final String? goalLabel;
     if (countGoal > 0) {
       goalLabel = isGoalReached
-          ? '達成 $countGoal 聲'
-          : '目標 $countGoal · ${(ringProgress * 100).toInt()}%';
+          ? l10n.goalReachedLabel(countGoal)
+          : l10n.goalProgressLabel(countGoal, (ringProgress * 100).toInt());
     } else if (timeGoal > 0) {
       goalLabel = isGoalReached
-          ? '定時 $timeGoal 分 · 已到'
-          : '定時 $timeGoal 分 · 剩 ${_formatRemaining(vm.autoStopRemainingSeconds)}';
+          ? l10n.autoTimeReachedLabel(timeGoal)
+          : l10n.autoTimeProgressLabel(
+              timeGoal,
+              _formatRemaining(l10n, vm.autoStopRemainingSeconds),
+            );
     } else {
       goalLabel = null;
     }
     final String stopLabel = countGoal > 0
-        ? '目標 $countGoal'
-        : (timeGoal > 0 ? '定時 $timeGoal 分' : '持續播放');
+        ? l10n.goalChipLabel(countGoal)
+        : (timeGoal > 0 ? l10n.autoTimerChip(timeGoal) : l10n.autoContinuous);
     final IconData stopIcon = countGoal > 0
         ? Icons.flag_outlined
         : (timeGoal > 0
@@ -237,7 +244,7 @@ class ModernTimerView extends StatelessWidget {
                     color: primary,
                     size: 26,
                   ),
-                  tooltip: vm.isAutoCounting ? '暫停' : '開始',
+                  tooltip: vm.isAutoCounting ? l10n.commonPause : l10n.commonStart,
                   onPressed: () => vm.toggleAutoCount(),
                 ),
                 const SizedBox(width: 10),
@@ -251,10 +258,10 @@ class ModernTimerView extends StatelessWidget {
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     size: 20,
                   ),
-                  tooltip: '重設計時',
+                  tooltip: l10n.timerResetTooltip,
                   onPressed: () {
                     vm.resetAutoTimer();
-                    AppToast.show(context, '計時已重置');
+                    AppToast.show(context, l10n.autoTimerResetToast);
                   },
                 ),
               ],
@@ -364,7 +371,7 @@ class ModernTimerView extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '聲 · 遍',
+                            l10n.autoCircleUnitLabel,
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
@@ -384,7 +391,10 @@ class ModernTimerView extends StatelessWidget {
                           const SizedBox(height: 6),
                           // 當前曲目節拍小標籤
                           Text(
-                            '每拍 ${(song.effectiveBeatIntervalMs / 1000).toStringAsFixed(2)}s 自動累加',
+                            l10n.autoBeatHint(
+                              (song.effectiveBeatIntervalMs / 1000)
+                                  .toStringAsFixed(2),
+                            ),
                             style: TextStyle(
                               fontSize: 10.5,
                               color: theme.colorScheme.onSurface
@@ -464,7 +474,8 @@ class ModernTimerView extends StatelessWidget {
                 ),
                 onPressed: vm.autoCount > 0 ? () => vm.decrementAuto() : null,
                 icon: const Icon(Icons.remove_circle_outline_rounded, size: 14),
-                label: const Text('減一', style: TextStyle(fontSize: 12)),
+                label: Text(l10n.counterMinusOne,
+                    style: const TextStyle(fontSize: 12)),
               ),
               const SizedBox(width: 8),
 
@@ -484,7 +495,8 @@ class ModernTimerView extends StatelessWidget {
                 ),
                 onPressed: () => _confirmResetAutoCount(context, vm),
                 icon: const Icon(Icons.refresh_rounded, size: 14),
-                label: const Text('重置', style: TextStyle(fontSize: 12)),
+                label: Text(l10n.autoResetShort,
+                    style: const TextStyle(fontSize: 12)),
               ),
             ],
           ),
@@ -512,7 +524,7 @@ class ModernTimerView extends StatelessWidget {
                 size: 24,
               ),
               label: Text(
-                vm.isAutoCounting ? '暫停' : '開始',
+                vm.isAutoCounting ? l10n.commonPause : l10n.commonStart,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -545,8 +557,8 @@ class ModernTimerView extends StatelessWidget {
     );
   }
 
-  static String _formatRemaining(int seconds) {
-    if (seconds >= 60) return '${(seconds / 60).ceil()} 分';
-    return '$seconds 秒';
+  static String _formatRemaining(AppLocalizations l10n, int seconds) {
+    if (seconds >= 60) return l10n.autoRemainingMinutes((seconds / 60).ceil());
+    return l10n.autoRemainingSeconds(seconds);
   }
 }

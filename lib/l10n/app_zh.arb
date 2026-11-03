@@ -268,5 +268,205 @@
         "type": "int"
       }
     }
+  },
+  "autoStopSheetTitle": "設定自動停止",
+  "@autoStopSheetTitle": {
+    "description": "自動計數：自動停止設定面板標題"
+  },
+  "autoStopExclusiveHint": "聲數與時間只能擇一，設定其中一項會清空另一項。",
+  "@autoStopExclusiveHint": {
+    "description": "自動停止面板說明：聲數與時間互斥"
+  },
+  "autoStopByCountTitle": "念滿聲數停止",
+  "@autoStopByCountTitle": {
+    "description": "自動停止面板：依聲數區塊標題"
+  },
+  "autoStopByTimeTitle": "定時停止",
+  "@autoStopByTimeTitle": {
+    "description": "自動停止面板：依時間區塊標題"
+  },
+  "autoCountChip": "{count} 聲",
+  "@autoCountChip": {
+    "description": "自動停止聲數選項晶片",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autoCountCustomChip": "{count} 聲 (自訂)",
+  "@autoCountCustomChip": {
+    "description": "自動停止聲數：目前為自訂值的晶片",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autoCountGoalSetToast": "已設定念滿 {count} 聲自動停止",
+  "@autoCountGoalSetToast": {
+    "description": "Toast：已設定聲數自動停止",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autoCountGoalClearedToast": "已取消聲數目標，持續播放",
+  "@autoCountGoalClearedToast": {
+    "description": "Toast：取消聲數自動停止"
+  },
+  "autoMinutesChip": "{minutes} 分鐘",
+  "@autoMinutesChip": {
+    "description": "定時停止分鐘選項晶片",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoMinutesCustomChip": "{minutes} 分鐘 (自訂)",
+  "@autoMinutesCustomChip": {
+    "description": "定時停止：目前為自訂值的晶片",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoMinutesPrompt": "或自訂分鐘數：",
+  "@autoMinutesPrompt": {
+    "description": "定時停止自訂輸入提示"
+  },
+  "autoMinutesHint": "輸入分鐘數 (如 20)",
+  "@autoMinutesHint": {
+    "description": "定時停止輸入框 placeholder"
+  },
+  "unitMinutesSuffix": "分鐘",
+  "@unitMinutesSuffix": {
+    "description": "數字輸入框後綴：分鐘"
+  },
+  "autoMinutesInvalid": "請輸入大於 0 的有效分鐘數",
+  "@autoMinutesInvalid": {
+    "description": "定時停止輸入無效提示"
+  },
+  "autoTimerSetToast": "已設定定時停止：{minutes} 分鐘",
+  "@autoTimerSetToast": {
+    "description": "Toast：已設定定時停止",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoTimerClearedToast": "已取消定時停止，持續播放",
+  "@autoTimerClearedToast": {
+    "description": "Toast：取消定時停止"
+  },
+  "autoStopClearAction": "清除設定，持續播放",
+  "@autoStopClearAction": {
+    "description": "自動停止面板：清除兩種停止條件按鈕"
+  },
+  "autoStopClearedToast": "已清除設定，持續播放",
+  "@autoStopClearedToast": {
+    "description": "Toast：已清除自動停止"
+  },
+  "autoAlreadyZeroToast": "目前計數已為 0",
+  "@autoAlreadyZeroToast": {
+    "description": "Toast：自動計數已經是 0"
+  },
+  "autoResetConfirmTitle": "重設自動計數？",
+  "@autoResetConfirmTitle": {
+    "description": "自動計數重置確認對話框標題"
+  },
+  "autoResetConfirmBody": "目前自動計數為 {count} 聲，確定要歸零重置嗎？\n（計時時間將會保留）",
+  "@autoResetConfirmBody": {
+    "description": "自動計數重置確認對話框內文",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autoResetConfirmAction": "確認重置",
+  "@autoResetConfirmAction": {
+    "description": "自動計數重置確認按鈕"
+  },
+  "autoResetDoneToast": "自動計數已重置為 0",
+  "@autoResetDoneToast": {
+    "description": "Toast：自動計數已重置"
+  },
+  "autoTimerResetToast": "計時已重置",
+  "@autoTimerResetToast": {
+    "description": "Toast：自動計數碼表已重置"
+  },
+  "autoTimeProgressLabel": "定時 {minutes} 分 · 剩 {remaining}",
+  "@autoTimeProgressLabel": {
+    "description": "圓盤內定時停止進度；remaining 為已格式化的剩餘時間",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "autoTimeReachedLabel": "定時 {minutes} 分 · 已到",
+  "@autoTimeReachedLabel": {
+    "description": "圓盤內定時已到",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoTimerChip": "定時 {minutes} 分",
+  "@autoTimerChip": {
+    "description": "自動停止小按鈕：目前為定時停止",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoContinuous": "持續播放",
+  "@autoContinuous": {
+    "description": "自動停止小按鈕：未設定任何停止條件"
+  },
+  "autoCircleUnitLabel": "聲 · 遍",
+  "@autoCircleUnitLabel": {
+    "description": "自動計數圓盤數字下方單位"
+  },
+  "autoBeatHint": "每拍 {seconds}s 自動累加",
+  "@autoBeatHint": {
+    "description": "自動計數圓盤：每拍秒數；seconds 為小數兩位字串",
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "autoResetShort": "重置",
+  "@autoResetShort": {
+    "description": "自動計數小按鈕：重置計數"
+  },
+  "autoRemainingMinutes": "{minutes} 分",
+  "@autoRemainingMinutes": {
+    "description": "剩餘時間 (分鐘)",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoRemainingSeconds": "{seconds} 秒",
+  "@autoRemainingSeconds": {
+    "description": "剩餘時間 (秒)",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   }
 }

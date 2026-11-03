@@ -202,4 +202,130 @@ class AppLocalizationsEn extends AppLocalizations {
   String goalSetToast(int count) {
     return 'Goal set: $count';
   }
+
+  @override
+  String get autoStopSheetTitle => 'Auto stop';
+
+  @override
+  String get autoStopExclusiveHint =>
+      'Choose either a count or a time. Setting one clears the other.';
+
+  @override
+  String get autoStopByCountTitle => 'Stop after a count';
+
+  @override
+  String get autoStopByTimeTitle => 'Stop after a time';
+
+  @override
+  String autoCountChip(int count) {
+    return '$count';
+  }
+
+  @override
+  String autoCountCustomChip(int count) {
+    return '$count (custom)';
+  }
+
+  @override
+  String autoCountGoalSetToast(int count) {
+    return 'Will stop after $count';
+  }
+
+  @override
+  String get autoCountGoalClearedToast => 'Count goal removed';
+
+  @override
+  String autoMinutesChip(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String autoMinutesCustomChip(int minutes) {
+    return '$minutes min (custom)';
+  }
+
+  @override
+  String get autoMinutesPrompt => 'Or enter custom minutes:';
+
+  @override
+  String get autoMinutesHint => 'Minutes (e.g. 20)';
+
+  @override
+  String get unitMinutesSuffix => 'min';
+
+  @override
+  String get autoMinutesInvalid => 'Enter minutes greater than 0';
+
+  @override
+  String autoTimerSetToast(int minutes) {
+    return 'Will stop after $minutes min';
+  }
+
+  @override
+  String get autoTimerClearedToast => 'Timer removed';
+
+  @override
+  String get autoStopClearAction => 'Clear and play continuously';
+
+  @override
+  String get autoStopClearedToast => 'Playing continuously';
+
+  @override
+  String get autoAlreadyZeroToast => 'Count is already 0';
+
+  @override
+  String get autoResetConfirmTitle => 'Reset auto count?';
+
+  @override
+  String autoResetConfirmBody(int count) {
+    return 'Reset the auto count of $count to 0?\n(The timer will be kept.)';
+  }
+
+  @override
+  String get autoResetConfirmAction => 'Reset';
+
+  @override
+  String get autoResetDoneToast => 'Auto count reset to 0';
+
+  @override
+  String get autoTimerResetToast => 'Timer reset';
+
+  @override
+  String autoTimeProgressLabel(int minutes, String remaining) {
+    return 'Timer $minutes min · $remaining left';
+  }
+
+  @override
+  String autoTimeReachedLabel(int minutes) {
+    return 'Timer $minutes min · done';
+  }
+
+  @override
+  String autoTimerChip(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get autoContinuous => 'Continuous';
+
+  @override
+  String get autoCircleUnitLabel => 'recitations';
+
+  @override
+  String autoBeatHint(String seconds) {
+    return '+1 every ${seconds}s';
+  }
+
+  @override
+  String get autoResetShort => 'Reset';
+
+  @override
+  String autoRemainingMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String autoRemainingSeconds(int seconds) {
+    return '$seconds s';
+  }
 }

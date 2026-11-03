@@ -8,6 +8,7 @@ import 'package:buddha_counter/l10n/l10n.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_settings_screen.dart';
 import 'package:buddha_counter/ui/modern/screens/modern_counter_screen.dart';
 import 'package:buddha_counter/ui/modern/views/modern_counter_view.dart';
+import 'package:buddha_counter/ui/modern/views/modern_timer_view.dart';
 
 import 'helpers/test_app.dart';
 
@@ -138,6 +139,40 @@ void main() {
       for (final label in ['Manual', 'Auto', 'Dedication', 'Calendar']) {
         expect(find.text(label), findsWidgets, reason: label);
       }
+    });
+  });
+
+  group('auto count view', () {
+    testWidgets('english labels for goal, timed stop and continuous',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({
+        StorageService.keyAutoCounter: 27,
+      });
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        deviceLocales: const [Locale('en', 'US')],
+      );
+      vm.setAutoTargetCount(108);
+      await tester.pumpWidget(
+          liveLocaleApp(vm, const Scaffold(body: ModernTimerView())));
+      await tester.pump();
+
+      expect(find.text('Goal 108'), findsOneWidget);
+      expect(find.text('Goal 108 · 25%'), findsOneWidget);
+      expect(find.text('−1'), findsOneWidget);
+      expect(find.text('Reset'), findsOneWidget);
+      expect(find.text('Start'), findsOneWidget);
+
+      vm.setAutoStopMinutes(30);
+      await tester.pump();
+      expect(find.text('30 min'), findsOneWidget);
+      expect(find.text('Timer 30 min · 30 min left'), findsOneWidget);
+
+      vm.clearAutoStopCondition();
+      await tester.pump();
+      expect(find.text('Continuous'), findsOneWidget);
     });
   });
 

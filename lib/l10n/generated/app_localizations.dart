@@ -453,6 +453,204 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'已設定目標：{count} 聲'**
   String goalSetToast(int count);
+
+  /// 自動計數：自動停止設定面板標題
+  ///
+  /// In zh, this message translates to:
+  /// **'設定自動停止'**
+  String get autoStopSheetTitle;
+
+  /// 自動停止面板說明：聲數與時間互斥
+  ///
+  /// In zh, this message translates to:
+  /// **'聲數與時間只能擇一，設定其中一項會清空另一項。'**
+  String get autoStopExclusiveHint;
+
+  /// 自動停止面板：依聲數區塊標題
+  ///
+  /// In zh, this message translates to:
+  /// **'念滿聲數停止'**
+  String get autoStopByCountTitle;
+
+  /// 自動停止面板：依時間區塊標題
+  ///
+  /// In zh, this message translates to:
+  /// **'定時停止'**
+  String get autoStopByTimeTitle;
+
+  /// 自動停止聲數選項晶片
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 聲'**
+  String autoCountChip(int count);
+
+  /// 自動停止聲數：目前為自訂值的晶片
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 聲 (自訂)'**
+  String autoCountCustomChip(int count);
+
+  /// Toast：已設定聲數自動停止
+  ///
+  /// In zh, this message translates to:
+  /// **'已設定念滿 {count} 聲自動停止'**
+  String autoCountGoalSetToast(int count);
+
+  /// Toast：取消聲數自動停止
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消聲數目標，持續播放'**
+  String get autoCountGoalClearedToast;
+
+  /// 定時停止分鐘選項晶片
+  ///
+  /// In zh, this message translates to:
+  /// **'{minutes} 分鐘'**
+  String autoMinutesChip(int minutes);
+
+  /// 定時停止：目前為自訂值的晶片
+  ///
+  /// In zh, this message translates to:
+  /// **'{minutes} 分鐘 (自訂)'**
+  String autoMinutesCustomChip(int minutes);
+
+  /// 定時停止自訂輸入提示
+  ///
+  /// In zh, this message translates to:
+  /// **'或自訂分鐘數：'**
+  String get autoMinutesPrompt;
+
+  /// 定時停止輸入框 placeholder
+  ///
+  /// In zh, this message translates to:
+  /// **'輸入分鐘數 (如 20)'**
+  String get autoMinutesHint;
+
+  /// 數字輸入框後綴：分鐘
+  ///
+  /// In zh, this message translates to:
+  /// **'分鐘'**
+  String get unitMinutesSuffix;
+
+  /// 定時停止輸入無效提示
+  ///
+  /// In zh, this message translates to:
+  /// **'請輸入大於 0 的有效分鐘數'**
+  String get autoMinutesInvalid;
+
+  /// Toast：已設定定時停止
+  ///
+  /// In zh, this message translates to:
+  /// **'已設定定時停止：{minutes} 分鐘'**
+  String autoTimerSetToast(int minutes);
+
+  /// Toast：取消定時停止
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消定時停止，持續播放'**
+  String get autoTimerClearedToast;
+
+  /// 自動停止面板：清除兩種停止條件按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'清除設定，持續播放'**
+  String get autoStopClearAction;
+
+  /// Toast：已清除自動停止
+  ///
+  /// In zh, this message translates to:
+  /// **'已清除設定，持續播放'**
+  String get autoStopClearedToast;
+
+  /// Toast：自動計數已經是 0
+  ///
+  /// In zh, this message translates to:
+  /// **'目前計數已為 0'**
+  String get autoAlreadyZeroToast;
+
+  /// 自動計數重置確認對話框標題
+  ///
+  /// In zh, this message translates to:
+  /// **'重設自動計數？'**
+  String get autoResetConfirmTitle;
+
+  /// 自動計數重置確認對話框內文
+  ///
+  /// In zh, this message translates to:
+  /// **'目前自動計數為 {count} 聲，確定要歸零重置嗎？\n（計時時間將會保留）'**
+  String autoResetConfirmBody(int count);
+
+  /// 自動計數重置確認按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'確認重置'**
+  String get autoResetConfirmAction;
+
+  /// Toast：自動計數已重置
+  ///
+  /// In zh, this message translates to:
+  /// **'自動計數已重置為 0'**
+  String get autoResetDoneToast;
+
+  /// Toast：自動計數碼表已重置
+  ///
+  /// In zh, this message translates to:
+  /// **'計時已重置'**
+  String get autoTimerResetToast;
+
+  /// 圓盤內定時停止進度；remaining 為已格式化的剩餘時間
+  ///
+  /// In zh, this message translates to:
+  /// **'定時 {minutes} 分 · 剩 {remaining}'**
+  String autoTimeProgressLabel(int minutes, String remaining);
+
+  /// 圓盤內定時已到
+  ///
+  /// In zh, this message translates to:
+  /// **'定時 {minutes} 分 · 已到'**
+  String autoTimeReachedLabel(int minutes);
+
+  /// 自動停止小按鈕：目前為定時停止
+  ///
+  /// In zh, this message translates to:
+  /// **'定時 {minutes} 分'**
+  String autoTimerChip(int minutes);
+
+  /// 自動停止小按鈕：未設定任何停止條件
+  ///
+  /// In zh, this message translates to:
+  /// **'持續播放'**
+  String get autoContinuous;
+
+  /// 自動計數圓盤數字下方單位
+  ///
+  /// In zh, this message translates to:
+  /// **'聲 · 遍'**
+  String get autoCircleUnitLabel;
+
+  /// 自動計數圓盤：每拍秒數；seconds 為小數兩位字串
+  ///
+  /// In zh, this message translates to:
+  /// **'每拍 {seconds}s 自動累加'**
+  String autoBeatHint(String seconds);
+
+  /// 自動計數小按鈕：重置計數
+  ///
+  /// In zh, this message translates to:
+  /// **'重置'**
+  String get autoResetShort;
+
+  /// 剩餘時間 (分鐘)
+  ///
+  /// In zh, this message translates to:
+  /// **'{minutes} 分'**
+  String autoRemainingMinutes(int minutes);
+
+  /// 剩餘時間 (秒)
+  ///
+  /// In zh, this message translates to:
+  /// **'{seconds} 秒'**
+  String autoRemainingSeconds(int seconds);
 }
 
 class _AppLocalizationsDelegate

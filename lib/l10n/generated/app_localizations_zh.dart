@@ -196,6 +196,131 @@ class AppLocalizationsZh extends AppLocalizations {
   String goalSetToast(int count) {
     return '已設定目標：$count 聲';
   }
+
+  @override
+  String get autoStopSheetTitle => '設定自動停止';
+
+  @override
+  String get autoStopExclusiveHint => '聲數與時間只能擇一，設定其中一項會清空另一項。';
+
+  @override
+  String get autoStopByCountTitle => '念滿聲數停止';
+
+  @override
+  String get autoStopByTimeTitle => '定時停止';
+
+  @override
+  String autoCountChip(int count) {
+    return '$count 聲';
+  }
+
+  @override
+  String autoCountCustomChip(int count) {
+    return '$count 聲 (自訂)';
+  }
+
+  @override
+  String autoCountGoalSetToast(int count) {
+    return '已設定念滿 $count 聲自動停止';
+  }
+
+  @override
+  String get autoCountGoalClearedToast => '已取消聲數目標，持續播放';
+
+  @override
+  String autoMinutesChip(int minutes) {
+    return '$minutes 分鐘';
+  }
+
+  @override
+  String autoMinutesCustomChip(int minutes) {
+    return '$minutes 分鐘 (自訂)';
+  }
+
+  @override
+  String get autoMinutesPrompt => '或自訂分鐘數：';
+
+  @override
+  String get autoMinutesHint => '輸入分鐘數 (如 20)';
+
+  @override
+  String get unitMinutesSuffix => '分鐘';
+
+  @override
+  String get autoMinutesInvalid => '請輸入大於 0 的有效分鐘數';
+
+  @override
+  String autoTimerSetToast(int minutes) {
+    return '已設定定時停止：$minutes 分鐘';
+  }
+
+  @override
+  String get autoTimerClearedToast => '已取消定時停止，持續播放';
+
+  @override
+  String get autoStopClearAction => '清除設定，持續播放';
+
+  @override
+  String get autoStopClearedToast => '已清除設定，持續播放';
+
+  @override
+  String get autoAlreadyZeroToast => '目前計數已為 0';
+
+  @override
+  String get autoResetConfirmTitle => '重設自動計數？';
+
+  @override
+  String autoResetConfirmBody(int count) {
+    return '目前自動計數為 $count 聲，確定要歸零重置嗎？\n（計時時間將會保留）';
+  }
+
+  @override
+  String get autoResetConfirmAction => '確認重置';
+
+  @override
+  String get autoResetDoneToast => '自動計數已重置為 0';
+
+  @override
+  String get autoTimerResetToast => '計時已重置';
+
+  @override
+  String autoTimeProgressLabel(int minutes, String remaining) {
+    return '定時 $minutes 分 · 剩 $remaining';
+  }
+
+  @override
+  String autoTimeReachedLabel(int minutes) {
+    return '定時 $minutes 分 · 已到';
+  }
+
+  @override
+  String autoTimerChip(int minutes) {
+    return '定時 $minutes 分';
+  }
+
+  @override
+  String get autoContinuous => '持續播放';
+
+  @override
+  String get autoCircleUnitLabel => '聲 · 遍';
+
+  @override
+  String autoBeatHint(String seconds) {
+    return '每拍 ${seconds}s 自動累加';
+  }
+
+  @override
+  String get autoResetShort => '重置';
+
+  @override
+  String autoRemainingMinutes(int minutes) {
+    return '$minutes 分';
+  }
+
+  @override
+  String autoRemainingSeconds(int seconds) {
+    return '$seconds 秒';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -389,6 +514,131 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   @override
   String goalSetToast(int count) {
     return '已设定目标：$count 声';
+  }
+
+  @override
+  String get autoStopSheetTitle => '设定自动停止';
+
+  @override
+  String get autoStopExclusiveHint => '声数与时间只能择一，设定其中一项会清空另一项。';
+
+  @override
+  String get autoStopByCountTitle => '念满声数停止';
+
+  @override
+  String get autoStopByTimeTitle => '定时停止';
+
+  @override
+  String autoCountChip(int count) {
+    return '$count 声';
+  }
+
+  @override
+  String autoCountCustomChip(int count) {
+    return '$count 声 (自定义)';
+  }
+
+  @override
+  String autoCountGoalSetToast(int count) {
+    return '已设定念满 $count 声自动停止';
+  }
+
+  @override
+  String get autoCountGoalClearedToast => '已取消声数目标，持续播放';
+
+  @override
+  String autoMinutesChip(int minutes) {
+    return '$minutes 分钟';
+  }
+
+  @override
+  String autoMinutesCustomChip(int minutes) {
+    return '$minutes 分钟 (自定义)';
+  }
+
+  @override
+  String get autoMinutesPrompt => '或自定义分钟数：';
+
+  @override
+  String get autoMinutesHint => '输入分钟数 (如 20)';
+
+  @override
+  String get unitMinutesSuffix => '分钟';
+
+  @override
+  String get autoMinutesInvalid => '请输入大于 0 的有效分钟数';
+
+  @override
+  String autoTimerSetToast(int minutes) {
+    return '已设定定时停止：$minutes 分钟';
+  }
+
+  @override
+  String get autoTimerClearedToast => '已取消定时停止，持续播放';
+
+  @override
+  String get autoStopClearAction => '清除设定，持续播放';
+
+  @override
+  String get autoStopClearedToast => '已清除设定，持续播放';
+
+  @override
+  String get autoAlreadyZeroToast => '目前计数已为 0';
+
+  @override
+  String get autoResetConfirmTitle => '重设自动计数？';
+
+  @override
+  String autoResetConfirmBody(int count) {
+    return '目前自动计数为 $count 声，确定要归零重置吗？\n（计时时间将会保留）';
+  }
+
+  @override
+  String get autoResetConfirmAction => '确认重置';
+
+  @override
+  String get autoResetDoneToast => '自动计数已重置为 0';
+
+  @override
+  String get autoTimerResetToast => '计时已重置';
+
+  @override
+  String autoTimeProgressLabel(int minutes, String remaining) {
+    return '定时 $minutes 分 · 剩 $remaining';
+  }
+
+  @override
+  String autoTimeReachedLabel(int minutes) {
+    return '定时 $minutes 分 · 已到';
+  }
+
+  @override
+  String autoTimerChip(int minutes) {
+    return '定时 $minutes 分';
+  }
+
+  @override
+  String get autoContinuous => '持续播放';
+
+  @override
+  String get autoCircleUnitLabel => '声 · 遍';
+
+  @override
+  String autoBeatHint(String seconds) {
+    return '每拍 ${seconds}s 自动累加';
+  }
+
+  @override
+  String get autoResetShort => '重置';
+
+  @override
+  String autoRemainingMinutes(int minutes) {
+    return '$minutes 分';
+  }
+
+  @override
+  String autoRemainingSeconds(int seconds) {
+    return '$seconds 秒';
   }
 }
 
