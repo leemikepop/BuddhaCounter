@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
   audioplayers: ^6.1.0
   shared_preferences: ^2.3.2
   wakelock_plus: ^1.2.8
@@ -34,6 +37,7 @@ flutter_launcher_icons:
   remove_alpha_ios: true
 
 flutter:
+  generate: true
   uses-material-design: true
 
   assets:

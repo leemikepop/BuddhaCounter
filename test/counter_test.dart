@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:buddha_counter/core/constants/chant_songs.dart';
@@ -17,7 +15,6 @@ import 'package:buddha_counter/ui/modern/views/modern_counter_view.dart';
 import 'package:buddha_counter/ui/modern/views/modern_timer_view.dart';
 import 'package:buddha_counter/ui/modern/screens/modern_counter_screen.dart';
 import 'package:buddha_counter/ui/modern/views/modern_practice_view.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_counter_screen.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_settings_screen.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_about_screen.dart';
@@ -25,70 +22,12 @@ import 'package:buddha_counter/ui/common/app_toast.dart';
 import 'package:buddha_counter/ui/modern/widgets/modern_guide_dialog.dart';
 import 'package:buddha_counter/ui/modern/widgets/song_list_tile.dart';
 import 'package:buddha_counter/core/services/practice_record_service.dart';
+import 'helpers/test_app.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(() {
-    AudioPlayer.preparationTimeout = const Duration(milliseconds: 10);
-    AudioPlayer.seekingTimeout = const Duration(milliseconds: 10);
-    SharedPreferences.setMockInitialValues({});
-    PackageInfo.setMockInitialValues(
-      appName: '念佛計數器',
-      packageName: 'com.yichung.lee.buddha_counter',
-      version: '1.48.0',
-      buildNumber: '148',
-      buildSignature: '',
-    );
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('xyz.luan/audioplayers.global'),
-      (call) async => 1,
-    );
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('xyz.luan/audioplayers'),
-      (call) async {
-        final playerId = call.arguments?['playerId'];
-        if (playerId != null) {
-          final eventChannel = 'xyz.luan/audioplayers/events/$playerId';
-          if (call.method == 'seek') {
-            final ByteData message =
-                const StandardMethodCodec().encodeSuccessEnvelope({
-              'event': 'audio.onSeekComplete',
-            });
-            TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-                .handlePlatformMessage(eventChannel, message, (data) {});
-          } else if (call.method == 'setSourceUrl' ||
-              call.method == 'setSourceBytes') {
-            final ByteData message =
-                const StandardMethodCodec().encodeSuccessEnvelope({
-              'event': 'audio.onPrepared',
-              'value': true,
-            });
-            TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-                .handlePlatformMessage(eventChannel, message, (data) {});
-          }
-        }
-        return 1;
-      },
-    );
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('com.ryanheise.audio_service.client.methods'),
-      (call) async => {},
-    );
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('com.ryanheise.audio_service.handler.methods'),
-      (call) async => {},
-    );
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (call) async => Directory.systemTemp.path,
-    );
-  });
+  setUpTestPlatformMocks();
 
   group('BuddhaCounter Storage & Model Tests', () {
     setUp(() {
@@ -288,7 +227,7 @@ void main() {
 
     testWidgets('MarqueeText renders text cleanly', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
+        testApp(
           home: Scaffold(
             body: MarqueeText(text: '南無本師釋迦牟尼佛 (三稱、開經偈)'),
           ),
@@ -307,7 +246,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: Scaffold(
               body: ModernCounterView(),
             ),
@@ -339,7 +278,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: Scaffold(
               body: ModernTimerView(),
             ),
@@ -373,7 +312,7 @@ void main() {
     testWidgets('AppToast renders message correctly and dismisses',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        testApp(
           home: Scaffold(
             body: Builder(
               builder: (ctx) => ElevatedButton(
@@ -501,7 +440,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: Scaffold(
               body: Column(
                 children: [
@@ -575,7 +514,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: Scaffold(
               body: ModernTimerView(),
             ),
@@ -642,7 +581,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: ModernCounterScreen(),
           ),
         ),
@@ -667,7 +606,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: LegacyCounterScreen(),
           ),
         ),
@@ -692,7 +631,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: ModernCounterScreen(),
           ),
         ),
@@ -718,7 +657,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: Scaffold(
               body: ModernPracticeView(),
             ),
@@ -785,7 +724,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: LegacyCounterScreen(),
           ),
         ),
@@ -814,7 +753,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: LegacySettingsScreen(),
           ),
         ),
@@ -836,7 +775,7 @@ void main() {
         'LegacyAboutScreen displays dynamic project version from PackageInfo',
         (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
+        testApp(
           home: LegacyAboutScreen(),
         ),
       );
@@ -874,7 +813,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: Scaffold(
               body: ModernCounterView(),
             ),
@@ -925,7 +864,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider.value(
           value: vm,
-          child: MaterialApp(
+          child: testApp(
             home: Builder(
               builder: (ctx) => ElevatedButton(
                 onPressed: () => ModernGuideDialog.show(ctx),
@@ -1002,7 +941,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: ModernCounterScreen(),
           ),
         ),
@@ -1107,7 +1046,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: ModernCounterScreen(),
           ),
         ),
@@ -1366,7 +1305,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider.value(
           value: vm,
-          child: const MaterialApp(
+          child: testApp(
             home: ModernCounterScreen(),
           ),
         ),
@@ -1627,7 +1566,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
           value: vm,
-          child: const MaterialApp(home: Scaffold(body: ModernTimerView())),
+          child: testApp(home: Scaffold(body: ModernTimerView())),
         ),
       );
       await tester.pump();

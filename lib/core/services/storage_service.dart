@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../l10n/app_language.dart';
 
 enum SoundEffectType {
   woodfish1, // 木魚一 (wooden-fish-1.mp3)
@@ -67,6 +68,7 @@ class StorageService {
   static const String keyReminderHour = 'pref_reminder_hour';
   static const String keyReminderMinute = 'pref_reminder_minute';
   static const String keyLastActiveDate = 'pref_last_active_date';
+  static const String keyAppLanguage = 'pref_locale';
 
   final SharedPreferences _prefs;
 
@@ -205,6 +207,12 @@ class StorageService {
   int getReminderMinute() => _prefs.getInt(keyReminderMinute) ?? 0;
   Future<void> setReminderMinute(int min) =>
       _prefs.setInt(keyReminderMinute, min);
+
+  /// App 內語言偏好 (預設跟隨系統)
+  AppLanguage getAppLanguage() =>
+      AppLanguage.fromStorage(_prefs.getString(keyAppLanguage));
+  Future<void> setAppLanguage(AppLanguage v) =>
+      _prefs.setString(keyAppLanguage, v.storageValue);
 
   String getLastActiveDate() => _prefs.getString(keyLastActiveDate) ?? '';
   Future<void> setLastActiveDate(String dateStr) =>

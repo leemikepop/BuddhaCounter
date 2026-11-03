@@ -9,6 +9,7 @@ import '../../core/services/audio_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/practice_record_service.dart';
 import '../../core/services/storage_service.dart';
+import '../../l10n/app_language.dart';
 
 class CounterViewModel extends ChangeNotifier {
   final StorageService _storage;
@@ -192,6 +193,42 @@ class CounterViewModel extends ChangeNotifier {
   PracticeRecordService get practiceRecords => _practiceRecords;
   NotificationService get notifications => _notifications;
 
+  // --- 語言 ---
+  AppLanguage _appLanguage = AppLanguage.system;
+  AppLanguage get appLanguage => _appLanguage;
+
+  List<Locale> _deviceLocales = const [];
+
+  Locale _locale = kZhHant;
+
+  /// 目前實際使用的語言 (已依偏好與手機語言解析)
+  Locale get locale => _locale;
+
+  void setAppLanguage(AppLanguage v) {
+    _appLanguage = v;
+    _storage.setAppLanguage(v);
+    _resolveLocale();
+    notifyListeners();
+  }
+
+  /// 手機系統語言變更時呼叫 (WidgetsBindingObserver.didChangeLocales)
+  void updateDeviceLocales(List<Locale> locales) {
+    _deviceLocales = List.unmodifiable(locales);
+    if (_resolveLocale()) notifyListeners();
+  }
+
+  /// 重新解析語言；有變更時回傳 true 並通知相依服務
+  bool _resolveLocale() {
+    final next = resolveAppLocale(_deviceLocales, _appLanguage);
+    if (next == _locale) return false;
+    _locale = next;
+    _onLocaleChanged(next);
+    return true;
+  }
+
+  /// 語言變更時同步無 BuildContext 的服務 (曲目內容、通知、小工具、背景播放)
+  void _onLocaleChanged(Locale locale) {}
+
   int get streakDays => _practiceRecords.calculateStreak();
   int get todayPracticeCount => _practiceRecords.getCount(DateTime.now());
   int get weeklyPracticeCount => _practiceRecords.getWeeklyTotal(DateTime.now());
@@ -207,12 +244,19 @@ class CounterViewModel extends ChangeNotifier {
     required AudioService audio,
     PracticeRecordService? practiceRecords,
     NotificationService? notifications,
+    List<Locale>? deviceLocales,
   })  : _storage = storage,
         _audio = audio,
         _practiceRecords = practiceRecords ?? PracticeRecordService(storage),
         _notifications = notifications ?? NotificationService(storage),
         _soundEffect = storage.getSoundEffect(),
         _uiMode = storage.getUiMode() {
+    _appLanguage = _storage.getAppLanguage();
+    _deviceLocales = List.unmodifiable(
+        deviceLocales ?? PlatformDispatcher.instance.locales);
+    _locale = resolveAppLocale(_deviceLocales, _appLanguage);
+    _onLocaleChanged(_locale);
+
     _count = _storage.getCounter();
     _currentSongId = _storage.getLastSongId();
     _autoCount = _storage.getAutoCounter();

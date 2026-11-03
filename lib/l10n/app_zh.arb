@@ -1,0 +1,23 @@
+{
+  "@@locale": "zh",
+  "appTitle": "念佛計數器",
+  "@appTitle": {
+    "description": "App 名稱 (視窗標題、關於頁)"
+  },
+  "commonCancel": "取消",
+  "@commonCancel": {
+    "description": "通用：取消按鈕"
+  },
+  "commonConfirm": "確認",
+  "@commonConfirm": {
+    "description": "通用：確認按鈕"
+  },
+  "commonSet": "設定",
+  "@commonSet": {
+    "description": "通用：套用自訂數值的按鈕"
+  },
+  "commonClose": "關閉",
+  "@commonClose": {
+    "description": "通用：關閉按鈕 / tooltip"
+  }
+}

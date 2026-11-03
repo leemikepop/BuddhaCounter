@@ -10,6 +10,7 @@ import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/widget_service.dart';
 import 'features/counter/counter_view_model.dart';
+import 'l10n/l10n.dart';
 import 'ui/legacy/screens/legacy_counter_screen.dart';
 import 'ui/modern/screens/modern_counter_screen.dart';
 import 'ui/modern/theme/modern_theme.dart';
@@ -110,6 +111,12 @@ class _BuddhaCounterAppState extends State<BuddhaCounterApp>
   }
 
   @override
+  void didChangeLocales(List<Locale>? locales) {
+    // 手機系統語言變更：設定為「跟隨系統」時即時切換
+    context.read<CounterViewModel>().updateDeviceLocales(locales ?? const []);
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       // 當 App 切換回前台或喚醒時，檢查跨日重設並同步桌面小工具數據
@@ -127,13 +134,16 @@ class _BuddhaCounterAppState extends State<BuddhaCounterApp>
   @override
   Widget build(BuildContext context) {
     // 僅訂閱 UI 模式與深淺色主題變化，避免計數或音訊播放時重複重建整棵 MaterialApp
-    final (uiMode, themeMode) =
-        context.select<CounterViewModel, (AppUiMode, ThemeMode)>(
-      (vm) => (vm.uiMode, vm.themeMode),
+    final (uiMode, themeMode, locale) =
+        context.select<CounterViewModel, (AppUiMode, ThemeMode, Locale)>(
+      (vm) => (vm.uiMode, vm.themeMode, vm.locale),
     );
 
     return MaterialApp(
-      title: '念佛計數器',
+      onGenerateTitle: (ctx) => ctx.l10n.appTitle,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: locale,
       debugShowCheckedModeBanner: false,
       themeMode: (uiMode == AppUiMode.legacy) ? ThemeMode.light : themeMode,
       theme: (uiMode == AppUiMode.legacy)
