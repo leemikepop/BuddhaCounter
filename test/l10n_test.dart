@@ -11,6 +11,9 @@ import 'package:buddha_counter/ui/modern/views/modern_counter_view.dart';
 import 'package:buddha_counter/ui/modern/views/modern_timer_view.dart';
 import 'package:buddha_counter/ui/modern/views/modern_calendar_view.dart';
 import 'package:buddha_counter/l10n/l10n_dates.dart';
+import 'package:buddha_counter/l10n/chant_tag_labels.dart';
+import 'package:buddha_counter/core/constants/chant_songs.dart';
+import 'package:buddha_counter/core/content/chant_content.dart';
 
 import 'helpers/test_app.dart';
 
@@ -141,6 +144,7 @@ void main() {
       for (final label in ['Manual', 'Auto', 'Dedication', 'Calendar']) {
         expect(find.text(label), findsWidgets, reason: label);
       }
+      await disposeAndSettleTimers(tester);
     });
   });
 
@@ -211,6 +215,82 @@ void main() {
     });
   });
 
+  group('chant content', () {
+    tearDown(() => ChantConstants.applyLocale(kZhHant));
+
+    test('zh_Hans and en catalogs cover all 31 songs and dedication verses',
+        () {
+      final ids = {for (var i = 0; i <= 30; i++) i};
+      final zhHant = chantContentFor(kZhHant);
+      for (final loc in [kZhHans, kEn]) {
+        final c = chantContentFor(loc);
+        expect(c.songTitles.keys.toSet(), ids, reason: '$loc');
+        expect(c.huiXiangItems.length, ChantConstants.huiXiangCount);
+        for (var i = 0; i < c.huiXiangItems.length; i++) {
+          expect(c.huiXiangItems[i].verses.length,
+              zhHant.huiXiangItems[i].verses.length);
+        }
+        for (final s in ChantConstants.getAllSongs()) {
+          expect(c.artistNames.containsKey(s.artist), isTrue,
+              reason: '$loc missing artist ${s.artist}');
+        }
+      }
+    });
+
+    test('applyLocale localizes titles and keeps zh_Hant unchanged', () async {
+      await ChantConstants.loadMetadataFromAssets();
+      ChantConstants.applyLocale(kZhHans);
+      expect(ChantConstants.getSongById(0).title.startsWith('阿弥陀佛'), isTrue);
+      expect(ChantConstants.getSongById(0).artist, '悟道法师');
+
+      ChantConstants.applyLocale(kEn);
+      expect(ChantConstants.getSongById(11).title, contains('Namo Amitabha'));
+      expect(ChantConstants.getSongById(1).artist,
+          chantContentFor(kEn).defaultArtist);
+      expect(ChantConstants.getSongById(1).album, 'Buddha Counter');
+      expect(ChantConstants.huiXiangItems.first.title,
+          chantContentFor(kEn).huiXiangItems.first.title);
+
+      ChantConstants.applyLocale(kZhHant);
+      expect(ChantConstants.getSongById(0).title, '阿彌陀佛-四字四音-華藏淨宗-悟道法師');
+      expect(ChantConstants.getSongById(0).artist, '悟道法師');
+      expect(ChantConstants.huiXiangItems.first.title, '大回向西方文');
+    });
+
+    test('tag counts are identical in every language', () {
+      for (final loc in [kZhHant, kZhHans, kEn]) {
+        ChantConstants.applyLocale(loc);
+        expect(ChantConstants.countSongsByTag(ChantTag.fourCharAmitabha), 12);
+        expect(ChantConstants.availableTags.first, ChantTag.fourCharAmitabha);
+      }
+    });
+
+    test('every tag has a label in every language', () {
+      for (final loc in [kZhHant, kZhHans, kEn]) {
+        final l10n = lookupAppLocalizations(loc);
+        for (final t in ChantTag.values) {
+          expect(chantTagLabel(l10n, t), isNotEmpty);
+        }
+      }
+      expect(chantTagLabel(lookupAppLocalizations(kZhHant),
+          ChantTag.fourCharAmitabha), '四字彌陀');
+    });
+
+    test('view model applies content locale on language change', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        deviceLocales: const [Locale('zh', 'TW')],
+      );
+      expect(ChantConstants.huiXiangItems.first.title, '大回向西方文');
+      vm.setAppLanguage(AppLanguage.zhHans);
+      expect(ChantConstants.huiXiangItems.first.verses.first,
+          startsWith('愿我临终'));
+    });
+  });
+
   group('language picker', () {
     Future<CounterViewModel> newVm() async {
       SharedPreferences.setMockInitialValues({});
@@ -254,6 +334,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(vm.appLanguage, AppLanguage.zhHant);
       expect(find.text('語言'), findsOneWidget);
+      await disposeAndSettleTimers(tester);
     });
 
     testWidgets('legacy settings language section switches to Simplified',

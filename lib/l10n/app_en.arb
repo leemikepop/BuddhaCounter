@@ -161,5 +161,13 @@
   "diagDialogTitle": "Widget diagnostics",
   "diagHint": "💡 Tip: iOS widgets share data through an Apple-signed App Group. Sideloading with a free Apple ID (e.g. Sideloadly) blocks this, so the widget shows \"not connected\". Paid developer or TestFlight builds sync normally.",
   "diagCopiedToast": "Report copied",
-  "diagCopy": "Copy report"
+  "diagCopy": "Copy report",
+  "chantTagFourCharAmitabha": "4-char Amitabha",
+  "chantTagSixCharAmitabha": "6-char Amitabha",
+  "chantTagBodhisattvaMantra": "Bodhisattvas & mantras",
+  "chantTagPilgrimage": "Pilgrimage",
+  "chantTagLingyan": "Lingyan chant",
+  "chantTagMasterChant": "Masters",
+  "chantTagBriskMedium": "Brisk",
+  "chantTagSlowSolemn": "Slow"
 }

@@ -227,7 +227,9 @@ class CounterViewModel extends ChangeNotifier {
   }
 
   /// 語言變更時同步無 BuildContext 的服務 (曲目內容、通知、小工具、背景播放)
-  void _onLocaleChanged(Locale locale) {}
+  void _onLocaleChanged(Locale locale) {
+    ChantConstants.applyLocale(locale);
+  }
 
   int get streakDays => _practiceRecords.calculateStreak();
   int get todayPracticeCount => _practiceRecords.getCount(DateTime.now());
@@ -253,7 +255,7 @@ class CounterViewModel extends ChangeNotifier {
         _uiMode = storage.getUiMode() {
     _appLanguage = _storage.getAppLanguage();
     _deviceLocales = List.unmodifiable(
-        deviceLocales ?? PlatformDispatcher.instance.locales);
+        deviceLocales ?? WidgetsBinding.instance.platformDispatcher.locales);
     _locale = resolveAppLocale(_deviceLocales, _appLanguage);
     _onLocaleChanged(_locale);
 
@@ -288,7 +290,7 @@ class CounterViewModel extends ChangeNotifier {
     }
     _fullscreenTap = _storage.getFullscreenTap();
     _hasSeenModernGuide = _storage.getSeenModernGuide();
-    final maxHxIdx = ChantConstants.huiXiangItems.length - 1;
+    final maxHxIdx = ChantConstants.huiXiangCount - 1;
     _huiXiangIndex = _storage.getHuiXiangIndex().clamp(0, maxHxIdx);
 
     // 監聽音訊時長變化（透過獨立 ValueListenable 更新進度條，不觸發全頁重建）
@@ -1160,7 +1162,7 @@ class CounterViewModel extends ChangeNotifier {
   }
 
   Future<void> setHuiXiangIndex(int index) async {
-    final maxIdx = ChantConstants.huiXiangItems.length - 1;
+    final maxIdx = ChantConstants.huiXiangCount - 1;
     final clamped = index.clamp(0, maxIdx);
     if (_huiXiangIndex == clamped) return;
     _huiXiangIndex = clamped;

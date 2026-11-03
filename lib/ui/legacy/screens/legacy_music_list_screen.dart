@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/chant_tag_labels.dart';
+import '../../../l10n/l10n.dart';
 
 /// 經典佛曲清單畫面 (忠實復刻原 MainActivity4 & activity_main_activity4.xml，並支援標籤分類篩選)
 class LegacyMusicListScreen extends StatefulWidget {
@@ -12,7 +14,7 @@ class LegacyMusicListScreen extends StatefulWidget {
 }
 
 class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
-  String? _selectedTag; // null 代表「全部」
+  ChantTag? _selectedTag; // null 代表「全部」
 
   @override
   void initState() {
@@ -61,7 +63,7 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
                       const SizedBox(width: 6),
                       ChoiceChip(
                         label: Text(
-                          '$tag (${ChantConstants.countSongsByTag(tag)})',
+                          '${chantTagLabel(context.l10n, tag)} (${ChantConstants.countSongsByTag(tag)})',
                         ),
                         selected: _selectedTag == tag,
                         onSelected: (val) {

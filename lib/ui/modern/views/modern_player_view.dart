@@ -3,6 +3,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/chant_tag_labels.dart';
+import '../../../l10n/l10n.dart';
 import '../widgets/song_list_tile.dart';
 
 /// 現代禪意【佛曲梵音播放器】專屬視圖
@@ -17,7 +19,7 @@ class ModernPlayerView extends StatefulWidget {
 class _ModernPlayerViewState extends State<ModernPlayerView> {
   final TextEditingController _searchController = TextEditingController();
   String _searchKeyword = '';
-  String? _selectedTag; // null 代表「全部」
+  ChantTag? _selectedTag; // null 代表「全部」
   final ValueNotifier<double?> _dragValueNotifier = ValueNotifier<double?>(null);
 
   @override
@@ -43,7 +45,8 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
           !song.title.toLowerCase().contains(kw) &&
           !song.artist.toLowerCase().contains(kw) &&
           !song.album.toLowerCase().contains(kw) &&
-          !song.tags.any((t) => t.toLowerCase().contains(kw))) {
+          !song.tags.any((t) =>
+              chantTagLabel(context.l10n, t).toLowerCase().contains(kw))) {
         return false;
       }
       return true;
@@ -368,7 +371,7 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
               for (final tag in ChantConstants.availableTags) ...[
                 const SizedBox(width: 8),
                 _buildFilterChip(
-                  '$tag (${ChantConstants.countSongsByTag(tag)})',
+                  '${chantTagLabel(context.l10n, tag)} (${ChantConstants.countSongsByTag(tag)})',
                   tag,
                 ),
               ],
@@ -414,7 +417,7 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
     );
   }
 
-  Widget _buildFilterChip(String label, String? tagValue) {
+  Widget _buildFilterChip(String label, ChantTag? tagValue) {
     final isSel = _selectedTag == tagValue;
     return ChoiceChip(
       label: Text(label),

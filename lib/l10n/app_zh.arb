@@ -867,5 +867,37 @@
   "diagCopy": "複製報告",
   "@diagCopy": {
     "description": "按鈕：複製診斷報告"
+  },
+  "chantTagFourCharAmitabha": "四字彌陀",
+  "@chantTagFourCharAmitabha": {
+    "description": "佛曲分類：四字「阿彌陀佛」"
+  },
+  "chantTagSixCharAmitabha": "六字彌陀",
+  "@chantTagSixCharAmitabha": {
+    "description": "佛曲分類：六字「南無阿彌陀佛」"
+  },
+  "chantTagBodhisattvaMantra": "菩薩・持咒",
+  "@chantTagBodhisattvaMantra": {
+    "description": "佛曲分類：菩薩聖號與咒語"
+  },
+  "chantTagPilgrimage": "朝山聖號",
+  "@chantTagPilgrimage": {
+    "description": "佛曲分類：朝山聖號"
+  },
+  "chantTagLingyan": "靈巖梵唄",
+  "@chantTagLingyan": {
+    "description": "佛曲分類：靈巖山寺梵唄"
+  },
+  "chantTagMasterChant": "法師大德",
+  "@chantTagMasterChant": {
+    "description": "佛曲分類：法師大德領唱"
+  },
+  "chantTagBriskMedium": "快中板",
+  "@chantTagBriskMedium": {
+    "description": "佛曲分類：快板或中板"
+  },
+  "chantTagSlowSolemn": "慢板",
+  "@chantTagSlowSolemn": {
+    "description": "佛曲分類：慢板"
   }
 }

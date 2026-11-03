@@ -4,6 +4,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/chant_tag_labels.dart';
+import '../../../l10n/l10n.dart';
 import 'song_list_tile.dart';
 
 /// 現代禪意下方浮動音樂播放器 (Floating Bottom Music Player)
@@ -292,7 +294,7 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
   ScrollController? _activeScrollController;
 
   String _keyword = '';
-  String? _selectedTag; // null 代表「全部」
+  ChantTag? _selectedTag; // null 代表「全部」
   final ValueNotifier<double?> _dragValueNotifier = ValueNotifier<double?>(null);
   late bool _isExpanded;
 
@@ -420,7 +422,8 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
           !song.title.toLowerCase().contains(kw) &&
           !song.artist.toLowerCase().contains(kw) &&
           !song.album.toLowerCase().contains(kw) &&
-          !song.tags.any((t) => t.toLowerCase().contains(kw))) {
+          !song.tags.any((t) =>
+              chantTagLabel(context.l10n, t).toLowerCase().contains(kw))) {
         return false;
       }
       return true;
@@ -936,7 +939,7 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                     const SizedBox(width: 8),
                                     _buildTagChip(
                                       label:
-                                          '$tag (${ChantConstants.countSongsByTag(tag)})',
+                                          '${chantTagLabel(context.l10n, tag)} (${ChantConstants.countSongsByTag(tag)})',
                                       tagValue: tag,
                                     ),
                                   ],
@@ -1003,7 +1006,7 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
 
   Widget _buildTagChip({
     required String label,
-    required String? tagValue,
+    required ChantTag? tagValue,
   }) {
     final isSel = _selectedTag == tagValue;
     return ChoiceChip(

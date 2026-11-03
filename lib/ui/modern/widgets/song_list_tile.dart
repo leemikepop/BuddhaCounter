@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/chant_songs.dart';
+import '../../../l10n/chant_tag_labels.dart';
+import '../../../l10n/l10n.dart';
 
 /// 現代佛曲清單卡片組件（含分類標籤、平均節拍與演出者資訊）
 class SongListTile extends StatelessWidget {
@@ -137,7 +139,7 @@ class SongListTile extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                tag,
+                                chantTagLabel(context.l10n, tag),
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:buddha_counter/core/constants/chant_songs.dart';
 import 'package:buddha_counter/features/counter/counter_view_model.dart';
 import 'package:buddha_counter/l10n/l10n.dart';
 
@@ -32,7 +33,17 @@ Widget liveLocaleApp(CounterViewModel vm, Widget home) {
 }
 
 /// 註冊所有測試共用的平台通道 Mock (音訊、背景播放、路徑、套件資訊)
+/// 並固定每個測試的手機語言為 zh-TW、曲目內容為繁中 (避免全域內容狀態在測試間殘留)
 void setUpTestPlatformMocks() {
+  setUp(() {
+    TestWidgetsFlutterBinding.instance.platformDispatcher.localesTestValue =
+        const [Locale('zh', 'TW')];
+    ChantConstants.applyLocale(kZhHant);
+  });
+  tearDown(() {
+    TestWidgetsFlutterBinding.instance.platformDispatcher.clearLocalesTestValue();
+  });
+
   setUpAll(() {
     AudioPlayer.preparationTimeout = const Duration(milliseconds: 10);
     AudioPlayer.seekingTimeout = const Duration(milliseconds: 10);
@@ -88,4 +99,10 @@ void setUpTestPlatformMocks() {
       (call) async => Directory.systemTemp.path,
     );
   });
+}
+
+/// 卸載畫面並推進時間，讓跑馬燈 (MarqueeText) 等延遲迴圈自然結束，避免 pending timer
+Future<void> disposeAndSettleTimers(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox());
+  await tester.pump(const Duration(seconds: 3));
 }

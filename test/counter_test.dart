@@ -105,8 +105,8 @@ void main() {
       expect(customSong.effectiveBeatIntervalMs, 4000);
       expect(customSong.artist, '三寶弟子');
       expect(customSong.album, '念佛計數器');
-      expect(ChantConstants.availableTags, contains(ChantTags.fourCharAmitabha));
-      expect(ChantConstants.countSongsByTag(ChantTags.fourCharAmitabha), 12);
+      expect(ChantConstants.availableTags, contains(ChantTag.fourCharAmitabha));
+      expect(ChantConstants.countSongsByTag(ChantTag.fourCharAmitabha), 12);
     });
 
     test('loadMetadataFromAssets reads OGG Vorbis title, artist, album with defaults', () async {
@@ -669,32 +669,32 @@ void main() {
 
       // 驗證阿彌陀佛聖像、大回向西方文標題與偈頌文句
       expect(find.byType(Image), findsOneWidget);
-      expect(find.text(ChantConstants.huiXiangTitle), findsOneWidget);
-      expect(find.text(ChantConstants.huiXiangVerses.first), findsOneWidget);
+      expect(find.text('大回向西方文'), findsOneWidget);
+      expect(find.text('願我臨終無障礙 阿彌陀佛遠相迎'), findsOneWidget);
       expect(find.text('南無阿彌陀佛'), findsOneWidget);
 
       // 向左滑動切換至第二則迴向文（回向偈）
       await tester.fling(
-        find.text(ChantConstants.huiXiangTitle),
+        find.text('大回向西方文'),
         const Offset(-300, 0),
         1000,
       );
       await tester.pumpAndSettle();
 
       expect(vm.huiXiangIndex, 1);
-      expect(find.text(ChantConstants.huiXiangTitle2), findsOneWidget);
-      expect(find.text(ChantConstants.huiXiangVerses2.first), findsOneWidget);
+      expect(find.text('回向偈'), findsOneWidget);
+      expect(find.text('願生西方淨土中 九品蓮花為父母'), findsOneWidget);
 
       // 向右滑動切回第一則迴向文（大回向西方文）
       await tester.fling(
-        find.text(ChantConstants.huiXiangTitle2),
+        find.text('回向偈'),
         const Offset(300, 0),
         1000,
       );
       await tester.pumpAndSettle();
 
       expect(vm.huiXiangIndex, 0);
-      expect(find.text(ChantConstants.huiXiangTitle), findsOneWidget);
+      expect(find.text('大回向西方文'), findsOneWidget);
     });
 
     test('autoStopProgress calculates remaining fraction correctly', () async {
@@ -975,7 +975,7 @@ void main() {
 
       expect(find.text('佛曲選單（共 31 首） · 點擊收合'), findsOneWidget);
       final tagLabel =
-          '${ChantTags.pilgrimage} (${ChantConstants.countSongsByTag(ChantTags.pilgrimage)})';
+          '朝山聖號 (${ChantConstants.countSongsByTag(ChantTag.pilgrimage)})';
       expect(find.text(tagLabel), findsOneWidget);
 
       // 點擊「朝山聖號」標籤進行分類篩選

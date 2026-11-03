@@ -161,5 +161,13 @@
   "diagDialogTitle": "小组件诊断信息",
   "diagHint": "💡 诊断提示：iOS 桌面小组件必须依赖 Apple 官方签名的 App Group 跨进程共享数据。若通过免费个人 Apple ID 经由 Sideloadly 侧载，Apple 会限制该权限导致小组件显示未连接；若使用付费开发者账号或 TestFlight 签名，则可完整实时同步。",
   "diagCopiedToast": "已复制诊断报告至剪贴板",
-  "diagCopy": "复制报告"
+  "diagCopy": "复制报告",
+  "chantTagFourCharAmitabha": "四字弥陀",
+  "chantTagSixCharAmitabha": "六字弥陀",
+  "chantTagBodhisattvaMantra": "菩萨・持咒",
+  "chantTagPilgrimage": "朝山圣号",
+  "chantTagLingyan": "灵岩梵呗",
+  "chantTagMasterChant": "法师大德",
+  "chantTagBriskMedium": "快中板",
+  "chantTagSlowSolemn": "慢板"
 }

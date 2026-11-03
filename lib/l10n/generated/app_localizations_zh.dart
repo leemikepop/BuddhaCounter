@@ -565,6 +565,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diagCopy => '複製報告';
+
+  @override
+  String get chantTagFourCharAmitabha => '四字彌陀';
+
+  @override
+  String get chantTagSixCharAmitabha => '六字彌陀';
+
+  @override
+  String get chantTagBodhisattvaMantra => '菩薩・持咒';
+
+  @override
+  String get chantTagPilgrimage => '朝山聖號';
+
+  @override
+  String get chantTagLingyan => '靈巖梵唄';
+
+  @override
+  String get chantTagMasterChant => '法師大德';
+
+  @override
+  String get chantTagBriskMedium => '快中板';
+
+  @override
+  String get chantTagSlowSolemn => '慢板';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1128,6 +1152,30 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get diagCopy => '复制报告';
+
+  @override
+  String get chantTagFourCharAmitabha => '四字弥陀';
+
+  @override
+  String get chantTagSixCharAmitabha => '六字弥陀';
+
+  @override
+  String get chantTagBodhisattvaMantra => '菩萨・持咒';
+
+  @override
+  String get chantTagPilgrimage => '朝山圣号';
+
+  @override
+  String get chantTagLingyan => '灵岩梵呗';
+
+  @override
+  String get chantTagMasterChant => '法师大德';
+
+  @override
+  String get chantTagBriskMedium => '快中板';
+
+  @override
+  String get chantTagSlowSolemn => '慢板';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

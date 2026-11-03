@@ -1071,6 +1071,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'複製報告'**
   String get diagCopy;
+
+  /// 佛曲分類：四字「阿彌陀佛」
+  ///
+  /// In zh, this message translates to:
+  /// **'四字彌陀'**
+  String get chantTagFourCharAmitabha;
+
+  /// 佛曲分類：六字「南無阿彌陀佛」
+  ///
+  /// In zh, this message translates to:
+  /// **'六字彌陀'**
+  String get chantTagSixCharAmitabha;
+
+  /// 佛曲分類：菩薩聖號與咒語
+  ///
+  /// In zh, this message translates to:
+  /// **'菩薩・持咒'**
+  String get chantTagBodhisattvaMantra;
+
+  /// 佛曲分類：朝山聖號
+  ///
+  /// In zh, this message translates to:
+  /// **'朝山聖號'**
+  String get chantTagPilgrimage;
+
+  /// 佛曲分類：靈巖山寺梵唄
+  ///
+  /// In zh, this message translates to:
+  /// **'靈巖梵唄'**
+  String get chantTagLingyan;
+
+  /// 佛曲分類：法師大德領唱
+  ///
+  /// In zh, this message translates to:
+  /// **'法師大德'**
+  String get chantTagMasterChant;
+
+  /// 佛曲分類：快板或中板
+  ///
+  /// In zh, this message translates to:
+  /// **'快中板'**
+  String get chantTagBriskMedium;
+
+  /// 佛曲分類：慢板
+  ///
+  /// In zh, this message translates to:
+  /// **'慢板'**
+  String get chantTagSlowSolemn;
 }
 
 class _AppLocalizationsDelegate

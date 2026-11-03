@@ -580,4 +580,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diagCopy => 'Copy report';
+
+  @override
+  String get chantTagFourCharAmitabha => '4-char Amitabha';
+
+  @override
+  String get chantTagSixCharAmitabha => '6-char Amitabha';
+
+  @override
+  String get chantTagBodhisattvaMantra => 'Bodhisattvas & mantras';
+
+  @override
+  String get chantTagPilgrimage => 'Pilgrimage';
+
+  @override
+  String get chantTagLingyan => 'Lingyan chant';
+
+  @override
+  String get chantTagMasterChant => 'Masters';
+
+  @override
+  String get chantTagBriskMedium => 'Brisk';
+
+  @override
+  String get chantTagSlowSolemn => 'Slow';
 }
