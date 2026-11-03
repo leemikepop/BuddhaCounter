@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
 import '../../../l10n/l10n.dart';
+import '../../../l10n/sound_effect_labels.dart';
 import '../../common/language_picker.dart';
 import '../../common/app_toast.dart';
 
@@ -17,7 +18,7 @@ class LegacySettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('設定'),
+        title: Text(context.l10n.legacySettingsTitle),
         backgroundColor: const Color(0xFF0000FF),
         foregroundColor: Colors.white,
       ),
@@ -28,19 +29,19 @@ class LegacySettingsScreen extends StatelessWidget {
             // 螢幕常亮（防止休眠）設定
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text(
-                '保持螢幕常亮（防止休眠）',
+              title: Text(
+                context.l10n.legacyKeepScreenOnTitle,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF0000FF),
                 ),
               ),
-              subtitle: const Padding(
-                padding: EdgeInsets.only(top: 4),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  '開啟後計數、念佛與播放佛曲時不會自動關閉螢幕，亦可直接於各頁面頂部右上角快捷鍵切換',
-                  style: TextStyle(fontSize: 13, color: Colors.black54),
+                  context.l10n.legacyKeepScreenOnDesc,
+                  style: const TextStyle(fontSize: 13, color: Colors.black54),
                 ),
               ),
               value: vm.isCurrentScreenAwake,
@@ -48,7 +49,7 @@ class LegacySettingsScreen extends StatelessWidget {
                 vm.setScreenAwake(val);
                 AppToast.show(
                   context,
-                  val ? '螢幕常亮' : '已關閉螢幕常亮',
+                  val ? context.l10n.screenAwakeOn : context.l10n.screenAwakeOffToast,
                 );
               },
             ),
@@ -56,8 +57,8 @@ class LegacySettingsScreen extends StatelessWidget {
             const Divider(height: 32),
 
             // 敲擊音效設定
-            const Text(
-              '點擊計數音效',
+            Text(
+              context.l10n.legacyClickSoundTitle,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -74,22 +75,22 @@ class LegacySettingsScreen extends StatelessWidget {
                   vm.audioService.playClickSfx(val);
                 }
               },
-              child: const Column(
+              child: Column(
                 children: [
                   RadioListTile<SoundEffectType>(
-                    title: Text('木魚一'),
+                    title: Text(soundEffectLabel(context.l10n, SoundEffectType.woodfish1)),
                     value: SoundEffectType.woodfish1,
                   ),
                   RadioListTile<SoundEffectType>(
-                    title: Text('木魚二 (經典原音)'),
+                    title: Text(soundEffectLabel(context.l10n, SoundEffectType.woodfish2)),
                     value: SoundEffectType.woodfish2,
                   ),
                   RadioListTile<SoundEffectType>(
-                    title: Text('引磬聲'),
+                    title: Text(soundEffectLabel(context.l10n, SoundEffectType.bell)),
                     value: SoundEffectType.bell,
                   ),
                   RadioListTile<SoundEffectType>(
-                    title: Text('靜音'),
+                    title: Text(soundEffectLabel(context.l10n, SoundEffectType.none)),
                     value: SoundEffectType.none,
                   ),
                 ],
@@ -99,8 +100,8 @@ class LegacySettingsScreen extends StatelessWidget {
             const Divider(height: 32),
 
             // 介面風格切換（經典 Legacy / 現代 Modern）
-            const Text(
-              '介面模式切換',
+            Text(
+              context.l10n.legacyUiModeTitle,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -115,18 +116,18 @@ class LegacySettingsScreen extends StatelessWidget {
                 if (val != null) {
                   vm.setUiMode(val);
                   if (val == AppUiMode.modern) {
-                    AppToast.show(context, '已切換為現代模式');
+                    AppToast.show(context, context.l10n.switchedToModernToast);
                   }
                 }
               },
-              child: const Column(
+              child: Column(
                 children: [
                   RadioListTile<AppUiMode>(
-                    title: Text('經典模式'),
+                    title: Text(context.l10n.legacyClassicMode),
                     value: AppUiMode.legacy,
                   ),
                   RadioListTile<AppUiMode>(
-                    title: Text('現代模式'),
+                    title: Text(context.l10n.legacyModernMode),
                     value: AppUiMode.modern,
                   ),
                 ],
@@ -160,7 +161,7 @@ class LegacySettingsScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               onPressed: () => Navigator.pop(context),
-              child: const Text('儲存並返回', style: TextStyle(fontSize: 16)),
+              child: Text(context.l10n.legacySaveAndBack, style: TextStyle(fontSize: 16)),
             ),
           ],
         ),

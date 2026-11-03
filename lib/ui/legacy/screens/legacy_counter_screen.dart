@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
@@ -63,16 +64,16 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text(
-                  '念佛計數器 · 全新升級！',
+                Text(
+                  context.l10n.legacyUpgradeTitle,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  '已為您推出全新的「現代禪意模式」，包含沉浸圓環計數、自訂目標聲數、隨身佛曲播放器與晝夜護眼主題。\n\n您可隨時切換體驗，日後亦可自由切換回熟悉的經典模式。',
+                Text(
+                  context.l10n.legacyUpgradeBody,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -89,7 +90,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                           Navigator.pop(ctx);
                           vm.markModernGuideSeen();
                         },
-                        child: const Text('保留經典模式'),
+                        child: Text(context.l10n.legacyKeepClassic),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -107,8 +108,8 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                           vm.setUiMode(AppUiMode.modern);
                           ModernGuideDialog.show(context);
                         },
-                        child: const Text(
-                          '立即體驗新版',
+                        child: Text(
+                          context.l10n.legacyTryModern,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -132,8 +133,8 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF0000FF),
         foregroundColor: Colors.white,
-        title: const Text(
-          '手動計數',
+        title: Text(
+          context.l10n.tabManual,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -145,13 +146,13 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                   ? Icons.screen_lock_rotation_rounded
                   : Icons.screen_rotation_rounded,
             ),
-            tooltip: vm.isOrientationLocked ? '解除方向鎖定' : '鎖定螢幕方向',
+            tooltip: vm.isOrientationLocked ? context.l10n.orientationUnlockTooltip : context.l10n.orientationLockTooltip,
             onPressed: () {
               final orientation = MediaQuery.of(context).orientation;
               vm.toggleOrientationLock(orientation);
               AppToast.show(
                 context,
-                vm.isOrientationLocked ? '已鎖定螢幕方向' : '已解除鎖定',
+                vm.isOrientationLocked ? context.l10n.orientationLockedToast : context.l10n.legacyUnlockedToast,
               );
             },
           ),
@@ -163,12 +164,12 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                   ? Icons.remove_red_eye_rounded
                   : Icons.visibility_off_outlined,
             ),
-            tooltip: vm.isCurrentScreenAwake ? '關閉螢幕常亮' : '螢幕常亮',
+            tooltip: vm.isCurrentScreenAwake ? context.l10n.screenAwakeOffTooltip : context.l10n.screenAwakeOn,
             onPressed: () {
               vm.toggleCurrentScreenAwake();
               AppToast.show(
                 context,
-                vm.isCurrentScreenAwake ? '螢幕常亮' : '已關閉螢幕常亮',
+                vm.isCurrentScreenAwake ? context.l10n.screenAwakeOn : context.l10n.screenAwakeOffToast,
               );
             },
           ),
@@ -176,17 +177,17 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
           IconButton(
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.style_outlined),
-            tooltip: '切換至現代模式',
+            tooltip: context.l10n.legacySwitchToModern,
             onPressed: () {
               vm.setUiMode(AppUiMode.modern);
-              AppToast.show(context, '已切換為現代模式');
+              AppToast.show(context, context.l10n.switchedToModernToast);
             },
           ),
           // 4. 設定
           IconButton(
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.settings),
-            tooltip: '設定',
+            tooltip: context.l10n.legacySettingsTitle,
             onPressed: () {
               Navigator.push(
                 context,
@@ -202,31 +203,31 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Color(0xFF0000FF)),
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Color(0xFF0000FF)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    '念佛、拜佛記數器',
-                    style: TextStyle(
+                    context.l10n.drawerHeaderTitle,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   Text(
-                    '南無阿彌陀佛',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                    context.l10n.practiceBuddhaName,
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ),
             ),
             ListTile(
               leading: const Icon(Icons.timer_outlined),
-              title: const Text('自動計數'),
+              title: Text(context.l10n.tabAuto),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -238,7 +239,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.auto_stories),
-              title: const Text('迴向'),
+              title: Text(context.l10n.tabDedication),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -249,7 +250,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.calendar_month_rounded),
-              title: const Text('功課月曆表記'),
+              title: Text(context.l10n.legacyCalendarMenu),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -257,7 +258,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                   MaterialPageRoute(
                     builder: (_) => Scaffold(
                       appBar: AppBar(
-                        title: const Text('功課月曆表記'),
+                        title: Text(context.l10n.legacyCalendarMenu),
                       ),
                       body: const SafeArea(child: ModernCalendarView()),
                     ),
@@ -268,7 +269,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.library_music),
-              title: const Text('佛曲清單'),
+              title: Text(context.l10n.legacySongListTitle),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -281,7 +282,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('偏好設定'),
+              title: Text(context.l10n.legacyPreferences),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -293,7 +294,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.info_outline),
-              title: const Text('阿忠小站 · 緣起傳承'),
+              title: Text(context.l10n.drawerAbout),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -306,8 +307,8 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
             ListTile(
               leading:
                   const Icon(Icons.school_outlined, color: Color(0xFF0000FF)),
-              title: const Text('新版功能導覽教學'),
-              subtitle: const Text('了解現代禪意模式與新功能'),
+              title: Text(context.l10n.drawerGuide),
+              subtitle: Text(context.l10n.legacyGuideSubtitle),
               onTap: () {
                 Navigator.pop(context);
                 ModernGuideDialog.show(
@@ -320,11 +321,11 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.style_outlined),
-              title: const Text('切換至現代模式'),
+              title: Text(context.l10n.legacySwitchToModern),
               onTap: () {
                 Navigator.pop(context);
                 vm.setUiMode(AppUiMode.modern);
-                AppToast.show(context, '已切換為現代模式');
+                AppToast.show(context, context.l10n.switchedToModernToast);
               },
             ),
           ],
@@ -338,8 +339,8 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
               width: double.infinity,
               color: const Color(0xFF0000FF),
               padding: const EdgeInsets.symmetric(vertical: 4),
-              child: const Text(
-                '南無阿彌陀佛',
+              child: Text(
+                context.l10n.practiceBuddhaName,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -358,22 +359,22 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildClassicButton(
-                    text: '歸0',
+                    text: context.l10n.legacyResetZero,
                     onPressed: () => vm.resetCount(),
                   ),
                   _buildClassicButton(
-                    text: '減1',
+                    text: context.l10n.legacyMinusOne,
                     onPressed: () => vm.decrement(),
                   ),
                   _buildClassicButton(
-                    text: '念佛',
+                    text: context.l10n.legacyChant,
                     textColor: vm.isChantPlaying
                         ? const Color(0xFF0000FF)
                         : Colors.black,
                     onPressed: () => vm.toggleHomeChant(),
                   ),
                   _buildClassicButton(
-                    text: '迴向頁',
+                    text: context.l10n.legacyDedicationPage,
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -433,7 +434,7 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _buildClassicButton(
-                          text: '計數頁',
+                          text: context.l10n.legacyCounterPage,
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -445,22 +446,22 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                         ),
                         const SizedBox(width: 4),
                         _buildClassicButton(
-                          text: '開始',
+                          text: context.l10n.commonStart,
                           onPressed: () => vm.startTimer(),
                         ),
                         const SizedBox(width: 4),
                         _buildClassicButton(
-                          text: '停止',
+                          text: context.l10n.legacyStop,
                           onPressed: () => vm.stopTimer(),
                         ),
                         const SizedBox(width: 4),
                         _buildClassicButton(
-                          text: '歸零',
+                          text: context.l10n.counterResetShort,
                           onPressed: () => vm.resetTimer(),
                         ),
                         const SizedBox(width: 4),
                         _buildClassicButton(
-                          text: '佛曲',
+                          text: context.l10n.legacySongs,
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -479,8 +480,8 @@ class _LegacyCounterScreenState extends State<LegacyCounterScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        '計時：',
+                      Text(
+                        context.l10n.legacyTimerLabel,
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,

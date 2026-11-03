@@ -1132,5 +1132,194 @@
   "guideStart": "開始精進",
   "@guideStart": {
     "description": "導覽對話框完成按鈕"
+  },
+  "aboutTitle": "阿忠小站",
+  "@aboutTitle": {
+    "description": "關於頁標題 (作者小站名稱)"
+  },
+  "aboutAppName": "念佛計數器 (BuddhaCounter)",
+  "@aboutAppName": {
+    "description": "關於頁 App 名稱"
+  },
+  "aboutVersion": "版本 {version}",
+  "@aboutVersion": {
+    "description": "關於頁版本號",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutHeading": "【 阿忠小站 · 緣起與傳承 】",
+  "@aboutHeading": {
+    "description": "關於頁段落標題"
+  },
+  "aboutBody": "本應用程式由李義忠（阿忠）居士發心設計開發，最初於 Android 早期發布，旨在提供十方念佛、拜佛同修一個方便、純粹的隨身精進記數工具。\n\n為使阿忠的心血得以長久傳承、並服務更多現代修行大眾，現由後輩工程師接棒維護，推出全新的操作介面。\n\n祈願一切見聞者，皆發菩提心，一向專念南無阿彌陀佛，同生極樂國。",
+  "@aboutBody": {
+    "description": "關於頁緣起內文"
+  },
+  "aboutVisitSite": "瀏覽阿忠小站 (https://www.leeyc.net)",
+  "@aboutVisitSite": {
+    "description": "關於頁：開啟作者網站按鈕"
+  },
+  "aboutPrivacyIos": "iOS 隱私權政策",
+  "@aboutPrivacyIos": {
+    "description": "關於頁：iOS 隱私權政策"
+  },
+  "aboutPrivacyAndroid": "Android 隱私權政策",
+  "@aboutPrivacyAndroid": {
+    "description": "關於頁：Android 隱私權政策"
+  },
+  "legacyAutoTitle": "念佛自動計數",
+  "@legacyAutoTitle": {
+    "description": "經典模式自動計數頁標題"
+  },
+  "legacyAutoSongButton": "念佛\n曲目",
+  "@legacyAutoSongButton": {
+    "description": "經典自動計數頁：選曲按鈕 (兩行)"
+  },
+  "legacyTimerLabel": "計時：",
+  "@legacyTimerLabel": {
+    "description": "經典模式計時標籤"
+  },
+  "legacyAudioLabel": "音訊：",
+  "@legacyAudioLabel": {
+    "description": "經典自動計數頁音訊位置標籤"
+  },
+  "legacyAutoStopLabel": "自動關閉：",
+  "@legacyAutoStopLabel": {
+    "description": "經典自動計數頁定時關閉標籤"
+  },
+  "legacyMinutesLater": " 分鐘後",
+  "@legacyMinutesLater": {
+    "description": "經典自動計數頁定時關閉單位"
+  },
+  "legacyResetZero": "歸0",
+  "@legacyResetZero": {
+    "description": "經典模式按鈕：歸 0"
+  },
+  "legacyChant": "念佛",
+  "@legacyChant": {
+    "description": "經典模式按鈕：念佛 (播放)"
+  },
+  "legacyAudio": "音訊",
+  "@legacyAudio": {
+    "description": "經典自動計數頁按鈕：顯示音訊位置"
+  },
+  "legacyChantTitle": "念佛頁面",
+  "@legacyChantTitle": {
+    "description": "經典模式念佛 (迴向) 頁標題"
+  },
+  "legacyBackHome": "返回首頁",
+  "@legacyBackHome": {
+    "description": "經典模式：返回首頁按鈕"
+  },
+  "legacyUpgradeTitle": "念佛計數器 · 全新升級！",
+  "@legacyUpgradeTitle": {
+    "description": "經典模式升級介紹對話框標題"
+  },
+  "legacyUpgradeBody": "已為您推出全新的「現代禪意模式」，包含沉浸圓環計數、自訂目標聲數、隨身佛曲播放器與晝夜護眼主題。\n\n您可隨時切換體驗，日後亦可自由切換回熟悉的經典模式。",
+  "@legacyUpgradeBody": {
+    "description": "經典模式升級介紹對話框內文"
+  },
+  "legacyKeepClassic": "保留經典模式",
+  "@legacyKeepClassic": {
+    "description": "升級介紹：保留經典模式"
+  },
+  "legacyTryModern": "立即體驗新版",
+  "@legacyTryModern": {
+    "description": "升級介紹：切換到現代模式"
+  },
+  "legacyUnlockedToast": "已解除鎖定",
+  "@legacyUnlockedToast": {
+    "description": "經典模式 Toast：已解除方向鎖定"
+  },
+  "legacySwitchToModern": "切換至現代模式",
+  "@legacySwitchToModern": {
+    "description": "經典模式：切換到現代模式 (tooltip / 選單)"
+  },
+  "switchedToModernToast": "已切換為現代模式",
+  "@switchedToModernToast": {
+    "description": "Toast：已切到現代模式"
+  },
+  "legacySettingsTitle": "設定",
+  "@legacySettingsTitle": {
+    "description": "經典模式設定 (tooltip 與設定頁標題)"
+  },
+  "legacyCalendarMenu": "功課月曆表記",
+  "@legacyCalendarMenu": {
+    "description": "經典模式選單：功課月曆"
+  },
+  "legacyPreferences": "偏好設定",
+  "@legacyPreferences": {
+    "description": "經典模式選單：偏好設定"
+  },
+  "legacyGuideSubtitle": "了解現代禪意模式與新功能",
+  "@legacyGuideSubtitle": {
+    "description": "經典模式選單：導覽說明"
+  },
+  "legacyMinusOne": "減1",
+  "@legacyMinusOne": {
+    "description": "經典模式按鈕：減 1"
+  },
+  "legacyDedicationPage": "迴向頁",
+  "@legacyDedicationPage": {
+    "description": "經典模式按鈕：前往迴向頁"
+  },
+  "legacyCounterPage": "計數頁",
+  "@legacyCounterPage": {
+    "description": "經典模式按鈕：前往計數頁"
+  },
+  "legacyStop": "停止",
+  "@legacyStop": {
+    "description": "經典模式按鈕：停止計時"
+  },
+  "legacySongs": "佛曲",
+  "@legacySongs": {
+    "description": "經典模式按鈕：佛曲清單"
+  },
+  "legacyKeepScreenOnTitle": "保持螢幕常亮（防止休眠）",
+  "@legacyKeepScreenOnTitle": {
+    "description": "經典設定：螢幕常亮開關標題"
+  },
+  "legacyKeepScreenOnDesc": "開啟後計數、念佛與播放佛曲時不會自動關閉螢幕，亦可直接於各頁面頂部右上角快捷鍵切換",
+  "@legacyKeepScreenOnDesc": {
+    "description": "經典設定：螢幕常亮說明"
+  },
+  "legacyClickSoundTitle": "點擊計數音效",
+  "@legacyClickSoundTitle": {
+    "description": "經典設定：點擊音效標題"
+  },
+  "soundWoodfish1": "木魚一",
+  "@soundWoodfish1": {
+    "description": "音效名稱：木魚一"
+  },
+  "soundWoodfish2": "木魚二 (經典原音)",
+  "@soundWoodfish2": {
+    "description": "音效名稱：木魚二 (經典原音)"
+  },
+  "soundBell": "引磬聲",
+  "@soundBell": {
+    "description": "音效名稱：引磬"
+  },
+  "soundMute": "靜音",
+  "@soundMute": {
+    "description": "音效名稱：靜音"
+  },
+  "legacyUiModeTitle": "介面模式切換",
+  "@legacyUiModeTitle": {
+    "description": "經典設定：介面模式標題"
+  },
+  "legacyClassicMode": "經典模式",
+  "@legacyClassicMode": {
+    "description": "介面模式：經典"
+  },
+  "legacyModernMode": "現代模式",
+  "@legacyModernMode": {
+    "description": "介面模式：現代"
+  },
+  "legacySaveAndBack": "儲存並返回",
+  "@legacySaveAndBack": {
+    "description": "經典設定：儲存並返回按鈕"
   }
 }

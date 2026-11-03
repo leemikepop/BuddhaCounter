@@ -1371,6 +1371,282 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'開始精進'**
   String get guideStart;
+
+  /// 關於頁標題 (作者小站名稱)
+  ///
+  /// In zh, this message translates to:
+  /// **'阿忠小站'**
+  String get aboutTitle;
+
+  /// 關於頁 App 名稱
+  ///
+  /// In zh, this message translates to:
+  /// **'念佛計數器 (BuddhaCounter)'**
+  String get aboutAppName;
+
+  /// 關於頁版本號
+  ///
+  /// In zh, this message translates to:
+  /// **'版本 {version}'**
+  String aboutVersion(String version);
+
+  /// 關於頁段落標題
+  ///
+  /// In zh, this message translates to:
+  /// **'【 阿忠小站 · 緣起與傳承 】'**
+  String get aboutHeading;
+
+  /// 關於頁緣起內文
+  ///
+  /// In zh, this message translates to:
+  /// **'本應用程式由李義忠（阿忠）居士發心設計開發，最初於 Android 早期發布，旨在提供十方念佛、拜佛同修一個方便、純粹的隨身精進記數工具。\n\n為使阿忠的心血得以長久傳承、並服務更多現代修行大眾，現由後輩工程師接棒維護，推出全新的操作介面。\n\n祈願一切見聞者，皆發菩提心，一向專念南無阿彌陀佛，同生極樂國。'**
+  String get aboutBody;
+
+  /// 關於頁：開啟作者網站按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'瀏覽阿忠小站 (https://www.leeyc.net)'**
+  String get aboutVisitSite;
+
+  /// 關於頁：iOS 隱私權政策
+  ///
+  /// In zh, this message translates to:
+  /// **'iOS 隱私權政策'**
+  String get aboutPrivacyIos;
+
+  /// 關於頁：Android 隱私權政策
+  ///
+  /// In zh, this message translates to:
+  /// **'Android 隱私權政策'**
+  String get aboutPrivacyAndroid;
+
+  /// 經典模式自動計數頁標題
+  ///
+  /// In zh, this message translates to:
+  /// **'念佛自動計數'**
+  String get legacyAutoTitle;
+
+  /// 經典自動計數頁：選曲按鈕 (兩行)
+  ///
+  /// In zh, this message translates to:
+  /// **'念佛\n曲目'**
+  String get legacyAutoSongButton;
+
+  /// 經典模式計時標籤
+  ///
+  /// In zh, this message translates to:
+  /// **'計時：'**
+  String get legacyTimerLabel;
+
+  /// 經典自動計數頁音訊位置標籤
+  ///
+  /// In zh, this message translates to:
+  /// **'音訊：'**
+  String get legacyAudioLabel;
+
+  /// 經典自動計數頁定時關閉標籤
+  ///
+  /// In zh, this message translates to:
+  /// **'自動關閉：'**
+  String get legacyAutoStopLabel;
+
+  /// 經典自動計數頁定時關閉單位
+  ///
+  /// In zh, this message translates to:
+  /// **' 分鐘後'**
+  String get legacyMinutesLater;
+
+  /// 經典模式按鈕：歸 0
+  ///
+  /// In zh, this message translates to:
+  /// **'歸0'**
+  String get legacyResetZero;
+
+  /// 經典模式按鈕：念佛 (播放)
+  ///
+  /// In zh, this message translates to:
+  /// **'念佛'**
+  String get legacyChant;
+
+  /// 經典自動計數頁按鈕：顯示音訊位置
+  ///
+  /// In zh, this message translates to:
+  /// **'音訊'**
+  String get legacyAudio;
+
+  /// 經典模式念佛 (迴向) 頁標題
+  ///
+  /// In zh, this message translates to:
+  /// **'念佛頁面'**
+  String get legacyChantTitle;
+
+  /// 經典模式：返回首頁按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'返回首頁'**
+  String get legacyBackHome;
+
+  /// 經典模式升級介紹對話框標題
+  ///
+  /// In zh, this message translates to:
+  /// **'念佛計數器 · 全新升級！'**
+  String get legacyUpgradeTitle;
+
+  /// 經典模式升級介紹對話框內文
+  ///
+  /// In zh, this message translates to:
+  /// **'已為您推出全新的「現代禪意模式」，包含沉浸圓環計數、自訂目標聲數、隨身佛曲播放器與晝夜護眼主題。\n\n您可隨時切換體驗，日後亦可自由切換回熟悉的經典模式。'**
+  String get legacyUpgradeBody;
+
+  /// 升級介紹：保留經典模式
+  ///
+  /// In zh, this message translates to:
+  /// **'保留經典模式'**
+  String get legacyKeepClassic;
+
+  /// 升級介紹：切換到現代模式
+  ///
+  /// In zh, this message translates to:
+  /// **'立即體驗新版'**
+  String get legacyTryModern;
+
+  /// 經典模式 Toast：已解除方向鎖定
+  ///
+  /// In zh, this message translates to:
+  /// **'已解除鎖定'**
+  String get legacyUnlockedToast;
+
+  /// 經典模式：切換到現代模式 (tooltip / 選單)
+  ///
+  /// In zh, this message translates to:
+  /// **'切換至現代模式'**
+  String get legacySwitchToModern;
+
+  /// Toast：已切到現代模式
+  ///
+  /// In zh, this message translates to:
+  /// **'已切換為現代模式'**
+  String get switchedToModernToast;
+
+  /// 經典模式設定 (tooltip 與設定頁標題)
+  ///
+  /// In zh, this message translates to:
+  /// **'設定'**
+  String get legacySettingsTitle;
+
+  /// 經典模式選單：功課月曆
+  ///
+  /// In zh, this message translates to:
+  /// **'功課月曆表記'**
+  String get legacyCalendarMenu;
+
+  /// 經典模式選單：偏好設定
+  ///
+  /// In zh, this message translates to:
+  /// **'偏好設定'**
+  String get legacyPreferences;
+
+  /// 經典模式選單：導覽說明
+  ///
+  /// In zh, this message translates to:
+  /// **'了解現代禪意模式與新功能'**
+  String get legacyGuideSubtitle;
+
+  /// 經典模式按鈕：減 1
+  ///
+  /// In zh, this message translates to:
+  /// **'減1'**
+  String get legacyMinusOne;
+
+  /// 經典模式按鈕：前往迴向頁
+  ///
+  /// In zh, this message translates to:
+  /// **'迴向頁'**
+  String get legacyDedicationPage;
+
+  /// 經典模式按鈕：前往計數頁
+  ///
+  /// In zh, this message translates to:
+  /// **'計數頁'**
+  String get legacyCounterPage;
+
+  /// 經典模式按鈕：停止計時
+  ///
+  /// In zh, this message translates to:
+  /// **'停止'**
+  String get legacyStop;
+
+  /// 經典模式按鈕：佛曲清單
+  ///
+  /// In zh, this message translates to:
+  /// **'佛曲'**
+  String get legacySongs;
+
+  /// 經典設定：螢幕常亮開關標題
+  ///
+  /// In zh, this message translates to:
+  /// **'保持螢幕常亮（防止休眠）'**
+  String get legacyKeepScreenOnTitle;
+
+  /// 經典設定：螢幕常亮說明
+  ///
+  /// In zh, this message translates to:
+  /// **'開啟後計數、念佛與播放佛曲時不會自動關閉螢幕，亦可直接於各頁面頂部右上角快捷鍵切換'**
+  String get legacyKeepScreenOnDesc;
+
+  /// 經典設定：點擊音效標題
+  ///
+  /// In zh, this message translates to:
+  /// **'點擊計數音效'**
+  String get legacyClickSoundTitle;
+
+  /// 音效名稱：木魚一
+  ///
+  /// In zh, this message translates to:
+  /// **'木魚一'**
+  String get soundWoodfish1;
+
+  /// 音效名稱：木魚二 (經典原音)
+  ///
+  /// In zh, this message translates to:
+  /// **'木魚二 (經典原音)'**
+  String get soundWoodfish2;
+
+  /// 音效名稱：引磬
+  ///
+  /// In zh, this message translates to:
+  /// **'引磬聲'**
+  String get soundBell;
+
+  /// 音效名稱：靜音
+  ///
+  /// In zh, this message translates to:
+  /// **'靜音'**
+  String get soundMute;
+
+  /// 經典設定：介面模式標題
+  ///
+  /// In zh, this message translates to:
+  /// **'介面模式切換'**
+  String get legacyUiModeTitle;
+
+  /// 介面模式：經典
+  ///
+  /// In zh, this message translates to:
+  /// **'經典模式'**
+  String get legacyClassicMode;
+
+  /// 介面模式：現代
+  ///
+  /// In zh, this message translates to:
+  /// **'現代模式'**
+  String get legacyModernMode;
+
+  /// 經典設定：儲存並返回按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'儲存並返回'**
+  String get legacySaveAndBack;
 }
 
 class _AppLocalizationsDelegate

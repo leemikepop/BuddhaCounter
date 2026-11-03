@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
@@ -52,7 +53,7 @@ class _LegacyChantScreenState extends State<LegacyChantScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text('念佛頁面'),
+          title: Text(context.l10n.legacyChantTitle),
           backgroundColor: const Color(0xFF0000FF),
           foregroundColor: Colors.white,
         ),
@@ -105,8 +106,8 @@ class _LegacyChantScreenState extends State<LegacyChantScreen> {
                 const SizedBox(height: 12),
 
                 // 南無阿彌陀佛
-                const Text(
-                  '南無阿彌陀佛',
+                Text(
+                  context.l10n.practiceBuddhaName,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -127,7 +128,7 @@ class _LegacyChantScreenState extends State<LegacyChantScreen> {
                     _vm.stopChant();
                     Navigator.pop(context);
                   },
-                  child: const Text('返回首頁', style: TextStyle(fontSize: 16)),
+                  child: Text(context.l10n.legacyBackHome, style: TextStyle(fontSize: 16)),
                 ),
 
                 const SizedBox(height: 20),

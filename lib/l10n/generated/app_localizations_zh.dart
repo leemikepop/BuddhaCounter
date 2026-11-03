@@ -735,6 +735,149 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get guideStart => '開始精進';
+
+  @override
+  String get aboutTitle => '阿忠小站';
+
+  @override
+  String get aboutAppName => '念佛計數器 (BuddhaCounter)';
+
+  @override
+  String aboutVersion(String version) {
+    return '版本 $version';
+  }
+
+  @override
+  String get aboutHeading => '【 阿忠小站 · 緣起與傳承 】';
+
+  @override
+  String get aboutBody =>
+      '本應用程式由李義忠（阿忠）居士發心設計開發，最初於 Android 早期發布，旨在提供十方念佛、拜佛同修一個方便、純粹的隨身精進記數工具。\n\n為使阿忠的心血得以長久傳承、並服務更多現代修行大眾，現由後輩工程師接棒維護，推出全新的操作介面。\n\n祈願一切見聞者，皆發菩提心，一向專念南無阿彌陀佛，同生極樂國。';
+
+  @override
+  String get aboutVisitSite => '瀏覽阿忠小站 (https://www.leeyc.net)';
+
+  @override
+  String get aboutPrivacyIos => 'iOS 隱私權政策';
+
+  @override
+  String get aboutPrivacyAndroid => 'Android 隱私權政策';
+
+  @override
+  String get legacyAutoTitle => '念佛自動計數';
+
+  @override
+  String get legacyAutoSongButton => '念佛\n曲目';
+
+  @override
+  String get legacyTimerLabel => '計時：';
+
+  @override
+  String get legacyAudioLabel => '音訊：';
+
+  @override
+  String get legacyAutoStopLabel => '自動關閉：';
+
+  @override
+  String get legacyMinutesLater => ' 分鐘後';
+
+  @override
+  String get legacyResetZero => '歸0';
+
+  @override
+  String get legacyChant => '念佛';
+
+  @override
+  String get legacyAudio => '音訊';
+
+  @override
+  String get legacyChantTitle => '念佛頁面';
+
+  @override
+  String get legacyBackHome => '返回首頁';
+
+  @override
+  String get legacyUpgradeTitle => '念佛計數器 · 全新升級！';
+
+  @override
+  String get legacyUpgradeBody =>
+      '已為您推出全新的「現代禪意模式」，包含沉浸圓環計數、自訂目標聲數、隨身佛曲播放器與晝夜護眼主題。\n\n您可隨時切換體驗，日後亦可自由切換回熟悉的經典模式。';
+
+  @override
+  String get legacyKeepClassic => '保留經典模式';
+
+  @override
+  String get legacyTryModern => '立即體驗新版';
+
+  @override
+  String get legacyUnlockedToast => '已解除鎖定';
+
+  @override
+  String get legacySwitchToModern => '切換至現代模式';
+
+  @override
+  String get switchedToModernToast => '已切換為現代模式';
+
+  @override
+  String get legacySettingsTitle => '設定';
+
+  @override
+  String get legacyCalendarMenu => '功課月曆表記';
+
+  @override
+  String get legacyPreferences => '偏好設定';
+
+  @override
+  String get legacyGuideSubtitle => '了解現代禪意模式與新功能';
+
+  @override
+  String get legacyMinusOne => '減1';
+
+  @override
+  String get legacyDedicationPage => '迴向頁';
+
+  @override
+  String get legacyCounterPage => '計數頁';
+
+  @override
+  String get legacyStop => '停止';
+
+  @override
+  String get legacySongs => '佛曲';
+
+  @override
+  String get legacyKeepScreenOnTitle => '保持螢幕常亮（防止休眠）';
+
+  @override
+  String get legacyKeepScreenOnDesc =>
+      '開啟後計數、念佛與播放佛曲時不會自動關閉螢幕，亦可直接於各頁面頂部右上角快捷鍵切換';
+
+  @override
+  String get legacyClickSoundTitle => '點擊計數音效';
+
+  @override
+  String get soundWoodfish1 => '木魚一';
+
+  @override
+  String get soundWoodfish2 => '木魚二 (經典原音)';
+
+  @override
+  String get soundBell => '引磬聲';
+
+  @override
+  String get soundMute => '靜音';
+
+  @override
+  String get legacyUiModeTitle => '介面模式切換';
+
+  @override
+  String get legacyClassicMode => '經典模式';
+
+  @override
+  String get legacyModernMode => '現代模式';
+
+  @override
+  String get legacySaveAndBack => '儲存並返回';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1468,6 +1611,149 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get guideStart => '开始精进';
+
+  @override
+  String get aboutTitle => '阿忠小站';
+
+  @override
+  String get aboutAppName => '念佛计数器 (BuddhaCounter)';
+
+  @override
+  String aboutVersion(String version) {
+    return '版本 $version';
+  }
+
+  @override
+  String get aboutHeading => '【 阿忠小站 · 缘起与传承 】';
+
+  @override
+  String get aboutBody =>
+      '本应用程序由李义忠（阿忠）居士发心设计开发，最初于 Android 早期发布，旨在提供十方念佛、拜佛同修一个方便、纯粹的随身精进记数工具。\n\n为使阿忠的心血得以长久传承、并服务更多现代修行大众，现由后辈工程师接棒维护，推出全新的操作界面。\n\n祈愿一切见闻者，皆发菩提心，一向专念南无阿弥陀佛，同生极乐国。';
+
+  @override
+  String get aboutVisitSite => '浏览阿忠小站 (https://www.leeyc.net)';
+
+  @override
+  String get aboutPrivacyIos => 'iOS 隐私政策';
+
+  @override
+  String get aboutPrivacyAndroid => 'Android 隐私政策';
+
+  @override
+  String get legacyAutoTitle => '念佛自动计数';
+
+  @override
+  String get legacyAutoSongButton => '念佛\n曲目';
+
+  @override
+  String get legacyTimerLabel => '计时：';
+
+  @override
+  String get legacyAudioLabel => '音频：';
+
+  @override
+  String get legacyAutoStopLabel => '自动关闭：';
+
+  @override
+  String get legacyMinutesLater => ' 分钟后';
+
+  @override
+  String get legacyResetZero => '归0';
+
+  @override
+  String get legacyChant => '念佛';
+
+  @override
+  String get legacyAudio => '音频';
+
+  @override
+  String get legacyChantTitle => '念佛页面';
+
+  @override
+  String get legacyBackHome => '返回首页';
+
+  @override
+  String get legacyUpgradeTitle => '念佛计数器 · 全新升级！';
+
+  @override
+  String get legacyUpgradeBody =>
+      '已为您推出全新的「现代禅意模式」，包含沉浸圆环计数、自定义目标声数、随身佛曲播放器与昼夜护眼主题。\n\n您可随时切换体验，日后亦可自由切换回熟悉的经典模式。';
+
+  @override
+  String get legacyKeepClassic => '保留经典模式';
+
+  @override
+  String get legacyTryModern => '立即体验新版';
+
+  @override
+  String get legacyUnlockedToast => '已解除锁定';
+
+  @override
+  String get legacySwitchToModern => '切换至现代模式';
+
+  @override
+  String get switchedToModernToast => '已切换为现代模式';
+
+  @override
+  String get legacySettingsTitle => '设置';
+
+  @override
+  String get legacyCalendarMenu => '功课月历表记';
+
+  @override
+  String get legacyPreferences => '偏好设置';
+
+  @override
+  String get legacyGuideSubtitle => '了解现代禅意模式与新功能';
+
+  @override
+  String get legacyMinusOne => '减1';
+
+  @override
+  String get legacyDedicationPage => '回向页';
+
+  @override
+  String get legacyCounterPage => '计数页';
+
+  @override
+  String get legacyStop => '停止';
+
+  @override
+  String get legacySongs => '佛曲';
+
+  @override
+  String get legacyKeepScreenOnTitle => '保持屏幕常亮（防止休眠）';
+
+  @override
+  String get legacyKeepScreenOnDesc =>
+      '开启后计数、念佛与播放佛曲时不会自动关闭屏幕，亦可直接于各页面顶部右上角快捷键切换';
+
+  @override
+  String get legacyClickSoundTitle => '点击计数音效';
+
+  @override
+  String get soundWoodfish1 => '木鱼一';
+
+  @override
+  String get soundWoodfish2 => '木鱼二 (经典原音)';
+
+  @override
+  String get soundBell => '引磬声';
+
+  @override
+  String get soundMute => '静音';
+
+  @override
+  String get legacyUiModeTitle => '界面模式切换';
+
+  @override
+  String get legacyClassicMode => '经典模式';
+
+  @override
+  String get legacyModernMode => '现代模式';
+
+  @override
+  String get legacySaveAndBack => '保存并返回';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

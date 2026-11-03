@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
@@ -52,7 +53,7 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF0000FF),
         foregroundColor: Colors.white,
-        title: const Text('念佛自動計數'),
+        title: Text(context.l10n.legacyAutoTitle),
         actions: [
           // 1. 螢幕方向鎖定
           IconButton(
@@ -62,13 +63,13 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                   ? Icons.screen_lock_rotation_rounded
                   : Icons.screen_rotation_rounded,
             ),
-            tooltip: vm.isOrientationLocked ? '解除方向鎖定' : '鎖定螢幕方向',
+            tooltip: vm.isOrientationLocked ? context.l10n.orientationUnlockTooltip : context.l10n.orientationLockTooltip,
             onPressed: () {
               final orientation = MediaQuery.of(context).orientation;
               vm.toggleOrientationLock(orientation);
               AppToast.show(
                 context,
-                vm.isOrientationLocked ? '已鎖定螢幕方向' : '已解除方向鎖定',
+                vm.isOrientationLocked ? context.l10n.orientationLockedToast : context.l10n.orientationUnlockedToast,
               );
             },
           ),
@@ -80,12 +81,12 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                   ? Icons.remove_red_eye_rounded
                   : Icons.visibility_off_outlined,
             ),
-            tooltip: vm.isCurrentScreenAwake ? '關閉螢幕常亮' : '螢幕常亮',
+            tooltip: vm.isCurrentScreenAwake ? context.l10n.screenAwakeOffTooltip : context.l10n.screenAwakeOn,
             onPressed: () {
               vm.toggleCurrentScreenAwake();
               AppToast.show(
                 context,
-                vm.isCurrentScreenAwake ? '螢幕常亮' : '已關閉螢幕常亮',
+                vm.isCurrentScreenAwake ? context.l10n.screenAwakeOn : context.l10n.screenAwakeOffToast,
               );
             },
           ),
@@ -99,8 +100,8 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
               width: double.infinity,
               color: const Color(0xFF0000FF),
               padding: const EdgeInsets.symmetric(vertical: 4),
-              child: const Text(
-                '南無阿彌陀佛',
+              child: Text(
+                context.l10n.practiceBuddhaName,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -122,8 +123,8 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       child: Row(
                         children: [
-                          const Text(
-                            '念佛\n曲目',
+                          Text(
+                            context.l10n.legacyAutoSongButton,
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                           ),
@@ -160,8 +161,8 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            '計時：',
+                          Text(
+                            context.l10n.legacyTimerLabel,
                             style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                           ),
                           Text(
@@ -183,8 +184,8 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            '音訊：',
+                          Text(
+                            context.l10n.legacyAudioLabel,
                             style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                           ),
                           Text(
@@ -206,8 +207,8 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            '自動關閉：',
+                          Text(
+                            context.l10n.legacyAutoStopLabel,
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                           SizedBox(
@@ -230,8 +231,8 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                               },
                             ),
                           ),
-                          const Text(
-                            ' 分鐘後',
+                          Text(
+                            context.l10n.legacyMinutesLater,
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -268,7 +269,7 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildButton(
-                    '返回',
+                    context.l10n.commonBack,
                     () {
                       if (vm.isAutoCounting) {
                         vm.stopAutoCount();
@@ -276,14 +277,14 @@ class _LegacyAutoCountScreenState extends State<LegacyAutoCountScreen> {
                       Navigator.pop(context);
                     },
                   ),
-                  _buildButton('歸0', () => vm.resetAutoCount()),
+                  _buildButton(context.l10n.legacyResetZero, () => vm.resetAutoCount()),
                   _buildButton(
-                    '念佛',
+                    context.l10n.legacyChant,
                     () => vm.toggleAutoCount(),
                     textColor: vm.isAutoCounting ? const Color(0xFF0000FF) : Colors.black,
                   ),
                   _buildButton(
-                    '音訊',
+                    context.l10n.legacyAudio,
                     () => vm.toggleShowAudioPosition(),
                     textColor: vm.showAudioPosition ? const Color(0xFF0000FF) : Colors.black,
                   ),

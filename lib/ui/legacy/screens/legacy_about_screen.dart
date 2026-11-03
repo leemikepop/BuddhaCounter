@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/l10n.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,7 +19,7 @@ class LegacyAboutScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('阿忠小站'),
+        title: Text(context.l10n.aboutTitle),
         backgroundColor: const Color(0xFF0000FF),
         foregroundColor: Colors.white,
       ),
@@ -45,8 +46,8 @@ class LegacyAboutScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              const Text(
-                '念佛計數器 (BuddhaCounter)',
+              Text(
+                context.l10n.aboutAppName,
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               FutureBuilder<PackageInfo>(
@@ -54,7 +55,7 @@ class LegacyAboutScreen extends StatelessWidget {
                 builder: (context, snapshot) {
                   final version = snapshot.data?.version ?? '1.48.0';
                   return Text(
-                    '版本 $version',
+                    context.l10n.aboutVersion(version),
                     style: const TextStyle(fontSize: 14, color: Colors.grey),
                   );
                 },
@@ -62,8 +63,8 @@ class LegacyAboutScreen extends StatelessWidget {
 
               const Divider(height: 32),
 
-              const Text(
-                '【 阿忠小站 · 緣起與傳承 】',
+              Text(
+                context.l10n.aboutHeading,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -72,10 +73,8 @@ class LegacyAboutScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              const Text(
-                '本應用程式由李義忠（阿忠）居士發心設計開發，最初於 Android 早期發布，旨在提供十方念佛、拜佛同修一個方便、純粹的隨身精進記數工具。\n\n'
-                '為使阿忠的心血得以長久傳承、並服務更多現代修行大眾，現由後輩工程師接棒維護，推出全新的操作介面。\n\n'
-                '祈願一切見聞者，皆發菩提心，一向專念南無阿彌陀佛，同生極樂國。',
+              Text(
+                context.l10n.aboutBody,
                 textAlign: TextAlign.start,
                 style:
                     TextStyle(fontSize: 16, height: 1.6, color: Colors.black87),
@@ -86,7 +85,7 @@ class LegacyAboutScreen extends StatelessWidget {
               // 父親原網站連結
               OutlinedButton.icon(
                 icon: const Icon(Icons.open_in_browser),
-                label: const Text('瀏覽阿忠小站 (https://www.leeyc.net)'),
+                label: Text(context.l10n.aboutVisitSite),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF0000FF),
                   padding:
@@ -105,7 +104,7 @@ class LegacyAboutScreen extends StatelessWidget {
                 children: [
                   TextButton.icon(
                     icon: const Icon(Icons.privacy_tip_outlined, size: 18),
-                    label: const Text('iOS 隱私權政策'),
+                    label: Text(context.l10n.aboutPrivacyIos),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFF0000FF),
                     ),
@@ -115,7 +114,7 @@ class LegacyAboutScreen extends StatelessWidget {
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.privacy_tip_outlined, size: 18),
-                    label: const Text('Android 隱私權政策'),
+                    label: Text(context.l10n.aboutPrivacyAndroid),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFF0000FF),
                     ),
@@ -136,7 +135,7 @@ class LegacyAboutScreen extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('返回', style: TextStyle(fontSize: 16)),
+                child: Text(context.l10n.commonBack, style: TextStyle(fontSize: 16)),
               ),
             ],
           ),

@@ -21,19 +21,6 @@ enum SoundEffectType {
     }
   }
 
-  /// 介面顯示名稱
-  String get displayName {
-    switch (this) {
-      case SoundEffectType.woodfish1:
-        return '木魚一';
-      case SoundEffectType.woodfish2:
-        return '木魚二';
-      case SoundEffectType.bell:
-        return '引磬';
-      case SoundEffectType.none:
-        return '靜音';
-    }
-  }
 }
 
 enum AppUiMode {

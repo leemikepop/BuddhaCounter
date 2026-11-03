@@ -754,4 +754,148 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guideStart => 'Get started';
+
+  @override
+  String get aboutTitle => 'A-Chung\'s Corner';
+
+  @override
+  String get aboutAppName => 'Buddha Counter';
+
+  @override
+  String aboutVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get aboutHeading => 'Our story';
+
+  @override
+  String get aboutBody =>
+      'This app was created by lay practitioner Lee Yi-Chung (A-Chung) and first released in the early days of Android, to give fellow practitioners a simple, pure companion for counting recitations and prostrations.\n\nTo carry on A-Chung\'s work and serve more practitioners today, it is now maintained by a younger engineer with a brand-new interface.\n\nMay all who see or hear of this arouse the Bodhi mind, single-mindedly recite Namo Amitabha Buddha, and together be reborn in the Land of Ultimate Bliss.';
+
+  @override
+  String get aboutVisitSite =>
+      'Visit A-Chung\'s Corner (https://www.leeyc.net)';
+
+  @override
+  String get aboutPrivacyIos => 'iOS privacy policy';
+
+  @override
+  String get aboutPrivacyAndroid => 'Android privacy policy';
+
+  @override
+  String get legacyAutoTitle => 'Auto count';
+
+  @override
+  String get legacyAutoSongButton => 'Chant\nlist';
+
+  @override
+  String get legacyTimerLabel => 'Time: ';
+
+  @override
+  String get legacyAudioLabel => 'Audio: ';
+
+  @override
+  String get legacyAutoStopLabel => 'Stop in: ';
+
+  @override
+  String get legacyMinutesLater => ' min';
+
+  @override
+  String get legacyResetZero => 'Reset';
+
+  @override
+  String get legacyChant => 'Chant';
+
+  @override
+  String get legacyAudio => 'Audio';
+
+  @override
+  String get legacyChantTitle => 'Recitation';
+
+  @override
+  String get legacyBackHome => 'Home';
+
+  @override
+  String get legacyUpgradeTitle => 'Buddha Counter · What\'s new!';
+
+  @override
+  String get legacyUpgradeBody =>
+      'Introducing the new Zen mode: an immersive ring counter, custom goals, a built-in chant player and light/dark themes.\n\nTry it anytime — you can always switch back to Classic mode.';
+
+  @override
+  String get legacyKeepClassic => 'Keep Classic';
+
+  @override
+  String get legacyTryModern => 'Try Zen mode';
+
+  @override
+  String get legacyUnlockedToast => 'Orientation unlocked';
+
+  @override
+  String get legacySwitchToModern => 'Switch to Zen mode';
+
+  @override
+  String get switchedToModernToast => 'Switched to Zen mode';
+
+  @override
+  String get legacySettingsTitle => 'Settings';
+
+  @override
+  String get legacyCalendarMenu => 'Practice calendar';
+
+  @override
+  String get legacyPreferences => 'Preferences';
+
+  @override
+  String get legacyGuideSubtitle => 'Learn about Zen mode and new features';
+
+  @override
+  String get legacyMinusOne => '−1';
+
+  @override
+  String get legacyDedicationPage => 'Dedication';
+
+  @override
+  String get legacyCounterPage => 'Counter';
+
+  @override
+  String get legacyStop => 'Stop';
+
+  @override
+  String get legacySongs => 'Chants';
+
+  @override
+  String get legacyKeepScreenOnTitle => 'Keep screen on';
+
+  @override
+  String get legacyKeepScreenOnDesc =>
+      'The screen stays on while counting or playing chants. You can also toggle this from the top-right of each page.';
+
+  @override
+  String get legacyClickSoundTitle => 'Tap sound';
+
+  @override
+  String get soundWoodfish1 => 'Wooden fish 1';
+
+  @override
+  String get soundWoodfish2 => 'Wooden fish 2 (classic)';
+
+  @override
+  String get soundBell => 'Hand bell';
+
+  @override
+  String get soundMute => 'Mute';
+
+  @override
+  String get legacyUiModeTitle => 'Interface style';
+
+  @override
+  String get legacyClassicMode => 'Classic mode';
+
+  @override
+  String get legacyModernMode => 'Zen mode';
+
+  @override
+  String get legacySaveAndBack => 'Save and go back';
 }

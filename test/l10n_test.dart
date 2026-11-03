@@ -18,6 +18,9 @@ import 'package:buddha_counter/ui/modern/views/modern_player_view.dart';
 import 'package:buddha_counter/ui/modern/widgets/song_list_tile.dart';
 import 'package:buddha_counter/ui/modern/views/modern_practice_view.dart';
 import 'package:buddha_counter/ui/modern/widgets/modern_guide_dialog.dart';
+import 'package:buddha_counter/ui/legacy/screens/legacy_counter_screen.dart';
+import 'package:buddha_counter/ui/legacy/screens/legacy_about_screen.dart';
+import 'package:buddha_counter/l10n/sound_effect_labels.dart';
 
 import 'helpers/test_app.dart';
 
@@ -394,6 +397,54 @@ void main() {
       await tester.pump();
       expect(find.text('开始精进'), findsOneWidget);
       expect(find.text('每日功课表记'), findsOneWidget);
+    });
+  });
+
+  group('classic mode screens', () {
+    Future<CounterViewModel> enVm(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      await storage.setOrientationLocked(false);
+      return CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        deviceLocales: const [Locale('en', 'GB')],
+      );
+    }
+
+    testWidgets('legacy counter, settings and about render in English',
+        (tester) async {
+      final vm = await enVm(tester);
+      await tester.pumpWidget(liveLocaleApp(vm, const LegacyCounterScreen()));
+      await tester.pump();
+      expect(find.text('Manual'), findsOneWidget);
+      expect(find.text('Namo Amitabha Buddha'), findsWidgets);
+
+      await tester.pumpWidget(liveLocaleApp(vm, const LegacySettingsScreen()));
+      await tester.pump();
+      expect(find.text('Settings'), findsOneWidget);
+      expect(find.text('Wooden fish 1'), findsOneWidget);
+
+      await tester.pumpWidget(liveLocaleApp(vm, const LegacyAboutScreen()));
+      await tester.pump();
+      expect(find.text("A-Chung's Corner"), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await disposeAndSettleTimers(tester);
+    });
+
+    test('sound effect labels exist in every language', () {
+      for (final loc in [kZhHant, kZhHans, kEn]) {
+        final l10n = lookupAppLocalizations(loc);
+        for (final t in SoundEffectType.values) {
+          expect(soundEffectLabel(l10n, t), isNotEmpty);
+        }
+      }
+      expect(soundEffectLabel(lookupAppLocalizations(kZhHant),
+          SoundEffectType.woodfish2), '木魚二 (經典原音)');
     });
   });
 
