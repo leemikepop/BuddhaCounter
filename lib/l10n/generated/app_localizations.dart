@@ -141,6 +141,318 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'跟隨系統'**
   String get languageFollowSystem;
+
+  /// 通用：開始 (計時、自動計數)
+  ///
+  /// In zh, this message translates to:
+  /// **'開始'**
+  String get commonStart;
+
+  /// 通用：暫停
+  ///
+  /// In zh, this message translates to:
+  /// **'暫停'**
+  String get commonPause;
+
+  /// 分頁名稱：手動計數 (底部分頁、標題列、側邊選單)
+  ///
+  /// In zh, this message translates to:
+  /// **'手動計數'**
+  String get tabManual;
+
+  /// 分頁名稱：自動計數
+  ///
+  /// In zh, this message translates to:
+  /// **'自動計數'**
+  String get tabAuto;
+
+  /// 分頁名稱：迴向 (迴向文頁)
+  ///
+  /// In zh, this message translates to:
+  /// **'迴向'**
+  String get tabDedication;
+
+  /// 分頁名稱：功課月曆
+  ///
+  /// In zh, this message translates to:
+  /// **'功課月曆'**
+  String get tabCalendar;
+
+  /// Toast：已切到淺色主題
+  ///
+  /// In zh, this message translates to:
+  /// **'已切換為淺色模式'**
+  String get themeSwitchedLightToast;
+
+  /// Toast：已切到深色主題
+  ///
+  /// In zh, this message translates to:
+  /// **'已切換為深色模式'**
+  String get themeSwitchedDarkToast;
+
+  /// Tooltip：切換到淺色主題
+  ///
+  /// In zh, this message translates to:
+  /// **'切換為淺色模式'**
+  String get themeToLightTooltip;
+
+  /// Tooltip：切換到深色主題
+  ///
+  /// In zh, this message translates to:
+  /// **'切換為深色模式'**
+  String get themeToDarkTooltip;
+
+  /// Tooltip：解除螢幕方向鎖定
+  ///
+  /// In zh, this message translates to:
+  /// **'解除方向鎖定'**
+  String get orientationUnlockTooltip;
+
+  /// Tooltip：鎖定螢幕方向
+  ///
+  /// In zh, this message translates to:
+  /// **'鎖定螢幕方向'**
+  String get orientationLockTooltip;
+
+  /// Toast：已鎖定方向
+  ///
+  /// In zh, this message translates to:
+  /// **'已鎖定螢幕方向'**
+  String get orientationLockedToast;
+
+  /// Toast：已解除方向鎖定
+  ///
+  /// In zh, this message translates to:
+  /// **'已解除方向鎖定'**
+  String get orientationUnlockedToast;
+
+  /// 螢幕常亮 (tooltip 與開啟時的 Toast)
+  ///
+  /// In zh, this message translates to:
+  /// **'螢幕常亮'**
+  String get screenAwakeOn;
+
+  /// Tooltip：關閉螢幕常亮
+  ///
+  /// In zh, this message translates to:
+  /// **'關閉螢幕常亮'**
+  String get screenAwakeOffTooltip;
+
+  /// Toast：已關閉螢幕常亮
+  ///
+  /// In zh, this message translates to:
+  /// **'已關閉螢幕常亮'**
+  String get screenAwakeOffToast;
+
+  /// Tooltip / 側邊選單：切回經典模式
+  ///
+  /// In zh, this message translates to:
+  /// **'切換回經典模式'**
+  String get switchToClassicMode;
+
+  /// Toast：已切到經典模式
+  ///
+  /// In zh, this message translates to:
+  /// **'已切換為經典模式'**
+  String get switchedToClassicToast;
+
+  /// 側邊選單頂部大標題
+  ///
+  /// In zh, this message translates to:
+  /// **'念佛、拜佛記數器'**
+  String get drawerHeaderTitle;
+
+  /// 側邊選單頂部副標 (佛號)
+  ///
+  /// In zh, this message translates to:
+  /// **'南無阿彌陀佛'**
+  String get drawerHeaderSubtitle;
+
+  /// 側邊選單：開啟佛曲清單
+  ///
+  /// In zh, this message translates to:
+  /// **'選擇佛曲清單'**
+  String get drawerSongList;
+
+  /// 側邊選單：開啟功能導覽
+  ///
+  /// In zh, this message translates to:
+  /// **'新版功能導覽教學'**
+  String get drawerGuide;
+
+  /// 側邊選單：關於頁 (作者小站名稱)
+  ///
+  /// In zh, this message translates to:
+  /// **'阿忠小站 · 緣起傳承'**
+  String get drawerAbout;
+
+  /// 手動計數歸零確認對話框標題
+  ///
+  /// In zh, this message translates to:
+  /// **'確認要歸零嗎？'**
+  String get counterResetConfirmTitle;
+
+  /// 手動計數歸零確認對話框內文
+  ///
+  /// In zh, this message translates to:
+  /// **'目前計數為{count}'**
+  String counterResetConfirmBody(int count);
+
+  /// 手動計數歸零確認按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'確認歸零'**
+  String get counterResetConfirmAction;
+
+  /// Toast：手動計數已歸零
+  ///
+  /// In zh, this message translates to:
+  /// **'已歸零'**
+  String get counterResetDoneToast;
+
+  /// 手動計數目標設定面板標題
+  ///
+  /// In zh, this message translates to:
+  /// **'設定手動計數目標'**
+  String get manualGoalSheetTitle;
+
+  /// Tooltip：碼表重設
+  ///
+  /// In zh, this message translates to:
+  /// **'重設計時'**
+  String get timerResetTooltip;
+
+  /// 目標小按鈕文字 (已設定目標)
+  ///
+  /// In zh, this message translates to:
+  /// **'目標 {count}'**
+  String goalChipLabel(int count);
+
+  /// 目標小按鈕文字 (未設定目標)
+  ///
+  /// In zh, this message translates to:
+  /// **'目標 不限'**
+  String get goalChipUnlimited;
+
+  /// 小按鈕：計數減一 (英文用符號以節省寬度)
+  ///
+  /// In zh, this message translates to:
+  /// **'減一'**
+  String get counterMinusOne;
+
+  /// 手動計數小按鈕：歸零
+  ///
+  /// In zh, this message translates to:
+  /// **'歸零'**
+  String get counterResetShort;
+
+  /// 手動計數頁：點擊音效選擇標題
+  ///
+  /// In zh, this message translates to:
+  /// **'音效'**
+  String get soundEffectTitle;
+
+  /// 音效分段按鈕：木魚一 (極短)
+  ///
+  /// In zh, this message translates to:
+  /// **'木魚1'**
+  String get soundChipWoodfish1;
+
+  /// 音效分段按鈕：木魚二 (極短)
+  ///
+  /// In zh, this message translates to:
+  /// **'木魚2'**
+  String get soundChipWoodfish2;
+
+  /// 音效分段按鈕：引磬 (極短)
+  ///
+  /// In zh, this message translates to:
+  /// **'引磬'**
+  String get soundChipBell;
+
+  /// 音效分段按鈕：靜音 (極短)
+  ///
+  /// In zh, this message translates to:
+  /// **'靜音'**
+  String get soundChipMute;
+
+  /// 開關：點擊震動回饋
+  ///
+  /// In zh, this message translates to:
+  /// **'震動回饋'**
+  String get vibrationFeedback;
+
+  /// 開關：全螢幕任意處點擊皆可計數
+  ///
+  /// In zh, this message translates to:
+  /// **'全螢幕點擊'**
+  String get fullscreenTap;
+
+  /// 手動計數圓盤數字下方的單位
+  ///
+  /// In zh, this message translates to:
+  /// **'聲 · 拜'**
+  String get zenCircleUnitLabel;
+
+  /// 圓盤內目標進度標籤
+  ///
+  /// In zh, this message translates to:
+  /// **'目標 {count} · {percent}%'**
+  String goalProgressLabel(int count, int percent);
+
+  /// 圓盤內目標已達成標籤
+  ///
+  /// In zh, this message translates to:
+  /// **'達成 {count} 聲'**
+  String goalReachedLabel(int count);
+
+  /// 目標選項：不限
+  ///
+  /// In zh, this message translates to:
+  /// **'不限目標'**
+  String get goalUnlimited;
+
+  /// 目標選項：目前為自訂數值時顯示的晶片
+  ///
+  /// In zh, this message translates to:
+  /// **'{value}(自訂)'**
+  String goalCustomChip(int value);
+
+  /// 目標面板自訂輸入提示
+  ///
+  /// In zh, this message translates to:
+  /// **'或自訂目標聲數：'**
+  String get goalCustomPrompt;
+
+  /// 目標自訂輸入框 placeholder
+  ///
+  /// In zh, this message translates to:
+  /// **'輸入目標 (如 500)'**
+  String get goalCustomHint;
+
+  /// 數字輸入框後綴：聲數單位
+  ///
+  /// In zh, this message translates to:
+  /// **'聲'**
+  String get unitRecitationsSuffix;
+
+  /// 目標輸入無效時的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'請輸入大於 0 的有效目標數字'**
+  String get goalInvalidNumber;
+
+  /// Toast：目標改為不限
+  ///
+  /// In zh, this message translates to:
+  /// **'已設定為不限目標'**
+  String get goalSetUnlimitedToast;
+
+  /// Toast：目標已設定
+  ///
+  /// In zh, this message translates to:
+  /// **'已設定目標：{count} 聲'**
+  String goalSetToast(int count);
 }
 
 class _AppLocalizationsDelegate

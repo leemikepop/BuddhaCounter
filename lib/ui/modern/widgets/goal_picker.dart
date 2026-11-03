@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../l10n/l10n.dart';
 import '../../common/app_toast.dart';
 
 /// 共用的「預設值選項 + 自訂數字輸入」區塊
@@ -163,7 +164,7 @@ class _PresetValuePickerState extends State<PresetValuePicker> {
                 ),
               ),
               onPressed: _submitCustom,
-              child: const Text('設定'),
+              child: Text(context.l10n.commonSet),
             ),
           ],
         ),
@@ -213,7 +214,7 @@ Future<void> showGoalSheet(
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
-                      tooltip: '關閉',
+                      tooltip: context.l10n.commonClose,
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -239,21 +240,27 @@ Future<void> showCountGoalPicker(
   return showGoalSheet(
     context,
     title: title,
-    builder: (ctx) => PresetValuePicker(
-      presets: const [108, 500, 1000, 5000, 10000],
-      zeroLabel: '不限目標',
-      current: current,
-      chipLabel: (v) => '$v',
-      customChipLabel: (v) => '$v(自訂)',
-      customPrompt: '或自訂目標聲數：',
-      hintText: '輸入目標 (如 500)',
-      suffixText: '聲',
-      invalidMessage: '請輸入大於 0 的有效目標數字',
-      onSelected: (v) {
-        onSelected(v);
-        Navigator.pop(ctx);
-        AppToast.show(context, v == 0 ? '已設定為不限目標' : '已設定目標：$v 聲');
-      },
-    ),
+    builder: (ctx) {
+      final l10n = ctx.l10n;
+      return PresetValuePicker(
+        presets: const [108, 500, 1000, 5000, 10000],
+        zeroLabel: l10n.goalUnlimited,
+        current: current,
+        chipLabel: (v) => '$v',
+        customChipLabel: l10n.goalCustomChip,
+        customPrompt: l10n.goalCustomPrompt,
+        hintText: l10n.goalCustomHint,
+        suffixText: l10n.unitRecitationsSuffix,
+        invalidMessage: l10n.goalInvalidNumber,
+        onSelected: (v) {
+          onSelected(v);
+          Navigator.pop(ctx);
+          AppToast.show(
+            context,
+            v == 0 ? l10n.goalSetUnlimitedToast : l10n.goalSetToast(v),
+          );
+        },
+      );
+    },
   );
 }

@@ -30,12 +30,12 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
   int _currentTabIndex = 0;
   late final PageController _pageController;
 
-  final List<String> _tabTitles = const [
-    '手動計數',
-    '自動計數',
-    '迴向',
-    '功課月曆',
-  ];
+  List<String> _tabTitles(AppLocalizations l10n) => [
+        l10n.tabManual,
+        l10n.tabAuto,
+        l10n.tabDedication,
+        l10n.tabCalendar,
+      ];
 
   @override
   void initState() {
@@ -76,10 +76,10 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
   void _toggleThemeQuickly(CounterViewModel vm, bool isDark) {
     if (isDark) {
       vm.setThemeMode(ThemeMode.light);
-      AppToast.show(context, '已切換為淺色模式');
+      AppToast.show(context, context.l10n.themeSwitchedLightToast);
     } else {
       vm.setThemeMode(ThemeMode.dark);
-      AppToast.show(context, '已切換為深色模式');
+      AppToast.show(context, context.l10n.themeSwitchedDarkToast);
     }
   }
 
@@ -94,11 +94,12 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _tabTitles[_currentTabIndex],
+          _tabTitles(l10n)[_currentTabIndex],
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -110,13 +111,17 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
                   ? Icons.screen_lock_rotation_rounded
                   : Icons.screen_rotation_rounded,
             ),
-            tooltip: isOrientationLocked ? '解除方向鎖定' : '鎖定螢幕方向',
+            tooltip: isOrientationLocked
+                ? l10n.orientationUnlockTooltip
+                : l10n.orientationLockTooltip,
             onPressed: () {
               final orientation = MediaQuery.of(context).orientation;
               vm.toggleOrientationLock(orientation);
               AppToast.show(
                 context,
-                vm.isOrientationLocked ? '已鎖定螢幕方向' : '已解除方向鎖定',
+                vm.isOrientationLocked
+                    ? l10n.orientationLockedToast
+                    : l10n.orientationUnlockedToast,
               );
             },
           ),
@@ -128,12 +133,16 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
                   ? Icons.remove_red_eye_rounded
                   : Icons.visibility_off_outlined,
             ),
-            tooltip: isCurrentScreenAwake ? '關閉螢幕常亮' : '螢幕常亮',
+            tooltip: isCurrentScreenAwake
+                ? l10n.screenAwakeOffTooltip
+                : l10n.screenAwakeOn,
             onPressed: () {
               vm.toggleCurrentScreenAwake();
               AppToast.show(
                 context,
-                vm.isCurrentScreenAwake ? '螢幕常亮' : '已關閉螢幕常亮',
+                vm.isCurrentScreenAwake
+                    ? l10n.screenAwakeOn
+                    : l10n.screenAwakeOffToast,
               );
             },
           ),
@@ -141,10 +150,10 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
           IconButton(
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.style_outlined),
-            tooltip: '切換回經典模式',
+            tooltip: l10n.switchToClassicMode,
             onPressed: () {
               vm.setUiMode(AppUiMode.legacy);
-              AppToast.show(context, '已切換為經典模式');
+              AppToast.show(context, l10n.switchedToClassicToast);
             },
           ),
           // 4. 快速切換深色 / 淺色模式
@@ -153,7 +162,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             icon: Icon(
               isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
             ),
-            tooltip: isDark ? '切換為淺色模式' : '切換為深色模式',
+            tooltip: isDark ? l10n.themeToLightTooltip : l10n.themeToDarkTooltip,
             onPressed: () => _toggleThemeQuickly(vm, isDark),
           ),
         ],
@@ -166,29 +175,29 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF22242B) : primary,
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    '念佛、拜佛記數器',
-                    style: TextStyle(
+                    l10n.drawerHeaderTitle,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   Text(
-                    '南無阿彌陀佛',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                    l10n.drawerHeaderSubtitle,
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ),
             ),
             ListTile(
               leading: const Icon(Icons.touch_app_rounded),
-              title: const Text('手動計數'),
+              title: Text(l10n.tabManual),
               selected: _currentTabIndex == 0,
               onTap: () {
                 Navigator.pop(context);
@@ -197,7 +206,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.timer_outlined),
-              title: const Text('自動計數'),
+              title: Text(l10n.tabAuto),
               selected: _currentTabIndex == 1,
               onTap: () {
                 Navigator.pop(context);
@@ -206,7 +215,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.spa_rounded),
-              title: const Text('迴向'),
+              title: Text(l10n.tabDedication),
               selected: _currentTabIndex == 2,
               onTap: () {
                 Navigator.pop(context);
@@ -215,7 +224,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.calendar_month_rounded),
-              title: const Text('功課月曆'),
+              title: Text(l10n.tabCalendar),
               selected: _currentTabIndex == 3,
               onTap: () {
                 Navigator.pop(context);
@@ -225,7 +234,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.queue_music_rounded),
-              title: const Text('選擇佛曲清單'),
+              title: Text(l10n.drawerSongList),
               onTap: () {
                 Navigator.pop(context);
                 ModernFloatingPlayer.openSongPicker(context);
@@ -234,7 +243,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.school_outlined),
-              title: const Text('新版功能導覽教學'),
+              title: Text(l10n.drawerGuide),
               onTap: () {
                 Navigator.pop(context);
                 ModernGuideDialog.show(context);
@@ -243,7 +252,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.info_outline),
-              title: const Text('阿忠小站 · 緣起傳承'),
+              title: Text(l10n.drawerAbout),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -264,7 +273,7 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.history_edu_rounded),
-              title: const Text('切換回經典模式'),
+              title: Text(l10n.switchToClassicMode),
               onTap: () {
                 Navigator.pop(context);
                 vm.setUiMode(AppUiMode.legacy);
@@ -304,26 +313,26 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentTabIndex,
         onDestinationSelected: _onTabSelect,
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.touch_app_outlined),
             selectedIcon: Icon(Icons.touch_app_rounded),
-            label: '手動計數',
+            label: l10n.tabManual,
           ),
           NavigationDestination(
             icon: Icon(Icons.timer_outlined),
             selectedIcon: Icon(Icons.timer_rounded),
-            label: '自動計數',
+            label: l10n.tabAuto,
           ),
           NavigationDestination(
             icon: Icon(Icons.spa_outlined),
             selectedIcon: Icon(Icons.spa_rounded),
-            label: '迴向',
+            label: l10n.tabDedication,
           ),
           NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
             selectedIcon: Icon(Icons.calendar_month_rounded),
-            label: '功課月曆',
+            label: l10n.tabCalendar,
           ),
         ],
       ),

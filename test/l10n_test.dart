@@ -7,6 +7,7 @@ import 'package:buddha_counter/features/counter/counter_view_model.dart';
 import 'package:buddha_counter/l10n/l10n.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_settings_screen.dart';
 import 'package:buddha_counter/ui/modern/screens/modern_counter_screen.dart';
+import 'package:buddha_counter/ui/modern/views/modern_counter_view.dart';
 
 import 'helpers/test_app.dart';
 
@@ -96,6 +97,47 @@ void main() {
       vm2.setAppLanguage(AppLanguage.system);
       vm2.updateDeviceLocales(const [Locale('zh', 'HK')]);
       expect(vm2.locale, kZhHant);
+    });
+  });
+
+  group('modern shell and manual counter', () {
+    Future<CounterViewModel> vmFor(Locale device) async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      await storage.setSeenModernGuide(true);
+      return CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        deviceLocales: [device],
+      );
+    }
+
+    testWidgets('manual counter renders in en and zh_Hans', (tester) async {
+      final vm = await vmFor(const Locale('en'));
+      await tester.pumpWidget(
+          liveLocaleApp(vm, const Scaffold(body: ModernCounterView())));
+      await tester.pump();
+      expect(find.text('Goal 108'), findsOneWidget);
+      expect(find.text('Goal 108 · 0%'), findsOneWidget);
+
+      vm.setAppLanguage(AppLanguage.zhHans);
+      await tester.pumpAndSettle();
+      expect(find.text('目标 108'), findsOneWidget);
+      expect(find.text('声 · 拜'), findsOneWidget);
+    });
+
+    testWidgets('bottom tabs are localized in English', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final vm = await vmFor(const Locale('en'));
+      vm.setUiMode(AppUiMode.modern);
+      await tester.pumpWidget(liveLocaleApp(vm, const ModernCounterScreen()));
+      await tester.pumpAndSettle();
+      for (final label in ['Manual', 'Auto', 'Dedication', 'Calendar']) {
+        expect(find.text(label), findsWidgets, reason: label);
+      }
     });
   });
 

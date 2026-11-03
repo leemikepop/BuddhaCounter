@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/l10n.dart';
 
 /// 現代禪意圓形計數盤組件
 /// 包含：呼吸微光進度環、手感回饋縮放動畫、大號襯線數字、目標達成狀態
@@ -174,7 +175,7 @@ class _ZenCircleCounterState extends State<ZenCircleCounter>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '聲 · 拜',
+                        context.l10n.zenCircleUnitLabel,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -199,8 +200,12 @@ class _ZenCircleCounterState extends State<ZenCircleCounter>
                           ),
                           child: Text(
                             isTargetReached
-                                ? '達成 ${widget.targetCount} 聲'
-                                : '目標 ${widget.targetCount} · ${(progress * 100).toInt()}%',
+                                ? context.l10n
+                                    .goalReachedLabel(widget.targetCount)
+                                : context.l10n.goalProgressLabel(
+                                    widget.targetCount,
+                                    (progress * 100).toInt(),
+                                  ),
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,

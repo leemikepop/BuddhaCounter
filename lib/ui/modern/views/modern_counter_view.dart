@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/l10n.dart';
 import '../../common/app_toast.dart';
 import '../widgets/goal_picker.dart';
 import '../widgets/zen_circle_counter.dart';
@@ -15,20 +16,20 @@ class ModernCounterView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('確認要歸零嗎？'),
-        content: Text('目前計數為${vm.count}'),
+        title: Text(context.l10n.counterResetConfirmTitle),
+        content: Text(context.l10n.counterResetConfirmBody(vm.count)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton.tonal(
             onPressed: () {
               Navigator.pop(ctx);
               vm.resetCount();
-              AppToast.show(context, '已歸零');
+              AppToast.show(context, context.l10n.counterResetDoneToast);
             },
-            child: const Text('確認歸零'),
+            child: Text(context.l10n.counterResetConfirmAction),
           ),
         ],
       ),
@@ -38,7 +39,7 @@ class ModernCounterView extends StatelessWidget {
   void _showTargetPicker(BuildContext context, CounterViewModel vm) {
     showCountGoalPicker(
       context,
-      title: '設定手動計數目標',
+      title: context.l10n.manualGoalSheetTitle,
       current: vm.targetCount,
       onSelected: vm.setTargetCount,
     );
@@ -109,7 +110,9 @@ class ModernCounterView extends StatelessWidget {
                     color: primary,
                     size: 26,
                   ),
-                  tooltip: vm.isTimerRunning ? '暫停' : '開始',
+                  tooltip: vm.isTimerRunning
+                      ? context.l10n.commonPause
+                      : context.l10n.commonStart,
                   onPressed: () {
                     if (vm.isTimerRunning) {
                       vm.stopTimer();
@@ -129,7 +132,7 @@ class ModernCounterView extends StatelessWidget {
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     size: 20,
                   ),
-                  tooltip: '重設計時',
+                  tooltip: context.l10n.timerResetTooltip,
                   onPressed: () => vm.resetTimer(),
                 ),
               ],
@@ -174,7 +177,9 @@ class ModernCounterView extends StatelessWidget {
                       Icon(Icons.flag_outlined, size: 14, color: primary),
                       const SizedBox(width: 4),
                       Text(
-                        vm.targetCount > 0 ? '目標 ${vm.targetCount}' : '目標 不限',
+                        vm.targetCount > 0
+                            ? context.l10n.goalChipLabel(vm.targetCount)
+                            : context.l10n.goalChipUnlimited,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -205,7 +210,8 @@ class ModernCounterView extends StatelessWidget {
                 ),
                 onPressed: vm.count > 0 ? () => vm.decrement() : null,
                 icon: const Icon(Icons.remove_circle_outline_rounded, size: 14),
-                label: const Text('減一', style: TextStyle(fontSize: 12)),
+                label: Text(context.l10n.counterMinusOne,
+                    style: const TextStyle(fontSize: 12)),
               ),
               const SizedBox(width: 8),
 
@@ -225,7 +231,8 @@ class ModernCounterView extends StatelessWidget {
                 ),
                 onPressed: () => _confirmReset(context, vm),
                 icon: const Icon(Icons.refresh_rounded, size: 14),
-                label: const Text('歸零', style: TextStyle(fontSize: 12)),
+                label: Text(context.l10n.counterResetShort,
+                    style: const TextStyle(fontSize: 12)),
               ),
             ],
           ),
@@ -250,31 +257,35 @@ class ModernCounterView extends StatelessWidget {
                     children: [
                       Icon(Icons.volume_up_outlined, size: 18, color: primary),
                       const SizedBox(width: 6),
-                      const Text(
-                        '音效',
-                        style: TextStyle(
+                      Text(
+                        context.l10n.soundEffectTitle,
+                        style: const TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: SegmentedButton<SoundEffectType>(
                           showSelectedIcon: false,
-                          segments: const [
+                          segments: [
                             ButtonSegment(
                               value: SoundEffectType.woodfish1,
-                              label: Text('木魚1', style: TextStyle(fontSize: 12)),
+                              label: Text(context.l10n.soundChipWoodfish1,
+                                  style: const TextStyle(fontSize: 12)),
                             ),
                             ButtonSegment(
                               value: SoundEffectType.woodfish2,
-                              label: Text('木魚2', style: TextStyle(fontSize: 12)),
+                              label: Text(context.l10n.soundChipWoodfish2,
+                                  style: const TextStyle(fontSize: 12)),
                             ),
                             ButtonSegment(
                               value: SoundEffectType.bell,
-                              label: Text('引磬', style: TextStyle(fontSize: 12)),
+                              label: Text(context.l10n.soundChipBell,
+                                  style: const TextStyle(fontSize: 12)),
                             ),
                             ButtonSegment(
                               value: SoundEffectType.none,
-                              label: Text('靜音', style: TextStyle(fontSize: 12)),
+                              label: Text(context.l10n.soundChipMute,
+                                  style: const TextStyle(fontSize: 12)),
                             ),
                           ],
                           selected: {vm.soundEffect},
@@ -310,7 +321,7 @@ class ModernCounterView extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    '震動回饋',
+                                    context.l10n.vibrationFeedback,
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: theme.colorScheme.onSurface,
@@ -342,7 +353,7 @@ class ModernCounterView extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    '全螢幕點擊',
+                                    context.l10n.fullscreenTap,
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: theme.colorScheme.onSurface,
