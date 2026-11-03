@@ -144,10 +144,16 @@ final class ChantLoopPlayer: NSObject, FlutterPlugin, FlutterStreamHandler {
       player.actionAtItemEnd = .advance
       let looper = AVPlayerLooper(player: player, templateItem: template)
       self.looper = looper
-      looperStatusObservation = looper.observe(\.status, options: [.new]) {
+      looperStatusObservation = looper.observe(\.status, options: [.initial, .new]) {
         [weak self] observed, _ in
-        guard observed.status == .failed else { return }
-        DispatchQueue.main.async { self?.fallBackFromLooper(observed) }
+        switch observed.status {
+        case .ready:
+          DispatchQueue.main.async { self?.sendLog("loop mode: AVPlayerLooper (gapless)") }
+        case .failed:
+          DispatchQueue.main.async { self?.fallBackFromLooper(observed) }
+        default:
+          break
+        }
       }
     } else {
       // 播完停在最後一格，不讓佇列清空 (循環備援時才能 seek 回開頭)
@@ -168,7 +174,7 @@ final class ChantLoopPlayer: NSObject, FlutterPlugin, FlutterStreamHandler {
   private func fallBackFromLooper(_ failed: AVPlayerLooper) {
     guard failed === looper else { return }
     sendLog(
-      "AVPlayerLooper failed: \(failed.error?.localizedDescription ?? "unknown"); using native seek loop"
+      "loop mode: seek fallback (AVPlayerLooper failed: \(failed.error?.localizedDescription ?? "unknown"))"
     )
     let wasPlaying = player.rate != 0
     let position = player.currentItem?.currentTime() ?? .zero
