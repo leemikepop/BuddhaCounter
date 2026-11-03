@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'chant_audio_handler.dart';
 import 'storage_service.dart';
 
@@ -36,6 +37,8 @@ class AudioService {
   Future<Duration?> getCurrentPosition() => _handler.musicPlayer.getCurrentPosition();
   Future<Duration?> getDuration() => _handler.musicPlayer.getDuration();
 
+  /// 點擊音效 (木魚 / 引磬) 的 Android 音訊設定：不搶音訊焦點、不保持喚醒。
+  /// iOS 不使用：iOS 只有一份全域 session，由 [ChantAudioHandler.configureIosAudioSession] 統一設定。
   static final AudioContext _sfxAudioContext = AudioContext(
     android: const AudioContextAndroid(
       isSpeakerphoneOn: false,
@@ -43,12 +46,6 @@ class AudioService {
       contentType: AndroidContentType.music,
       usageType: AndroidUsageType.media,
       audioFocus: AndroidAudioFocus.none,
-    ),
-    iOS: AudioContextIOS(
-      category: AVAudioSessionCategory.playback,
-      options: const {
-        AVAudioSessionOptions.mixWithOthers,
-      },
     ),
   );
 
@@ -58,7 +55,12 @@ class AudioService {
     for (final player in _sfxPool) {
       player.positionUpdater = null;
       player.setReleaseMode(ReleaseMode.stop);
-      player.setAudioContext(_sfxAudioContext);
+      // iOS 上單一播放器的設定會覆蓋全域 session (過去的 mixWithOthers 即由此生效)，因此只在 Android 設定
+      if (defaultTargetPlatform != TargetPlatform.iOS) {
+        player.setAudioContext(_sfxAudioContext).catchError((Object e) {
+          debugPrint('AudioService: sfx audio context failed: $e');
+        });
+      }
     }
   }
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../l10n/app_language.dart';
@@ -74,7 +75,15 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
 
   final Map<int, Future<File>> _inFlightFilePreps = {};
 
-  static final AudioContext _musicAudioContext = AudioContext(
+  /// 佛曲播放的音訊設定。
+  ///
+  /// iOS：整個 App 只有一份 AVAudioSession (audioplayers 對單一播放器的設定也會覆蓋全域)，
+  /// 因此只在 [configureIosAudioSession] 設定一次。必須是「playback 且不混音」：
+  /// - `mixWithOthers` 會讓 iOS 不把 App 視為 Now Playing → 控制中心 / 鎖定畫面不顯示播放控制
+  /// - `defaultToSpeaker` 只能搭配 playAndRecord，搭配 playback 會讓整組設定失敗
+  ///
+  /// Android：每個播放器各自設定，佛曲取得音訊焦點 (gain) 並保持喚醒。
+  static final AudioContext musicAudioContext = AudioContext(
     android: const AudioContextAndroid(
       isSpeakerphoneOn: false,
       stayAwake: true,
@@ -84,11 +93,21 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     ),
     iOS: AudioContextIOS(
       category: AVAudioSessionCategory.playback,
-      options: const {
-        AVAudioSessionOptions.defaultToSpeaker,
-      },
+      options: const {},
     ),
   );
+
+  static bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
+
+  /// 設定 iOS 全域音訊 session (僅一次，唯一的設定點)
+  static Future<void> configureIosAudioSession() async {
+    if (!_isIOS) return;
+    try {
+      await AudioPlayer.global.setAudioContext(musicAudioContext);
+    } catch (e) {
+      debugPrint('ChantAudioHandler: iOS audio session setup failed: $e');
+    }
+  }
 
   TimerPositionUpdater? _positionUpdater;
 
@@ -245,9 +264,15 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       } else {
         await _musicPlayer.setReleaseMode(ReleaseMode.loop);
       }
-      await _musicPlayer.setAudioContext(_musicAudioContext);
-      await _standbyPlayer.setAudioContext(_musicAudioContext);
-    } catch (_) {}
+      if (_isIOS) {
+        await configureIosAudioSession();
+      } else {
+        await _musicPlayer.setAudioContext(musicAudioContext);
+        await _standbyPlayer.setAudioContext(musicAudioContext);
+      }
+    } catch (e) {
+      debugPrint('ChantAudioHandler: player setup failed: $e');
+    }
   }
 
   void _broadcastPlaybackState() {
