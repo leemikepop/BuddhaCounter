@@ -1647,6 +1647,108 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'儲存並返回'**
   String get legacySaveAndBack;
+
+  /// 桌面小工具日期；monthShort 為英文月份縮寫
+  ///
+  /// In zh, this message translates to:
+  /// **'{month}月{day}日'**
+  String widgetDate(int month, int day, String monthShort);
+
+  /// 桌面小工具：每日目標進度
+  ///
+  /// In zh, this message translates to:
+  /// **'目標 {percent}% ({today}/{target})'**
+  String widgetTargetText(int percent, int today, int target);
+
+  /// 桌面小工具：未設每日目標時
+  ///
+  /// In zh, this message translates to:
+  /// **'今日累積 {today} 聲 (不限目標)'**
+  String widgetTodayNoGoal(int today);
+
+  /// 桌面小工具：連續天數
+  ///
+  /// In zh, this message translates to:
+  /// **'🔥 連續 {days} 天'**
+  String widgetStreak(int days);
+
+  /// 桌面小工具：尚無連續天數
+  ///
+  /// In zh, this message translates to:
+  /// **'今日精進念佛'**
+  String get widgetStreakNone;
+
+  /// 桌面小工具：本週累計
+  ///
+  /// In zh, this message translates to:
+  /// **'本週: {count}聲'**
+  String widgetWeekly(int count);
+
+  /// 桌面小工具：本月累計
+  ///
+  /// In zh, this message translates to:
+  /// **'本月: {count}聲'**
+  String widgetMonthly(int count);
+
+  /// 桌面小工具：重新整理按鈕 (無障礙說明)
+  ///
+  /// In zh, this message translates to:
+  /// **'重新整理'**
+  String get widgetRefresh;
+
+  /// Android 通知頻道名稱：每日提醒
+  ///
+  /// In zh, this message translates to:
+  /// **'精進日課提醒'**
+  String get reminderChannelName;
+
+  /// Android 通知頻道說明：每日提醒
+  ///
+  /// In zh, this message translates to:
+  /// **'簡單的事情每天做，就會變成不簡單。'**
+  String get reminderChannelDesc;
+
+  /// 每日提醒通知標題
+  ///
+  /// In zh, this message translates to:
+  /// **'今日精進功課'**
+  String get reminderNotifTitle;
+
+  /// 每日提醒通知內文
+  ///
+  /// In zh, this message translates to:
+  /// **'開啟念佛計數器填寫今日功課數吧！'**
+  String get reminderNotifBody;
+
+  /// Android 通知頻道名稱：目標達成
+  ///
+  /// In zh, this message translates to:
+  /// **'目標達成通知'**
+  String get milestoneChannelName;
+
+  /// Android 通知頻道說明：目標達成
+  ///
+  /// In zh, this message translates to:
+  /// **'發送目標達成與精進里程碑通知'**
+  String get milestoneChannelDesc;
+
+  /// Android 通知頻道名稱：背景播放
+  ///
+  /// In zh, this message translates to:
+  /// **'念佛計數器佛曲播放'**
+  String get audioChannelName;
+
+  /// 背景播放頻道說明與鎖定畫面描述
+  ///
+  /// In zh, this message translates to:
+  /// **'保持螢幕休眠或退至背景時佛曲持續播放'**
+  String get audioChannelDesc;
+
+  /// 鎖定畫面副標：演出者 · 專輯
+  ///
+  /// In zh, this message translates to:
+  /// **'{artist} · {album}'**
+  String mediaSubtitle(String artist, String album);
 }
 
 class _AppLocalizationsDelegate

@@ -1,7 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' show Locale;
+
 import 'package:flutter/foundation.dart';
+import '../../l10n/app_language.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'storage_service.dart';
 import 'widget_service.dart';
 
@@ -43,6 +47,9 @@ class DailyPracticeRecord {
 class PracticeRecordService {
   final StorageService _storage;
   final Map<String, DailyPracticeRecord> _records = {};
+
+  /// 小工具文字使用的語言 (由 CounterViewModel 依目前語言設定)
+  Locale locale = kZhHant;
 
   PracticeRecordService(this._storage) {
     _loadFromStorage();
@@ -178,6 +185,7 @@ class PracticeRecordService {
       weeklyCount: weekly,
       monthlyCount: monthly,
       streakDays: streak,
+      l10n: lookupAppLocalizations(locale),
     );
   }
 

@@ -1321,5 +1321,123 @@
   "legacySaveAndBack": "儲存並返回",
   "@legacySaveAndBack": {
     "description": "經典設定：儲存並返回按鈕"
+  },
+  "widgetDate": "{month}月{day}日",
+  "@widgetDate": {
+    "description": "桌面小工具日期；monthShort 為英文月份縮寫",
+    "placeholders": {
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      },
+      "monthShort": {
+        "type": "String"
+      }
+    }
+  },
+  "widgetTargetText": "目標 {percent}% ({today}/{target})",
+  "@widgetTargetText": {
+    "description": "桌面小工具：每日目標進度",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "today": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetTodayNoGoal": "今日累積 {today} 聲 (不限目標)",
+  "@widgetTodayNoGoal": {
+    "description": "桌面小工具：未設每日目標時",
+    "placeholders": {
+      "today": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetStreak": "🔥 連續 {days} 天",
+  "@widgetStreak": {
+    "description": "桌面小工具：連續天數",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetStreakNone": "今日精進念佛",
+  "@widgetStreakNone": {
+    "description": "桌面小工具：尚無連續天數"
+  },
+  "widgetWeekly": "本週: {count}聲",
+  "@widgetWeekly": {
+    "description": "桌面小工具：本週累計",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetMonthly": "本月: {count}聲",
+  "@widgetMonthly": {
+    "description": "桌面小工具：本月累計",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetRefresh": "重新整理",
+  "@widgetRefresh": {
+    "description": "桌面小工具：重新整理按鈕 (無障礙說明)"
+  },
+  "reminderChannelName": "精進日課提醒",
+  "@reminderChannelName": {
+    "description": "Android 通知頻道名稱：每日提醒"
+  },
+  "reminderChannelDesc": "簡單的事情每天做，就會變成不簡單。",
+  "@reminderChannelDesc": {
+    "description": "Android 通知頻道說明：每日提醒"
+  },
+  "reminderNotifTitle": "今日精進功課",
+  "@reminderNotifTitle": {
+    "description": "每日提醒通知標題"
+  },
+  "reminderNotifBody": "開啟念佛計數器填寫今日功課數吧！",
+  "@reminderNotifBody": {
+    "description": "每日提醒通知內文"
+  },
+  "milestoneChannelName": "目標達成通知",
+  "@milestoneChannelName": {
+    "description": "Android 通知頻道名稱：目標達成"
+  },
+  "milestoneChannelDesc": "發送目標達成與精進里程碑通知",
+  "@milestoneChannelDesc": {
+    "description": "Android 通知頻道說明：目標達成"
+  },
+  "audioChannelName": "念佛計數器佛曲播放",
+  "@audioChannelName": {
+    "description": "Android 通知頻道名稱：背景播放"
+  },
+  "audioChannelDesc": "保持螢幕休眠或退至背景時佛曲持續播放",
+  "@audioChannelDesc": {
+    "description": "背景播放頻道說明與鎖定畫面描述"
+  },
+  "mediaSubtitle": "{artist} · {album}",
+  "@mediaSubtitle": {
+    "description": "鎖定畫面副標：演出者 · 專輯",
+    "placeholders": {
+      "artist": {
+        "type": "String"
+      },
+      "album": {
+        "type": "String"
+      }
+    }
   }
 }

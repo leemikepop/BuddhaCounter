@@ -257,5 +257,22 @@
   "legacyUiModeTitle": "界面模式切换",
   "legacyClassicMode": "经典模式",
   "legacyModernMode": "现代模式",
-  "legacySaveAndBack": "保存并返回"
+  "legacySaveAndBack": "保存并返回",
+  "widgetDate": "{month}月{day}日",
+  "widgetTargetText": "目标 {percent}% ({today}/{target})",
+  "widgetTodayNoGoal": "今日累积 {today} 声 (不限目标)",
+  "widgetStreak": "🔥 连续 {days} 天",
+  "widgetStreakNone": "今日精进念佛",
+  "widgetWeekly": "本周: {count}声",
+  "widgetMonthly": "本月: {count}声",
+  "widgetRefresh": "刷新",
+  "reminderChannelName": "精进日课提醒",
+  "reminderChannelDesc": "简单的事情每天做，就会变成不简单。",
+  "reminderNotifTitle": "今日精进功课",
+  "reminderNotifBody": "开启念佛计数器填写今日功课数吧！",
+  "milestoneChannelName": "目标达成通知",
+  "milestoneChannelDesc": "发送目标达成与精进里程碑通知",
+  "audioChannelName": "念佛计数器佛曲播放",
+  "audioChannelDesc": "保持屏幕休眠或退至后台时佛曲持续播放",
+  "mediaSubtitle": "{artist} · {album}"
 }

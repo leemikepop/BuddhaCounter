@@ -31,16 +31,23 @@ void main() async {
   // 優先載入 31 首佛曲音檔內嵌之 Metadata（title / 參與演出者 artist / 專輯 album）
   await ChantConstants.loadMetadataFromAssets();
 
+  // 先初始化儲存服務，以便依使用者語言偏好決定啟動語言 (背景播放通知頻道名稱需在 runApp 前建立)
+  final storageService = await StorageService.init();
+  final startupL10n = lookupAppLocalizations(resolveAppLocale(
+    WidgetsBinding.instance.platformDispatcher.locales,
+    storageService.getAppLanguage(),
+  ));
+
   // 初始化系統級音訊媒體會話服務 (Android MediaSession & iOS NowPlayingCenter)
   ChantAudioHandler? audioHandler;
   try {
     audioHandler = await bg_audio.AudioService.init(
       builder: () => ChantAudioHandler(),
-      config: const bg_audio.AudioServiceConfig(
+      config: bg_audio.AudioServiceConfig(
         androidNotificationChannelId:
             'com.yichung.lee.buddha_counter.channel.audio',
-        androidNotificationChannelName: '念佛計數器佛曲播放',
-        androidNotificationChannelDescription: '保持螢幕休眠或退至背景時佛曲持續播放',
+        androidNotificationChannelName: startupL10n.audioChannelName,
+        androidNotificationChannelDescription: startupL10n.audioChannelDesc,
         androidNotificationOngoing: false,
         androidStopForegroundOnPause: false,
         androidNotificationIcon: 'drawable/ic_stat_music',
@@ -50,8 +57,7 @@ void main() async {
     debugPrint('AudioService.init error: $e');
   }
 
-  // 初始化儲存與音訊服務
-  final storageService = await StorageService.init();
+  // 初始化音訊服務
   final audioService = AudioService(handler: audioHandler);
 
   // 初始化桌面小工具與定時提醒通知服務

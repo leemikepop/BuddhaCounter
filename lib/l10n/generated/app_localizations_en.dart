@@ -898,4 +898,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get legacySaveAndBack => 'Save and go back';
+
+  @override
+  String widgetDate(int month, int day, String monthShort) {
+    return '$monthShort $day';
+  }
+
+  @override
+  String widgetTargetText(int percent, int today, int target) {
+    return 'Goal $percent% ($today/$target)';
+  }
+
+  @override
+  String widgetTodayNoGoal(int today) {
+    return 'Today: $today (no goal)';
+  }
+
+  @override
+  String widgetStreak(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '🔥 $days-day streak',
+      one: '🔥 1-day streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get widgetStreakNone => 'Practice today';
+
+  @override
+  String widgetWeekly(int count) {
+    return 'Week: $count';
+  }
+
+  @override
+  String widgetMonthly(int count) {
+    return 'Month: $count';
+  }
+
+  @override
+  String get widgetRefresh => 'Refresh';
+
+  @override
+  String get reminderChannelName => 'Daily practice reminder';
+
+  @override
+  String get reminderChannelDesc =>
+      'Small things done every day become something great.';
+
+  @override
+  String get reminderNotifTitle => 'Today\'s practice';
+
+  @override
+  String get reminderNotifBody =>
+      'Open Buddha Counter and log today\'s practice!';
+
+  @override
+  String get milestoneChannelName => 'Goals & milestones';
+
+  @override
+  String get milestoneChannelDesc =>
+      'Notifications when you reach goals and milestones';
+
+  @override
+  String get audioChannelName => 'Buddha Counter chant playback';
+
+  @override
+  String get audioChannelDesc =>
+      'Keeps chants playing with the screen off or in the background';
+
+  @override
+  String mediaSubtitle(String artist, String album) {
+    return '$artist · $album';
+  }
 }

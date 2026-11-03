@@ -4,6 +4,8 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import '../../l10n/app_language.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../constants/chant_songs.dart';
 
 /// 佛曲媒體播放會話處理器 (整合 Android MediaSession 與 iOS NowPlayingCenter / RemoteCommandCenter)
@@ -89,6 +91,41 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   );
 
   TimerPositionUpdater? _positionUpdater;
+
+  /// 系統通知欄 / 鎖定畫面文字使用的翻譯
+  AppLocalizations _l10n = lookupAppLocalizations(kZhHant);
+
+  MediaItem _queueItemFor(ChantSong s) => MediaItem(
+        id: s.id.toString(),
+        album: s.album,
+        title: s.title,
+        artist: s.artist,
+      );
+
+  MediaItem _mediaItemFor(ChantSong song, {Duration? duration}) => MediaItem(
+        id: song.id.toString(),
+        album: song.album,
+        title: song.title,
+        artist: song.artist,
+        duration: duration,
+        displayTitle: song.title,
+        displaySubtitle: _l10n.mediaSubtitle(song.artist, song.album),
+        displayDescription: _l10n.audioChannelDesc,
+      );
+
+  /// 語言變更時重建佇列與目前曲目的系統媒體資訊 (不影響播放狀態)
+  void refreshMediaItems(AppLocalizations l10n) {
+    _l10n = l10n;
+    queue.add(ChantConstants.allSongs.map(_queueItemFor).toList());
+    final current = mediaItem.value;
+    final id = current == null ? null : int.tryParse(current.id);
+    if (id != null) {
+      mediaItem.add(_mediaItemFor(
+        ChantConstants.getSongById(id),
+        duration: current!.duration,
+      ));
+    }
+  }
 
   ChantAudioHandler() {
     _initFuture = _initAudioPlayer();
@@ -198,14 +235,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     bindListeners(_standbyPlayer);
 
     // 廣播初始佇列 (Queue)
-    final queueItems = ChantConstants.allSongs.map((s) {
-      return MediaItem(
-        id: s.id.toString(),
-        album: s.album,
-        title: s.title,
-        artist: s.artist,
-      );
-    }).toList();
+    final queueItems = ChantConstants.allSongs.map(_queueItemFor).toList();
     queue.add(queueItems);
 
     try {
@@ -303,16 +333,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     }
 
     final song = ChantConstants.getSongById(songId);
-    final item = MediaItem(
-      id: songId.toString(),
-      album: song.album,
-      title: song.title,
-      artist: song.artist,
-      duration: null,
-      displayTitle: song.title,
-      displaySubtitle: '${song.artist} · ${song.album}',
-      displayDescription: '保持螢幕休眠或退至背景時佛曲持續播放',
-    );
+    final item = _mediaItemFor(song);
     mediaItem.add(item);
     _broadcastPlaybackState();
 

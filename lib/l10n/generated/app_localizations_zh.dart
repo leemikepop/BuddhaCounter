@@ -878,6 +878,71 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get legacySaveAndBack => '儲存並返回';
+
+  @override
+  String widgetDate(int month, int day, String monthShort) {
+    return '$month月$day日';
+  }
+
+  @override
+  String widgetTargetText(int percent, int today, int target) {
+    return '目標 $percent% ($today/$target)';
+  }
+
+  @override
+  String widgetTodayNoGoal(int today) {
+    return '今日累積 $today 聲 (不限目標)';
+  }
+
+  @override
+  String widgetStreak(int days) {
+    return '🔥 連續 $days 天';
+  }
+
+  @override
+  String get widgetStreakNone => '今日精進念佛';
+
+  @override
+  String widgetWeekly(int count) {
+    return '本週: $count聲';
+  }
+
+  @override
+  String widgetMonthly(int count) {
+    return '本月: $count聲';
+  }
+
+  @override
+  String get widgetRefresh => '重新整理';
+
+  @override
+  String get reminderChannelName => '精進日課提醒';
+
+  @override
+  String get reminderChannelDesc => '簡單的事情每天做，就會變成不簡單。';
+
+  @override
+  String get reminderNotifTitle => '今日精進功課';
+
+  @override
+  String get reminderNotifBody => '開啟念佛計數器填寫今日功課數吧！';
+
+  @override
+  String get milestoneChannelName => '目標達成通知';
+
+  @override
+  String get milestoneChannelDesc => '發送目標達成與精進里程碑通知';
+
+  @override
+  String get audioChannelName => '念佛計數器佛曲播放';
+
+  @override
+  String get audioChannelDesc => '保持螢幕休眠或退至背景時佛曲持續播放';
+
+  @override
+  String mediaSubtitle(String artist, String album) {
+    return '$artist · $album';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1754,6 +1819,71 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get legacySaveAndBack => '保存并返回';
+
+  @override
+  String widgetDate(int month, int day, String monthShort) {
+    return '$month月$day日';
+  }
+
+  @override
+  String widgetTargetText(int percent, int today, int target) {
+    return '目标 $percent% ($today/$target)';
+  }
+
+  @override
+  String widgetTodayNoGoal(int today) {
+    return '今日累积 $today 声 (不限目标)';
+  }
+
+  @override
+  String widgetStreak(int days) {
+    return '🔥 连续 $days 天';
+  }
+
+  @override
+  String get widgetStreakNone => '今日精进念佛';
+
+  @override
+  String widgetWeekly(int count) {
+    return '本周: $count声';
+  }
+
+  @override
+  String widgetMonthly(int count) {
+    return '本月: $count声';
+  }
+
+  @override
+  String get widgetRefresh => '刷新';
+
+  @override
+  String get reminderChannelName => '精进日课提醒';
+
+  @override
+  String get reminderChannelDesc => '简单的事情每天做，就会变成不简单。';
+
+  @override
+  String get reminderNotifTitle => '今日精进功课';
+
+  @override
+  String get reminderNotifBody => '开启念佛计数器填写今日功课数吧！';
+
+  @override
+  String get milestoneChannelName => '目标达成通知';
+
+  @override
+  String get milestoneChannelDesc => '发送目标达成与精进里程碑通知';
+
+  @override
+  String get audioChannelName => '念佛计数器佛曲播放';
+
+  @override
+  String get audioChannelDesc => '保持屏幕休眠或退至后台时佛曲持续播放';
+
+  @override
+  String mediaSubtitle(String artist, String album) {
+    return '$artist · $album';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

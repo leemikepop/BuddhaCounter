@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +23,8 @@ import 'package:buddha_counter/ui/modern/widgets/modern_guide_dialog.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_counter_screen.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_about_screen.dart';
 import 'package:buddha_counter/l10n/sound_effect_labels.dart';
+import 'package:buddha_counter/core/services/chant_audio_handler.dart';
+import 'package:buddha_counter/core/services/widget_service.dart';
 
 import 'helpers/test_app.dart';
 
@@ -448,6 +452,94 @@ void main() {
     });
   });
 
+  group('services without BuildContext', () {
+    test('home widget texts are localized and zh_Hant is unchanged', () {
+      WidgetTexts build(Locale l, {int target = 108, int streak = 3}) =>
+          buildWidgetTexts(
+            lookupAppLocalizations(l),
+            todayCount: 54,
+            targetCount: target,
+            weeklyCount: 300,
+            monthlyCount: 1200,
+            streakDays: streak,
+            now: DateTime(2026, 11, 3),
+          );
+
+      final en = build(kEn);
+      expect(en.streakText, '🔥 3-day streak');
+      expect(en.targetText, 'Goal 50% (54/108)');
+      expect(en.dateDisplay, 'Nov 3');
+      expect(en.weeklyText, 'Week: 300');
+      expect(en.widgetTitle, 'Buddha Counter');
+
+      final zh = build(kZhHant);
+      expect(zh.targetText, '目標 50% (54/108)');
+      expect(zh.streakText, '🔥 連續 3 天');
+      expect(zh.dateDisplay, '11月3日');
+      expect(zh.weeklyText, '本週: 300聲');
+      expect(build(kZhHant, target: 0).targetText, '今日累積 54 聲 (不限目標)');
+      expect(build(kZhHant, streak: 0).streakText, '今日精進念佛');
+    });
+
+    test('language change is pushed to records and notifications', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        deviceLocales: const [Locale('zh', 'TW')],
+      );
+      expect(vm.practiceRecords.locale, kZhHant);
+      expect(vm.notifications.locale, kZhHant);
+      vm.setAppLanguage(AppLanguage.en);
+      expect(vm.practiceRecords.locale, kEn);
+      expect(vm.notifications.locale, kEn);
+    });
+
+    testWidgets(
+        'switching language while auto counting keeps counting and refreshes media item',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final handler = _RefreshCountingHandler();
+      final vm = CounterViewModel(
+        storage: storage,
+        audio: AudioService(handler: handler),
+        deviceLocales: const [Locale('zh', 'TW')],
+      );
+      final markers =
+          ChantConstants.getSongById(vm.currentSongId).phraseMarkersMs;
+      Future<void> emit(int ms) async {
+        handler.positions.add(Duration(milliseconds: ms));
+        await tester.pump();
+      }
+
+      vm.clearAutoStopCondition();
+      vm.resetAutoCount();
+      vm.startAutoCount();
+      await tester.pump();
+      await emit(0);
+      await emit(markers[0] + 10);
+      await emit(markers[1] + 10);
+      expect(vm.autoCount, 2);
+
+      final before = handler.refreshCalls;
+      vm.setAppLanguage(AppLanguage.en);
+      await tester.pump();
+      expect(vm.isAutoCounting, isTrue);
+      expect(handler.refreshCalls, before + 1);
+      expect(handler.queue.value.first.title, contains('Amitabha'));
+      if (handler.mediaItem.value != null) {
+        expect(handler.mediaItem.value!.title, contains('Amitabha'));
+      }
+
+      await emit(markers[2] + 10);
+      expect(vm.autoCount, 3);
+      vm.stopAutoCount();
+      vm.dispose();
+    });
+  });
+
   group('language picker', () {
     Future<CounterViewModel> newVm() async {
       SharedPreferences.setMockInitialValues({});
@@ -514,4 +606,20 @@ void main() {
       expect(find.text('语言'), findsOneWidget);
     });
   });
+}
+
+/// 可推送播放進度並記錄 refreshMediaItems 呼叫次數的音訊處理器
+class _RefreshCountingHandler extends ChantAudioHandler {
+  final StreamController<Duration> positions =
+      StreamController<Duration>.broadcast();
+  int refreshCalls = 0;
+
+  @override
+  Stream<Duration> get onPositionChanged => positions.stream;
+
+  @override
+  void refreshMediaItems(AppLocalizations l10n) {
+    refreshCalls++;
+    super.refreshMediaItems(l10n);
+  }
 }

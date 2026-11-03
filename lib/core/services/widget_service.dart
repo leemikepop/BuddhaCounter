@@ -1,6 +1,59 @@
 import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../../l10n/l10n_dates.dart';
+
+/// 推送給原生桌面小工具的已翻譯文字
+class WidgetTexts {
+  final String dateDisplay;
+  final String targetText;
+  final String streakText;
+  final String widgetTitle;
+  final String weeklyText;
+  final String monthlyText;
+  final String refreshLabel;
+
+  const WidgetTexts({
+    required this.dateDisplay,
+    required this.targetText,
+    required this.streakText,
+    required this.widgetTitle,
+    required this.weeklyText,
+    required this.monthlyText,
+    required this.refreshLabel,
+  });
+}
+
+/// 依語言組出小工具顯示文字 (純函式，便於測試)
+WidgetTexts buildWidgetTexts(
+  AppLocalizations l10n, {
+  required int todayCount,
+  required int targetCount,
+  required int weeklyCount,
+  required int monthlyCount,
+  required int streakDays,
+  required DateTime now,
+}) {
+  return WidgetTexts(
+    dateDisplay:
+        l10n.widgetDate(now.month, now.day, englishMonthShort(now.month)),
+    targetText: targetCount > 0
+        ? l10n.widgetTargetText(
+            ((todayCount / targetCount) * 100).toInt(),
+            todayCount,
+            targetCount,
+          )
+        : l10n.widgetTodayNoGoal(todayCount),
+    streakText: streakDays > 0
+        ? l10n.widgetStreak(streakDays)
+        : l10n.widgetStreakNone,
+    widgetTitle: l10n.appTitle,
+    weeklyText: l10n.widgetWeekly(weeklyCount),
+    monthlyText: l10n.widgetMonthly(monthlyCount),
+    refreshLabel: l10n.widgetRefresh,
+  );
+}
 
 /// 桌面小工具更新服務 (iOS WidgetKit & Android AppWidget)
 class WidgetService {
@@ -68,17 +121,19 @@ class WidgetService {
     required int weeklyCount,
     required int monthlyCount,
     required int streakDays,
+    required AppLocalizations l10n,
   }) async {
     try {
       final now = DateTime.now();
-      final dateDisplay = '${now.month}月${now.day}日';
-      final String targetText;
-      if (targetCount > 0) {
-        final percent = ((todayCount / targetCount) * 100).toInt();
-        targetText = '目標 $percent% ($todayCount/$targetCount)';
-      } else {
-        targetText = '今日累積 $todayCount 聲 (不限目標)';
-      }
+      final texts = buildWidgetTexts(
+        l10n,
+        todayCount: todayCount,
+        targetCount: targetCount,
+        weeklyCount: weeklyCount,
+        monthlyCount: monthlyCount,
+        streakDays: streakDays,
+        now: now,
+      );
       final timestamp = now.millisecondsSinceEpoch.toDouble();
 
       final groups = await resolveTargetAppGroups();
@@ -92,15 +147,19 @@ class WidgetService {
           await HomeWidget.saveWidgetData<int>('weekly_count', weeklyCount, appGroupId: gid);
           await HomeWidget.saveWidgetData<int>('monthly_count', monthlyCount, appGroupId: gid);
           await HomeWidget.saveWidgetData<int>('streak_days', streakDays, appGroupId: gid);
-          await HomeWidget.saveWidgetData<String>('date_display', dateDisplay, appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>('date_display', texts.dateDisplay, appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>('widget_title', texts.widgetTitle, appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>('weekly_text', texts.weeklyText, appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>('monthly_text', texts.monthlyText, appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>('refresh_label', texts.refreshLabel, appGroupId: gid);
           await HomeWidget.saveWidgetData<String>(
             'streak_text',
-            streakDays > 0 ? '🔥 連續 $streakDays 天' : '今日精進念佛',
+            texts.streakText,
             appGroupId: gid,
           );
           await HomeWidget.saveWidgetData<String>(
             'target_text',
-            targetText,
+            texts.targetText,
             appGroupId: gid,
           );
           await HomeWidget.saveWidgetData<double>(

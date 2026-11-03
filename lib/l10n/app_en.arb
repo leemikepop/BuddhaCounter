@@ -257,5 +257,22 @@
   "legacyUiModeTitle": "Interface style",
   "legacyClassicMode": "Classic mode",
   "legacyModernMode": "Zen mode",
-  "legacySaveAndBack": "Save and go back"
+  "legacySaveAndBack": "Save and go back",
+  "widgetDate": "{monthShort} {day}",
+  "widgetTargetText": "Goal {percent}% ({today}/{target})",
+  "widgetTodayNoGoal": "Today: {today} (no goal)",
+  "widgetStreak": "{days, plural, =1{🔥 1-day streak} other{🔥 {days}-day streak}}",
+  "widgetStreakNone": "Practice today",
+  "widgetWeekly": "Week: {count}",
+  "widgetMonthly": "Month: {count}",
+  "widgetRefresh": "Refresh",
+  "reminderChannelName": "Daily practice reminder",
+  "reminderChannelDesc": "Small things done every day become something great.",
+  "reminderNotifTitle": "Today's practice",
+  "reminderNotifBody": "Open Buddha Counter and log today's practice!",
+  "milestoneChannelName": "Goals & milestones",
+  "milestoneChannelDesc": "Notifications when you reach goals and milestones",
+  "audioChannelName": "Buddha Counter chant playback",
+  "audioChannelDesc": "Keeps chants playing with the screen off or in the background",
+  "mediaSubtitle": "{artist} · {album}"
 }

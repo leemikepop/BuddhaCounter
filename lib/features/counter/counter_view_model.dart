@@ -9,7 +9,7 @@ import '../../core/services/audio_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/practice_record_service.dart';
 import '../../core/services/storage_service.dart';
-import '../../l10n/app_language.dart';
+import '../../l10n/l10n.dart';
 
 class CounterViewModel extends ChangeNotifier {
   final StorageService _storage;
@@ -223,12 +223,24 @@ class CounterViewModel extends ChangeNotifier {
     if (next == _locale) return false;
     _locale = next;
     _onLocaleChanged(next);
+    // 執行期間切換語言：立即同步小工具文字並以新語言重新排程每日提醒
+    _practiceRecords.syncWidget();
+    if (_storage.getReminderEnabled()) {
+      _notifications.scheduleDailyReminder(
+        hour: _storage.getReminderHour(),
+        minute: _storage.getReminderMinute(),
+        enabled: true,
+      );
+    }
     return true;
   }
 
   /// 語言變更時同步無 BuildContext 的服務 (曲目內容、通知、小工具、背景播放)
   void _onLocaleChanged(Locale locale) {
     ChantConstants.applyLocale(locale);
+    _practiceRecords.locale = locale;
+    _notifications.locale = locale;
+    _audio.handler.refreshMediaItems(lookupAppLocalizations(locale));
   }
 
   int get streakDays => _practiceRecords.calculateStreak();

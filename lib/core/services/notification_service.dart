@@ -1,21 +1,26 @@
+import 'dart:ui' show Locale;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import '../../l10n/app_language.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'storage_service.dart';
 
 /// 本地通知與定時提醒服務 (Local Notifications & Daily Reminders)
 class NotificationService {
   static const int reminderNotificationId = 100;
   static const String reminderChannelId = 'buddha_daily_reminder';
-  static const String reminderChannelName = '精進日課提醒';
-  static const String reminderChannelDesc = '簡單的事情每天做，就會變成不簡單。';
 
   final StorageService _storage;
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   bool _isInitialized = false;
   static bool _timeZonesInitialized = false;
+
+  /// 通知文字使用的語言 (由 CounterViewModel 依目前語言設定)
+  Locale locale = kZhHant;
 
   NotificationService(this._storage);
 
@@ -130,10 +135,11 @@ class NotificationService {
 
       if (!enabled) return;
 
-      const androidDetails = AndroidNotificationDetails(
+      final l10n = lookupAppLocalizations(locale);
+      final androidDetails = AndroidNotificationDetails(
         reminderChannelId,
-        reminderChannelName,
-        channelDescription: reminderChannelDesc,
+        l10n.reminderChannelName,
+        channelDescription: l10n.reminderChannelDesc,
         importance: Importance.high,
         priority: Priority.high,
         icon: '@mipmap/ic_launcher',
@@ -145,7 +151,7 @@ class NotificationService {
         presentSound: true,
       );
 
-      const details = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
       );
@@ -154,8 +160,8 @@ class NotificationService {
 
       await _plugin.zonedSchedule(
         id: reminderNotificationId,
-        title: '今日精進功課',
-        body: '開啟念佛計數器填寫今日功課數吧！',
+        title: l10n.reminderNotifTitle,
+        body: l10n.reminderNotifBody,
         scheduledDate: scheduledTime,
         notificationDetails: details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -172,10 +178,11 @@ class NotificationService {
     required String body,
   }) async {
     try {
-      const androidDetails = AndroidNotificationDetails(
+      final l10n = lookupAppLocalizations(locale);
+      final androidDetails = AndroidNotificationDetails(
         'buddha_milestone',
-        '目標達成通知',
-        channelDescription: '發送目標達成與精進里程碑通知',
+        l10n.milestoneChannelName,
+        channelDescription: l10n.milestoneChannelDesc,
         importance: Importance.high,
         priority: Priority.high,
         icon: '@mipmap/ic_launcher',
@@ -187,7 +194,7 @@ class NotificationService {
         presentSound: true,
       );
 
-      const details = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
       );
