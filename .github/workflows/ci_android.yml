@@ -1,11 +1,9 @@
 name: Android CI - Build & Release
 
+# 只在打版號 tag、發布 Release 或手動觸發時建置；平常 push 不自動編譯 (本機即可跑測試與建置)
 on:
   push:
-    branches: [ main, master ]
     tags: [ 'v*' ]
-  pull_request:
-    branches: [ main, master ]
   release:
     types: [ published ]
   workflow_dispatch:

@@ -1,10 +1,8 @@
 name: iOS CI - Build & Test
 
+# 只手動觸發：用來確認 iOS 編譯並產生側載用的 IPA。
+# 打版號 tag 時由 deploy_ios_testflight.yml 負責建置上傳，這裡不重複跑 (macOS 機器費用高)
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:

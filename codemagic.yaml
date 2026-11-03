@@ -15,14 +15,10 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
+    # 只在打版號 tag 時自動建置上傳；平常 push 到 main 不觸發 (需要時可在 Codemagic 網頁手動開始)
     triggering:
       events:
-        - push
         - tag
-      branch_patterns:
-        - pattern: 'main'
-          include: true
-          source: true
       tag_patterns:
         - pattern: 'v*'
     scripts:
