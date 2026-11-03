@@ -71,8 +71,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
             final isDark = theme.brightness == Brightness.dark;
 
             // 支援前後 10 年之快速年份切換
-            final availableYears =
-                List.generate(21, (i) => now.year - 10 + i);
+            final availableYears = List.generate(21, (i) => now.year - 10 + i);
 
             return AlertDialog(
               titlePadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
@@ -159,7 +158,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                         final month = index + 1;
                         final isCurrentSelected =
                             _displayedMonth.year == pickerYear &&
-                            _displayedMonth.month == month;
+                                _displayedMonth.month == month;
                         final isThisMonth =
                             now.year == pickerYear && now.month == month;
 
@@ -736,11 +735,11 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
   }
 
   /// 月曆日期格子
-  Widget _buildCalendarGrid(
-      CounterViewModel vm, Color primary, bool isDark) {
+  Widget _buildCalendarGrid(CounterViewModel vm, Color primary, bool isDark) {
     final year = _displayedMonth.year;
     final month = _displayedMonth.month;
-    final firstDayWeekday = DateTime(year, month, 1).weekday % 7; // 0 for Sunday
+    final firstDayWeekday =
+        DateTime(year, month, 1).weekday % 7; // 0 for Sunday
     final daysInMonth = DateTime(year, month + 1, 0).day;
 
     final now = DateTime.now();
@@ -758,8 +757,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
         childAspectRatio: 0.95,
       ),
       itemBuilder: (context, index) {
-        if (index < firstDayWeekday ||
-            index >= firstDayWeekday + daysInMonth) {
+        if (index < firstDayWeekday || index >= firstDayWeekday + daysInMonth) {
           return const SizedBox.shrink();
         }
 
@@ -798,43 +796,46 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                 width: isSelected ? 1.6 : 1.0,
               ),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  day.toString(),
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight:
-                        isSelected || isToday ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected
-                        ? primary
-                        : (isToday ? primary : null),
+            // 日期格內容 (純數字) 只在格子過小 (例如 320dp 窄螢幕) 時等比縮小，一般螢幕維持原尺寸
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    day.toString(),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: isSelected || isToday
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: isSelected ? primary : (isToday ? primary : null),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                if (count > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 3, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: isTargetAchieved
-                          ? const Color(0xFFF59E0B)
-                          : primary.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      _formatCompact(count),
-                      style: TextStyle(
-                        fontSize: 8.5,
-                        fontWeight: FontWeight.bold,
-                        color: isTargetAchieved ? Colors.white : primary,
+                  const SizedBox(height: 2),
+                  if (count > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 3, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: isTargetAchieved
+                            ? const Color(0xFFF59E0B)
+                            : primary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                    ),
-                  )
-                else
-                  const SizedBox(height: 12),
-              ],
+                      child: Text(
+                        _formatCompact(count),
+                        style: TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.bold,
+                          color: isTargetAchieved ? Colors.white : primary,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox(height: 12),
+                ],
+              ),
             ),
           ),
         );
@@ -857,8 +858,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
     required Color primary,
     required bool isDark,
   }) {
-    final dateStr =
-        context.l10n.calendarSelectedDate(
+    final dateStr = context.l10n.calendarSelectedDate(
       _selectedDate.year,
       _selectedDate.month,
       _selectedDate.day,
@@ -887,33 +887,40 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
               children: [
                 Icon(Icons.event_note_rounded, size: 20, color: primary),
                 const SizedBox(width: 8),
-                Text(
-                  dateStr,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                // 日期與「今日」徽章：窄螢幕或較長的英文日期時自動換行，不擠壓修改按鈕
+                Expanded(
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        dateStr,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (isToday)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: primary,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            context.l10n.calendarTodayBadge,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-                if (isToday) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: primary,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      context.l10n.calendarTodayBadge,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-                const Spacer(),
                 // 直接輸入修改按鈕
                 TextButton.icon(
                   onPressed: () => _showEditCountDialog(vm, count),
@@ -945,13 +952,16 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                   context.l10n.calendarCountUnit,
                   style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
-                const Spacer(),
-                Text(
-                  context.l10n.calendarBreakdown(
-                    record.manualCount,
-                    record.autoCount,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    context.l10n.calendarBreakdown(
+                      record.manualCount,
+                      record.autoCount,
+                    ),
+                    textAlign: TextAlign.end,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
@@ -974,20 +984,23 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    progress >= 1.0
-                        ? context.l10n.calendarGoalReached
-                        : context.l10n.calendarGoalInProgress,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: progress >= 1.0
-                          ? const Color(0xFFF59E0B)
-                          : Colors.grey,
-                      fontWeight: progress >= 1.0
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                  Expanded(
+                    child: Text(
+                      progress >= 1.0
+                          ? context.l10n.calendarGoalReached
+                          : context.l10n.calendarGoalInProgress,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: progress >= 1.0
+                            ? const Color(0xFFF59E0B)
+                            : Colors.grey,
+                        fontWeight: progress >= 1.0
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Text(
                     '${(progress * 100).toInt()}% ($count/$target)',
                     style: const TextStyle(fontSize: 11, color: Colors.grey),
@@ -1191,15 +1204,18 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                         onPressed: () async {
                           await vm.refreshWidgetData();
                           if (mounted) {
-                            AppToast.show(context, context.l10n.widgetSyncedToast);
+                            AppToast.show(
+                                context, context.l10n.widgetSyncedToast);
                           }
                         },
                         onLongPress: () async {
                           final diag = await WidgetService.getDiagnostics();
                           if (!mounted) return;
-                          _showWidgetDiagnosticsDialog(context, diag, primary, isDark);
+                          _showWidgetDiagnosticsDialog(
+                              context, diag, primary, isDark);
                         },
-                        icon: Icon(Icons.sync_rounded, size: 16, color: primary),
+                        icon:
+                            Icon(Icons.sync_rounded, size: 16, color: primary),
                         label: Text(
                           context.l10n.widgetSyncNow,
                           style: TextStyle(
@@ -1230,7 +1246,8 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
     final l10n = context.l10n;
     final pkg = diag['packageName'] ?? l10n.diagUnknown;
     final ver = '${diag['version']}+${diag['buildNumber']}';
-    final candidateGroups = (diag['candidateGroups'] as List?)?.join('\n') ?? l10n.diagNone;
+    final candidateGroups =
+        (diag['candidateGroups'] as List?)?.join('\n') ?? l10n.diagNone;
     final groupData = diag['groupData'] as Map<String, dynamic>? ?? {};
     final installedWidgets = (diag['installedWidgets'] as List?) ?? [];
 
@@ -1299,7 +1316,8 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                   decoration: BoxDecoration(
                     color: Colors.amber.withValues(alpha: isDark ? 0.15 : 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                    border:
+                        Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     l10n.diagHint,

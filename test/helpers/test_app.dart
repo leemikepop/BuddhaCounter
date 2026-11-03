@@ -106,3 +106,34 @@ Future<void> disposeAndSettleTimers(WidgetTester tester) async {
   await tester.pumpWidget(const SizedBox());
   await tester.pump(const Duration(seconds: 3));
 }
+
+/// 載入 Flutter SDK 內附的 Roboto，讓拉丁字母與數字以真實字寬排版。
+/// (測試預設字型每個字元都是 1em 方塊，英文與數字寬度會被高估約一倍；中文則本來就接近 1em)
+/// 找不到 SDK 字型時回傳 false，呼叫端應略過依賴真實字寬的測試。
+Future<bool> loadRealLatinFont() async {
+  final candidates = <String>[
+    if (Platform.environment['FLUTTER_ROOT'] != null)
+      Platform.environment['FLUTTER_ROOT']!,
+  ];
+  // flutter_tester 位於 <FLUTTER_ROOT>/bin/cache/artifacts/engine/...
+  final exe = Platform.resolvedExecutable.replaceAll(r'\', '/');
+  final idx = exe.indexOf('/bin/cache/');
+  if (idx > 0) candidates.add(exe.substring(0, idx));
+
+  for (final root in candidates) {
+    final dir = Directory('$root/bin/cache/artifacts/material_fonts');
+    final regular = File('${dir.path}/roboto-regular.ttf');
+    if (!regular.existsSync()) continue;
+    final loader = FontLoader('Roboto');
+    for (final name in ['regular', 'medium', 'bold']) {
+      final f = File('${dir.path}/roboto-$name.ttf');
+      if (f.existsSync()) {
+        final bytes = f.readAsBytesSync();
+        loader.addFont(Future.value(ByteData.view(bytes.buffer)));
+      }
+    }
+    await loader.load();
+    return true;
+  }
+  return false;
+}

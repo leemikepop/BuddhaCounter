@@ -560,6 +560,68 @@ void main() {
     });
   });
 
+  group('narrow layout (320dp) in every language', () {
+    var realFont = false;
+    setUpAll(() async {
+      realFont = await loadRealLatinFont();
+    });
+
+    for (final lang in [AppLanguage.en, AppLanguage.zhHans, AppLanguage.zhHant]) {
+      testWidgets('no overflow in ${lang.storageValue}', (tester) async {
+        if (!realFont) {
+          markTestSkipped('Flutter SDK Roboto not found; widths would be unrealistic');
+          return;
+        }
+        tester.view.physicalSize = const Size(320, 640);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        SharedPreferences.setMockInitialValues({
+          StorageService.keyAutoCounter: 9876,
+          StorageService.keyCounter: 12345,
+        });
+        final storage = await StorageService.init();
+        await storage.setSeenModernGuide(true);
+        await storage.setOrientationLocked(false);
+        final vm = CounterViewModel(
+          storage: storage,
+          audio: AudioService(),
+          deviceLocales: const [Locale('zh', 'TW')],
+        );
+        vm.setAppLanguage(lang);
+        vm.setAutoTargetCount(10000);
+        vm.setTargetCount(10000);
+        vm.setUiMode(AppUiMode.modern);
+
+        await tester.pumpWidget(liveLocaleApp(vm, const ModernCounterScreen()));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: 'manual tab');
+
+        final nav = find.byType(NavigationDestination);
+        for (var i = 1; i < 4; i++) {
+          await tester.tap(nav.at(i));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull, reason: 'tab $i');
+        }
+
+        await tester.pumpWidget(
+            liveLocaleApp(vm, const Scaffold(body: ModernTimerView())));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: 'auto count view');
+
+        vm.setUiMode(AppUiMode.legacy);
+        await tester.pumpWidget(liveLocaleApp(vm, const LegacyCounterScreen()));
+        await tester.pump();
+        expect(tester.takeException(), isNull, reason: 'legacy counter');
+
+        await tester.pumpWidget(liveLocaleApp(vm, const LegacySettingsScreen()));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: 'legacy settings');
+        await disposeAndSettleTimers(tester);
+      });
+    }
+  });
+
   group('language picker', () {
     Future<CounterViewModel> newVm() async {
       SharedPreferences.setMockInitialValues({});
