@@ -538,50 +538,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get widgetSyncNow => 'Sync widget now';
 
   @override
-  String get diagUnknown => 'Unknown';
-
-  @override
-  String get diagNone => 'None';
-
-  @override
-  String get diagReportTitle => '=== Widget diagnostics ===';
-
-  @override
-  String diagPackageId(String pkg) {
-    return 'Package ID: $pkg';
-  }
-
-  @override
-  String diagVersion(String ver) {
-    return 'Version: $ver';
-  }
-
-  @override
-  String get diagCandidateGroups => '[Candidate App Groups]';
-
-  @override
-  String get diagGroupData => '[Group data read test]';
-
-  @override
-  String get diagInstalledWidgets => '[Installed widgets]';
-
-  @override
-  String get diagNoWidgets => 'None (no widget on the home screen yet)';
-
-  @override
-  String get diagDialogTitle => 'Widget diagnostics';
-
-  @override
-  String get diagHint =>
-      '💡 Tip: iOS widgets share data through an Apple-signed App Group. Sideloading with a free Apple ID (e.g. Sideloadly) blocks this, so the widget shows \"not connected\". Paid developer or TestFlight builds sync normally.';
-
-  @override
-  String get diagCopiedToast => 'Report copied';
-
-  @override
-  String get diagCopy => 'Copy report';
-
-  @override
   String get chantTagFourCharAmitabha => '4-char Amitabha';
 
   @override

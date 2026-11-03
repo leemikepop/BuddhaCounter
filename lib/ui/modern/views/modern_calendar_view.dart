@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/practice_record_service.dart';
-import '../../../core/services/widget_service.dart';
 import '../../../features/counter/counter_view_model.dart';
 import '../../../l10n/l10n.dart';
 import '../../../l10n/l10n_dates.dart';
@@ -1208,12 +1207,6 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                                 context, context.l10n.widgetSyncedToast);
                           }
                         },
-                        onLongPress: () async {
-                          final diag = await WidgetService.getDiagnostics();
-                          if (!mounted) return;
-                          _showWidgetDiagnosticsDialog(
-                              context, diag, primary, isDark);
-                        },
                         icon:
                             Icon(Icons.sync_rounded, size: 16, color: primary),
                         label: Text(
@@ -1232,121 +1225,6 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  /// 顯示小工具跨進程與 App Group 診斷對話框
-  void _showWidgetDiagnosticsDialog(
-    BuildContext context,
-    Map<String, dynamic> diag,
-    Color primary,
-    bool isDark,
-  ) {
-    final l10n = context.l10n;
-    final pkg = diag['packageName'] ?? l10n.diagUnknown;
-    final ver = '${diag['version']}+${diag['buildNumber']}';
-    final candidateGroups =
-        (diag['candidateGroups'] as List?)?.join('\n') ?? l10n.diagNone;
-    final groupData = diag['groupData'] as Map<String, dynamic>? ?? {};
-    final installedWidgets = (diag['installedWidgets'] as List?) ?? [];
-
-    final buffer = StringBuffer();
-    buffer.writeln(l10n.diagReportTitle);
-    buffer.writeln(l10n.diagPackageId('$pkg'));
-    buffer.writeln(l10n.diagVersion(ver));
-    buffer.writeln('\n${l10n.diagCandidateGroups}');
-    buffer.writeln(candidateGroups);
-    buffer.writeln('\n${l10n.diagGroupData}');
-    groupData.forEach((k, v) {
-      buffer.writeln('- $k: $v');
-    });
-    buffer.writeln('\n${l10n.diagInstalledWidgets}');
-    if (installedWidgets.isEmpty) {
-      buffer.writeln(l10n.diagNoWidgets);
-    } else {
-      for (final w in installedWidgets) {
-        buffer.writeln('- $w');
-      }
-    }
-
-    final diagString = buffer.toString();
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.developer_mode_rounded, color: primary, size: 22),
-            const SizedBox(width: 8),
-            Text(
-              l10n.diagDialogTitle,
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.black26 : const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: SelectableText(
-                    diagString,
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 11.5,
-                      color: isDark ? Colors.white70 : Colors.black87,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: isDark ? 0.15 : 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border:
-                        Border.all(color: Colors.amber.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    l10n.diagHint,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDark ? Colors.amber[200] : Colors.amber[900],
-                      height: 1.35,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton.icon(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: diagString));
-              AppToast.show(context, l10n.diagCopiedToast);
-            },
-            icon: const Icon(Icons.copy_rounded, size: 16),
-            label: Text(l10n.diagCopy),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: primary),
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.commonClose),
-          ),
-        ],
       ),
     );
   }

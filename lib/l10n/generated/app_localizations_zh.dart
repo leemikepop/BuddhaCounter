@@ -523,50 +523,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get widgetSyncNow => '立即同步桌面小工具';
 
   @override
-  String get diagUnknown => '未知';
-
-  @override
-  String get diagNone => '無';
-
-  @override
-  String get diagReportTitle => '=== 桌面小工具診斷報告 ===';
-
-  @override
-  String diagPackageId(String pkg) {
-    return '應用套件識別碼 (Package ID): $pkg';
-  }
-
-  @override
-  String diagVersion(String ver) {
-    return '應用版本 (Version): $ver';
-  }
-
-  @override
-  String get diagCandidateGroups => '[候選 App Group 清單]';
-
-  @override
-  String get diagGroupData => '[各群組數據讀取測試]';
-
-  @override
-  String get diagInstalledWidgets => '[系統已安裝小工具]';
-
-  @override
-  String get diagNoWidgets => '無 (尚未偵測到主畫面已加入小工具)';
-
-  @override
-  String get diagDialogTitle => '小工具診斷資訊';
-
-  @override
-  String get diagHint =>
-      '💡 診斷提示：iOS 桌面小工具必須依賴 Apple 官方簽署之 App Group 跨進程共享數據。若透過免費個人 Apple ID 經由 Sideloadly 側載，Apple 會限制該權限導致小工具顯示未連線；若使用付費開發者帳號或 TestFlight 簽署，則可完整即時同步。';
-
-  @override
-  String get diagCopiedToast => '已複製診斷報告至剪貼簿';
-
-  @override
-  String get diagCopy => '複製報告';
-
-  @override
   String get chantTagFourCharAmitabha => '四字彌陀';
 
   @override
@@ -1470,50 +1426,6 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get widgetSyncNow => '立即同步桌面小组件';
-
-  @override
-  String get diagUnknown => '未知';
-
-  @override
-  String get diagNone => '无';
-
-  @override
-  String get diagReportTitle => '=== 桌面小组件诊断报告 ===';
-
-  @override
-  String diagPackageId(String pkg) {
-    return '应用包名 (Package ID): $pkg';
-  }
-
-  @override
-  String diagVersion(String ver) {
-    return '应用版本 (Version): $ver';
-  }
-
-  @override
-  String get diagCandidateGroups => '[候选 App Group 列表]';
-
-  @override
-  String get diagGroupData => '[各群组数据读取测试]';
-
-  @override
-  String get diagInstalledWidgets => '[系统已安装小组件]';
-
-  @override
-  String get diagNoWidgets => '无 (尚未检测到主屏幕已添加小组件)';
-
-  @override
-  String get diagDialogTitle => '小组件诊断信息';
-
-  @override
-  String get diagHint =>
-      '💡 诊断提示：iOS 桌面小组件必须依赖 Apple 官方签名的 App Group 跨进程共享数据。若通过免费个人 Apple ID 经由 Sideloadly 侧载，Apple 会限制该权限导致小组件显示未连接；若使用付费开发者账号或 TestFlight 签名，则可完整实时同步。';
-
-  @override
-  String get diagCopiedToast => '已复制诊断报告至剪贴板';
-
-  @override
-  String get diagCopy => '复制报告';
 
   @override
   String get chantTagFourCharAmitabha => '四字弥陀';

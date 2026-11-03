@@ -804,69 +804,7 @@
   },
   "widgetSyncNow": "立即同步桌面小工具",
   "@widgetSyncNow": {
-    "description": "按鈕：立即同步小工具 (長按顯示診斷)"
-  },
-  "diagUnknown": "未知",
-  "@diagUnknown": {
-    "description": "診斷報告：未知值"
-  },
-  "diagNone": "無",
-  "@diagNone": {
-    "description": "診斷報告：無資料"
-  },
-  "diagReportTitle": "=== 桌面小工具診斷報告 ===",
-  "@diagReportTitle": {
-    "description": "診斷報告首行"
-  },
-  "diagPackageId": "應用套件識別碼 (Package ID): {pkg}",
-  "@diagPackageId": {
-    "description": "診斷報告：套件 ID",
-    "placeholders": {
-      "pkg": {
-        "type": "String"
-      }
-    }
-  },
-  "diagVersion": "應用版本 (Version): {ver}",
-  "@diagVersion": {
-    "description": "診斷報告：版本",
-    "placeholders": {
-      "ver": {
-        "type": "String"
-      }
-    }
-  },
-  "diagCandidateGroups": "[候選 App Group 清單]",
-  "@diagCandidateGroups": {
-    "description": "診斷報告段落標題"
-  },
-  "diagGroupData": "[各群組數據讀取測試]",
-  "@diagGroupData": {
-    "description": "診斷報告段落標題"
-  },
-  "diagInstalledWidgets": "[系統已安裝小工具]",
-  "@diagInstalledWidgets": {
-    "description": "診斷報告段落標題"
-  },
-  "diagNoWidgets": "無 (尚未偵測到主畫面已加入小工具)",
-  "@diagNoWidgets": {
-    "description": "診斷報告：未安裝小工具"
-  },
-  "diagDialogTitle": "小工具診斷資訊",
-  "@diagDialogTitle": {
-    "description": "診斷對話框標題"
-  },
-  "diagHint": "💡 診斷提示：iOS 桌面小工具必須依賴 Apple 官方簽署之 App Group 跨進程共享數據。若透過免費個人 Apple ID 經由 Sideloadly 側載，Apple 會限制該權限導致小工具顯示未連線；若使用付費開發者帳號或 TestFlight 簽署，則可完整即時同步。",
-  "@diagHint": {
-    "description": "診斷對話框說明"
-  },
-  "diagCopiedToast": "已複製診斷報告至剪貼簿",
-  "@diagCopiedToast": {
-    "description": "Toast：已複製診斷報告"
-  },
-  "diagCopy": "複製報告",
-  "@diagCopy": {
-    "description": "按鈕：複製診斷報告"
+    "description": "按鈕：立即同步小工具"
   },
   "chantTagFourCharAmitabha": "四字彌陀",
   "@chantTagFourCharAmitabha": {

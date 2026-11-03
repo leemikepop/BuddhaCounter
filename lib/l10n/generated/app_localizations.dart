@@ -988,89 +988,11 @@ abstract class AppLocalizations {
   /// **'已同步最新數據至桌面小工具'**
   String get widgetSyncedToast;
 
-  /// 按鈕：立即同步小工具 (長按顯示診斷)
+  /// 按鈕：立即同步小工具
   ///
   /// In zh, this message translates to:
   /// **'立即同步桌面小工具'**
   String get widgetSyncNow;
-
-  /// 診斷報告：未知值
-  ///
-  /// In zh, this message translates to:
-  /// **'未知'**
-  String get diagUnknown;
-
-  /// 診斷報告：無資料
-  ///
-  /// In zh, this message translates to:
-  /// **'無'**
-  String get diagNone;
-
-  /// 診斷報告首行
-  ///
-  /// In zh, this message translates to:
-  /// **'=== 桌面小工具診斷報告 ==='**
-  String get diagReportTitle;
-
-  /// 診斷報告：套件 ID
-  ///
-  /// In zh, this message translates to:
-  /// **'應用套件識別碼 (Package ID): {pkg}'**
-  String diagPackageId(String pkg);
-
-  /// 診斷報告：版本
-  ///
-  /// In zh, this message translates to:
-  /// **'應用版本 (Version): {ver}'**
-  String diagVersion(String ver);
-
-  /// 診斷報告段落標題
-  ///
-  /// In zh, this message translates to:
-  /// **'[候選 App Group 清單]'**
-  String get diagCandidateGroups;
-
-  /// 診斷報告段落標題
-  ///
-  /// In zh, this message translates to:
-  /// **'[各群組數據讀取測試]'**
-  String get diagGroupData;
-
-  /// 診斷報告段落標題
-  ///
-  /// In zh, this message translates to:
-  /// **'[系統已安裝小工具]'**
-  String get diagInstalledWidgets;
-
-  /// 診斷報告：未安裝小工具
-  ///
-  /// In zh, this message translates to:
-  /// **'無 (尚未偵測到主畫面已加入小工具)'**
-  String get diagNoWidgets;
-
-  /// 診斷對話框標題
-  ///
-  /// In zh, this message translates to:
-  /// **'小工具診斷資訊'**
-  String get diagDialogTitle;
-
-  /// 診斷對話框說明
-  ///
-  /// In zh, this message translates to:
-  /// **'💡 診斷提示：iOS 桌面小工具必須依賴 Apple 官方簽署之 App Group 跨進程共享數據。若透過免費個人 Apple ID 經由 Sideloadly 側載，Apple 會限制該權限導致小工具顯示未連線；若使用付費開發者帳號或 TestFlight 簽署，則可完整即時同步。'**
-  String get diagHint;
-
-  /// Toast：已複製診斷報告
-  ///
-  /// In zh, this message translates to:
-  /// **'已複製診斷報告至剪貼簿'**
-  String get diagCopiedToast;
-
-  /// 按鈕：複製診斷報告
-  ///
-  /// In zh, this message translates to:
-  /// **'複製報告'**
-  String get diagCopy;
 
   /// 佛曲分類：四字「阿彌陀佛」
   ///
