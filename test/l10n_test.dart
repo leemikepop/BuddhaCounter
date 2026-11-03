@@ -5,6 +5,8 @@ import 'package:buddha_counter/core/services/audio_service.dart';
 import 'package:buddha_counter/core/services/storage_service.dart';
 import 'package:buddha_counter/features/counter/counter_view_model.dart';
 import 'package:buddha_counter/l10n/l10n.dart';
+import 'package:buddha_counter/ui/legacy/screens/legacy_settings_screen.dart';
+import 'package:buddha_counter/ui/modern/screens/modern_counter_screen.dart';
 
 import 'helpers/test_app.dart';
 
@@ -94,6 +96,72 @@ void main() {
       vm2.setAppLanguage(AppLanguage.system);
       vm2.updateDeviceLocales(const [Locale('zh', 'HK')]);
       expect(vm2.locale, kZhHant);
+    });
+  });
+
+  group('language picker', () {
+    Future<CounterViewModel> newVm() async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      await storage.setSeenModernGuide(true);
+      return CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        deviceLocales: const [Locale('zh', 'TW')],
+      );
+    }
+
+    void useTallScreen(WidgetTester tester) {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+    }
+
+    testWidgets('drawer language item switches app to English and back',
+        (tester) async {
+      useTallScreen(tester);
+      final vm = await newVm();
+      vm.setUiMode(AppUiMode.modern);
+      await tester.pumpWidget(liveLocaleApp(vm, const ModernCounterScreen()));
+      await tester.pumpAndSettle();
+
+      tester.state<ScaffoldState>(find.byType(Scaffold).first).openDrawer();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('語言'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('English'));
+      await tester.pumpAndSettle();
+
+      expect(vm.appLanguage, AppLanguage.en);
+      expect(find.text('Language'), findsOneWidget);
+
+      await tester.tap(find.text('Language'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('繁體中文'));
+      await tester.pumpAndSettle();
+      expect(vm.appLanguage, AppLanguage.zhHant);
+      expect(find.text('語言'), findsOneWidget);
+    });
+
+    testWidgets('legacy settings language section switches to Simplified',
+        (tester) async {
+      useTallScreen(tester);
+      final vm = await newVm();
+      await tester.pumpWidget(liveLocaleApp(vm, const LegacySettingsScreen()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('語言'));
+      await tester.pumpAndSettle();
+      expect(
+        find.widgetWithText(RadioListTile<AppLanguage>, '跟隨系統'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('简体中文'));
+      await tester.pumpAndSettle();
+
+      expect(vm.appLanguage, AppLanguage.zhHans);
+      expect(find.text('语言'), findsOneWidget);
     });
   });
 }

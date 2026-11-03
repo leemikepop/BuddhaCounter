@@ -4,5 +4,7 @@
   "commonCancel": "取消",
   "commonConfirm": "确认",
   "commonSet": "设定",
-  "commonClose": "关闭"
+  "commonClose": "关闭",
+  "languageMenuTitle": "语言",
+  "languageFollowSystem": "跟随系统"
 }

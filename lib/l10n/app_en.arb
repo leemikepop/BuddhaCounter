@@ -4,5 +4,7 @@
   "commonCancel": "Cancel",
   "commonConfirm": "Confirm",
   "commonSet": "Set",
-  "commonClose": "Close"
+  "commonClose": "Close",
+  "languageMenuTitle": "Language",
+  "languageFollowSystem": "System default"
 }

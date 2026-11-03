@@ -129,6 +129,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'關閉'**
   String get commonClose;
+
+  /// 語言設定選單標題 (Drawer 項目、設定頁區塊、面板標題)
+  ///
+  /// In zh, this message translates to:
+  /// **'語言'**
+  String get languageMenuTitle;
+
+  /// 語言選項：跟隨手機系統語言
+  ///
+  /// In zh, this message translates to:
+  /// **'跟隨系統'**
+  String get languageFollowSystem;
 }
 
 class _AppLocalizationsDelegate

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/l10n.dart';
+import '../../common/language_picker.dart';
 import '../../legacy/screens/legacy_about_screen.dart';
 import '../../common/app_toast.dart';
 import '../views/modern_counter_view.dart';
@@ -251,6 +253,13 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
                   ),
                 );
               },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.translate_rounded),
+              title: Text(context.l10n.languageMenuTitle),
+              subtitle: Text(appLanguageLabel(context.l10n, vm.appLanguage)),
+              onTap: () => showLanguagePicker(context),
             ),
             const Divider(),
             ListTile(

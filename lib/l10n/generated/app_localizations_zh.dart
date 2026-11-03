@@ -22,6 +22,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonClose => '關閉';
+
+  @override
+  String get languageMenuTitle => '語言';
+
+  @override
+  String get languageFollowSystem => '跟隨系統';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -42,6 +48,12 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get commonClose => '关闭';
+
+  @override
+  String get languageMenuTitle => '语言';
+
+  @override
+  String get languageFollowSystem => '跟随系统';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

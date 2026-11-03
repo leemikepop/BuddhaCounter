@@ -22,4 +22,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonClose => 'Close';
+
+  @override
+  String get languageMenuTitle => 'Language';
+
+  @override
+  String get languageFollowSystem => 'System default';
 }

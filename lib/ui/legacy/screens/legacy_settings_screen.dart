@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/l10n.dart';
+import '../../common/language_picker.dart';
 import '../../common/app_toast.dart';
 
 /// 經典設定頁面 (忠實復刻原 MainActivity3 & activity_main_activity3.xml + 現代/經典模式切換)
@@ -129,6 +131,24 @@ class LegacySettingsScreen extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+
+            const Divider(height: 32),
+
+            // 語言設定
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                context.l10n.languageMenuTitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0000FF),
+                ),
+              ),
+              subtitle: Text(appLanguageLabel(context.l10n, vm.appLanguage)),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => showLanguagePicker(context),
             ),
 
             const SizedBox(height: 24),
