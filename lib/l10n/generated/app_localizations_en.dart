@@ -328,4 +328,256 @@ class AppLocalizationsEn extends AppLocalizations {
   String autoRemainingSeconds(int seconds) {
     return '$seconds s';
   }
+
+  @override
+  String get calendarPrevYear => 'Previous year';
+
+  @override
+  String get calendarNextYear => 'Next year';
+
+  @override
+  String calendarYearLabel(int year) {
+    return '$year';
+  }
+
+  @override
+  String calendarMonthChip(int month, String monthShort) {
+    return '$monthShort';
+  }
+
+  @override
+  String get calendarBackToThisMonth => 'This month';
+
+  @override
+  String get calendarEditTitle => 'Edit practice count';
+
+  @override
+  String calendarEditDateLabel(int year, int month, int day, String monthName) {
+    return 'Date: $monthName $day, $year';
+  }
+
+  @override
+  String get calendarEditFieldLabel => 'Recitations';
+
+  @override
+  String get calendarEditFieldHint => 'Enter number of recitations';
+
+  @override
+  String get calendarEditSave => 'Save';
+
+  @override
+  String calendarEditSavedToast(int count) {
+    return 'Updated to $count';
+  }
+
+  @override
+  String get reminderPickerHelp => 'Daily reminder time';
+
+  @override
+  String reminderSetToast(String time) {
+    return 'Daily reminder set for $time';
+  }
+
+  @override
+  String streakBanner(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days-day streak',
+      one: '1-day streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get streakBadge => 'On fire';
+
+  @override
+  String get streakEncourageActive =>
+      'Keep the practice going — every recitation counts!';
+
+  @override
+  String get streakEncourageStart =>
+      'Start today\'s first recitation and build a daily habit!';
+
+  @override
+  String get metricToday => 'Today';
+
+  @override
+  String get metricWeek => 'This week';
+
+  @override
+  String get metricMonth => 'This month';
+
+  @override
+  String metricTodayGoal(int goal, int percent) {
+    return 'Goal $goal ($percent%)';
+  }
+
+  @override
+  String get metricNoGoal => 'No goal';
+
+  @override
+  String get metricWeekSubtitle => 'Mon – Sun';
+
+  @override
+  String metricMonthSubtitle(int month, String monthShort) {
+    return '$monthShort total';
+  }
+
+  @override
+  String compactNumber(String tenThousands, String thousands) {
+    return '${thousands}k';
+  }
+
+  @override
+  String get metricUnit => '';
+
+  @override
+  String get calendarPrevMonth => 'Previous month';
+
+  @override
+  String get calendarNextMonth => 'Next month';
+
+  @override
+  String calendarMonthTitle(int year, int month, String monthName) {
+    return '$monthName $year';
+  }
+
+  @override
+  String get calendarToday => 'Today';
+
+  @override
+  String get weekdaySun => 'Sun';
+
+  @override
+  String get weekdayMon => 'Mon';
+
+  @override
+  String get weekdayTue => 'Tue';
+
+  @override
+  String get weekdayWed => 'Wed';
+
+  @override
+  String get weekdayThu => 'Thu';
+
+  @override
+  String get weekdayFri => 'Fri';
+
+  @override
+  String get weekdaySat => 'Sat';
+
+  @override
+  String calendarSelectedDate(int year, int month, int day, String monthName) {
+    return '$monthName $day, $year';
+  }
+
+  @override
+  String get calendarTodayBadge => 'Today';
+
+  @override
+  String get calendarEditButton => 'Edit';
+
+  @override
+  String get calendarCountUnit => 'recitations';
+
+  @override
+  String calendarBreakdown(int manual, int auto) {
+    return 'Manual: $manual · Auto: $auto';
+  }
+
+  @override
+  String get calendarGoalReached => 'Goal reached — may all attain Buddhahood!';
+
+  @override
+  String get calendarGoalInProgress => 'Keep going...';
+
+  @override
+  String get dailyGoalSheetTitle => 'Daily goal';
+
+  @override
+  String get dailyGoalRowTitle => 'Daily goal';
+
+  @override
+  String get dailyGoalRowSubtitle => 'Counts manual + auto recitations';
+
+  @override
+  String dailyGoalValue(int count) {
+    return '$count';
+  }
+
+  @override
+  String get reminderTitle => 'Daily reminder';
+
+  @override
+  String get reminderEnabledToast => 'Daily reminder on';
+
+  @override
+  String get reminderDisabledToast => 'Daily reminder off';
+
+  @override
+  String reminderDailyAt(String time) {
+    return 'Every day at $time';
+  }
+
+  @override
+  String get reminderChangeTime => 'Change';
+
+  @override
+  String get widgetCardTitle => 'Home screen widget';
+
+  @override
+  String get widgetCardBody =>
+      'Add the widget to your home screen to see today\'s count, streak and weekly total. Data syncs automatically.';
+
+  @override
+  String get widgetSyncedToast => 'Widget updated';
+
+  @override
+  String get widgetSyncNow => 'Sync widget now';
+
+  @override
+  String get diagUnknown => 'Unknown';
+
+  @override
+  String get diagNone => 'None';
+
+  @override
+  String get diagReportTitle => '=== Widget diagnostics ===';
+
+  @override
+  String diagPackageId(String pkg) {
+    return 'Package ID: $pkg';
+  }
+
+  @override
+  String diagVersion(String ver) {
+    return 'Version: $ver';
+  }
+
+  @override
+  String get diagCandidateGroups => '[Candidate App Groups]';
+
+  @override
+  String get diagGroupData => '[Group data read test]';
+
+  @override
+  String get diagInstalledWidgets => '[Installed widgets]';
+
+  @override
+  String get diagNoWidgets => 'None (no widget on the home screen yet)';
+
+  @override
+  String get diagDialogTitle => 'Widget diagnostics';
+
+  @override
+  String get diagHint =>
+      '💡 Tip: iOS widgets share data through an Apple-signed App Group. Sideloading with a free Apple ID (e.g. Sideloadly) blocks this, so the widget shows \"not connected\". Paid developer or TestFlight builds sync normally.';
+
+  @override
+  String get diagCopiedToast => 'Report copied';
+
+  @override
+  String get diagCopy => 'Copy report';
 }

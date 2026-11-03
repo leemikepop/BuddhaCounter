@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../core/services/practice_record_service.dart';
 import '../../../core/services/widget_service.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/l10n.dart';
+import '../../../l10n/l10n_dates.dart';
 import '../../common/app_toast.dart';
 import '../widgets/goal_picker.dart';
 
@@ -88,7 +90,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                         pickerYear--;
                       });
                     },
-                    tooltip: '上一年',
+                    tooltip: ctx.l10n.calendarPrevYear,
                   ),
                   DropdownButtonHideUnderline(
                     child: DropdownButton<int>(
@@ -96,7 +98,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                           ? pickerYear
                           : null,
                       hint: Text(
-                        '$pickerYear 年',
+                        ctx.l10n.calendarYearLabel(pickerYear),
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -107,7 +109,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                         return DropdownMenuItem<int>(
                           value: y,
                           child: Text(
-                            '$y 年',
+                            ctx.l10n.calendarYearLabel(y),
                             style: TextStyle(
                               fontWeight: y == pickerYear
                                   ? FontWeight.bold
@@ -133,7 +135,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                         pickerYear++;
                       });
                     },
-                    tooltip: '下一年',
+                    tooltip: ctx.l10n.calendarNextYear,
                   ),
                 ],
               ),
@@ -182,7 +184,8 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                             ),
                             alignment: Alignment.center,
                             child: Text(
-                              '$month 月',
+                              ctx.l10n.calendarMonthChip(
+                                  month, englishMonthShort(month)),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: isCurrentSelected || isThisMonth
@@ -205,11 +208,11 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                   onPressed: () {
                     Navigator.pop(ctx, DateTime(now.year, now.month, 1));
                   },
-                  child: const Text('回到本月'),
+                  child: Text(ctx.l10n.calendarBackToThisMonth),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('取消'),
+                  child: Text(ctx.l10n.commonCancel),
                 ),
               ],
             );
@@ -232,13 +235,18 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('手動修改功課聲數'),
+          title: Text(ctx.l10n.calendarEditTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '日期：${_selectedDate.year}年${_selectedDate.month}月${_selectedDate.day}日',
+                ctx.l10n.calendarEditDateLabel(
+                  _selectedDate.year,
+                  _selectedDate.month,
+                  _selectedDate.day,
+                  englishMonthName(_selectedDate.month),
+                ),
                 style: const TextStyle(color: Colors.grey, fontSize: 13),
               ),
               const SizedBox(height: 12),
@@ -247,11 +255,11 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                 keyboardType: TextInputType.number,
                 autofocus: true,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
-                  labelText: '今日功課聲數',
-                  hintText: '請輸入念佛聲數',
-                  border: OutlineInputBorder(),
-                  suffixText: '聲',
+                decoration: InputDecoration(
+                  labelText: ctx.l10n.calendarEditFieldLabel,
+                  hintText: ctx.l10n.calendarEditFieldHint,
+                  border: const OutlineInputBorder(),
+                  suffixText: ctx.l10n.unitRecitationsSuffix,
                 ),
               ),
             ],
@@ -259,14 +267,14 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('取消'),
+              child: Text(ctx.l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () {
                 final val = int.tryParse(controller.text.trim()) ?? 0;
                 Navigator.pop(ctx, val);
               },
-              child: const Text('確認儲存'),
+              child: Text(ctx.l10n.calendarEditSave),
             ),
           ],
         );
@@ -277,7 +285,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
       await vm.setPracticeCount(_selectedDate, result);
       if (mounted) {
         setState(() {});
-        AppToast.show(context, '已更新功課紀錄為 $result 聲');
+        AppToast.show(context, context.l10n.calendarEditSavedToast(result));
       }
     }
   }
@@ -290,9 +298,9 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
     final picked = await showTimePicker(
       context: context,
       initialTime: initialTime,
-      helpText: '選擇每日念佛提醒時間',
-      cancelText: '取消',
-      confirmText: '設定',
+      helpText: context.l10n.reminderPickerHelp,
+      cancelText: context.l10n.commonCancel,
+      confirmText: context.l10n.commonSet,
     );
 
     if (picked != null && mounted) {
@@ -304,7 +312,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
       if (mounted) {
         final hStr = picked.hour.toString().padLeft(2, '0');
         final mStr = picked.minute.toString().padLeft(2, '0');
-        AppToast.show(context, '已設定每日 $hStr:$mStr 定時提醒');
+        AppToast.show(context, context.l10n.reminderSetToast('$hStr:$mStr'));
       }
     }
   }
@@ -452,7 +460,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                     Row(
                       children: [
                         Text(
-                          '連續精進 $streak 天',
+                          context.l10n.streakBanner(streak),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -468,9 +476,9 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                               color: const Color(0xFFF59E0B),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text(
-                              '精進不懈',
-                              style: TextStyle(
+                            child: Text(
+                              context.l10n.streakBadge,
+                              style: const TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -482,8 +490,8 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                     const SizedBox(height: 2),
                     Text(
                       streak > 0
-                          ? '念念相續，功德無量！繼續保持今日精進。'
-                          : '今日開啟第一聲佛號，建立每日精進習慣！',
+                          ? context.l10n.streakEncourageActive
+                          : context.l10n.streakEncourageStart,
                       style: TextStyle(
                         fontSize: 12,
                         color: isDark ? Colors.white70 : Colors.black87,
@@ -502,12 +510,15 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
           children: [
             Expanded(
               child: _buildMetricTile(
-                title: '今日功課',
+                title: context.l10n.metricToday,
                 value: todayCount.toString(),
-                unit: '聲',
+                unit: context.l10n.metricUnit,
                 subtitle: targetCount > 0
-                    ? '目標 $targetCount (${((todayCount / targetCount) * 100).toInt()}%)'
-                    : '無目標',
+                    ? context.l10n.metricTodayGoal(
+                        targetCount,
+                        ((todayCount / targetCount) * 100).toInt(),
+                      )
+                    : context.l10n.metricNoGoal,
                 icon: Icons.check_circle_outline_rounded,
                 iconColor: primary,
                 isDark: isDark,
@@ -516,10 +527,10 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
             const SizedBox(width: 8),
             Expanded(
               child: _buildMetricTile(
-                title: '本週累計',
+                title: context.l10n.metricWeek,
                 value: _formatNumber(weeklyCount),
-                unit: '聲',
-                subtitle: '週一至週日',
+                unit: context.l10n.metricUnit,
+                subtitle: context.l10n.metricWeekSubtitle,
                 icon: Icons.date_range_rounded,
                 iconColor: const Color(0xFF10B981),
                 isDark: isDark,
@@ -528,10 +539,13 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
             const SizedBox(width: 8),
             Expanded(
               child: _buildMetricTile(
-                title: '本月累計',
+                title: context.l10n.metricMonth,
                 value: _formatNumber(monthlyCount),
-                unit: '聲',
-                subtitle: '${DateTime.now().month}月總和',
+                unit: context.l10n.metricUnit,
+                subtitle: context.l10n.metricMonthSubtitle(
+                  DateTime.now().month,
+                  englishMonthShort(DateTime.now().month),
+                ),
                 icon: Icons.calendar_month_rounded,
                 iconColor: const Color(0xFF8B5CF6),
                 isDark: isDark,
@@ -616,7 +630,10 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
 
   String _formatNumber(int n) {
     if (n >= 10000) {
-      return '${(n / 10000).toStringAsFixed(1)}萬';
+      return context.l10n.compactNumber(
+        (n / 10000).toStringAsFixed(1),
+        (n / 1000).toStringAsFixed(1),
+      );
     }
     return n.toString();
   }
@@ -628,7 +645,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
         IconButton(
           icon: const Icon(Icons.chevron_left_rounded),
           onPressed: _prevMonth,
-          tooltip: '上一月',
+          tooltip: context.l10n.calendarPrevMonth,
         ),
         Expanded(
           child: InkWell(
@@ -642,7 +659,11 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                 children: [
                   Flexible(
                     child: Text(
-                      '${_displayedMonth.year} 年 ${_displayedMonth.month} 月',
+                      context.l10n.calendarMonthTitle(
+                        _displayedMonth.year,
+                        _displayedMonth.month,
+                        englishMonthName(_displayedMonth.month),
+                      ),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 16.5,
@@ -665,12 +686,12 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
         IconButton(
           icon: const Icon(Icons.chevron_right_rounded),
           onPressed: _nextMonth,
-          tooltip: '下一月',
+          tooltip: context.l10n.calendarNextMonth,
         ),
         TextButton.icon(
           onPressed: _goToToday,
           icon: const Icon(Icons.today_rounded, size: 16),
-          label: const Text('今天'),
+          label: Text(context.l10n.calendarToday),
           style: TextButton.styleFrom(
             visualDensity: VisualDensity.compact,
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -682,10 +703,20 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
 
   /// 星期標題行
   Widget _buildWeekdayRow(bool isDark) {
-    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+    final l10n = context.l10n;
+    // 月曆格線自週日起排列 (僅顯示用；本週累計仍以週一為起點)
+    final weekdays = [
+      l10n.weekdaySun,
+      l10n.weekdayMon,
+      l10n.weekdayTue,
+      l10n.weekdayWed,
+      l10n.weekdayThu,
+      l10n.weekdayFri,
+      l10n.weekdaySat,
+    ];
     return Row(
       children: weekdays.map((w) {
-        final isWeekend = w == '日' || w == '六';
+        final isWeekend = w == weekdays.first || w == weekdays.last;
         return Expanded(
           child: Center(
             child: Text(
@@ -827,7 +858,12 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
     required bool isDark,
   }) {
     final dateStr =
-        '${_selectedDate.year} 年 ${_selectedDate.month} 月 ${_selectedDate.day} 日';
+        context.l10n.calendarSelectedDate(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      englishMonthName(_selectedDate.month),
+    );
     final count = record.totalCount;
     final target = vm.dailyTargetCount;
     final progress = target > 0 ? (count / target).clamp(0.0, 1.0) : 0.0;
@@ -867,9 +903,9 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                       color: primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Text(
-                      '今日',
-                      style: TextStyle(
+                    child: Text(
+                      context.l10n.calendarTodayBadge,
+                      style: const TextStyle(
                         fontSize: 11,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -882,7 +918,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                 TextButton.icon(
                   onPressed: () => _showEditCountDialog(vm, count),
                   icon: const Icon(Icons.edit_outlined, size: 16),
-                  label: const Text('修改數值'),
+                  label: Text(context.l10n.calendarEditButton),
                   style: TextButton.styleFrom(
                     visualDensity: VisualDensity.compact,
                   ),
@@ -905,13 +941,16 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                const Text(
-                  '聲佛號',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                Text(
+                  context.l10n.calendarCountUnit,
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
                 const Spacer(),
                 Text(
-                  '手動: ${record.manualCount} · 自動: ${record.autoCount}',
+                  context.l10n.calendarBreakdown(
+                    record.manualCount,
+                    record.autoCount,
+                  ),
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
@@ -936,7 +975,9 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    progress >= 1.0 ? '福慧圓滿，共成佛道！' : '持續精進...',
+                    progress >= 1.0
+                        ? context.l10n.calendarGoalReached
+                        : context.l10n.calendarGoalInProgress,
                     style: TextStyle(
                       fontSize: 11,
                       color: progress >= 1.0
@@ -989,7 +1030,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
               borderRadius: BorderRadius.circular(10),
               onTap: () => showCountGoalPicker(
                 context,
-                title: '設定每日功課目標',
+                title: context.l10n.dailyGoalSheetTitle,
                 current: vm.dailyTargetCount,
                 onSelected: vm.setDailyTargetCount,
               ),
@@ -999,29 +1040,30 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                   children: [
                     Icon(Icons.flag_outlined, size: 20, color: primary),
                     const SizedBox(width: 8),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '每日功課目標',
-                            style: TextStyle(
+                            context.l10n.dailyGoalRowTitle,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
-                            '以當日手動 + 自動總聲數計算達成',
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                            context.l10n.dailyGoalRowSubtitle,
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
                           ),
                         ],
                       ),
                     ),
                     Text(
                       vm.dailyTargetCount > 0
-                          ? '${vm.dailyTargetCount} 聲'
-                          : '不限目標',
+                          ? context.l10n.dailyGoalValue(vm.dailyTargetCount)
+                          : context.l10n.goalUnlimited,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: primary,
@@ -1041,9 +1083,9 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                 Icon(Icons.notifications_active_outlined,
                     size: 20, color: primary),
                 const SizedBox(width: 8),
-                const Text(
-                  '每日定時念佛提醒',
-                  style: TextStyle(
+                Text(
+                  context.l10n.reminderTitle,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1063,7 +1105,9 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                     if (mounted) {
                       AppToast.show(
                         context,
-                        val ? '已開啟每日定時提醒' : '已關閉定時提醒',
+                        val
+                            ? context.l10n.reminderEnabledToast
+                            : context.l10n.reminderDisabledToast,
                       );
                     }
                   },
@@ -1087,13 +1131,15 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                       const Icon(Icons.access_time_rounded, size: 18),
                       const SizedBox(width: 8),
                       Text(
-                        '每天 $reminderHourStr:$reminderMinStr 推播提醒',
+                        context.l10n.reminderDailyAt(
+                            '$reminderHourStr:$reminderMinStr'),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
-                      const Text(
-                        '更換時間',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      Text(
+                        context.l10n.reminderChangeTime,
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       const Icon(Icons.chevron_right_rounded,
                           size: 18, color: Colors.grey),
@@ -1114,16 +1160,16 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'iOS / Android 桌面小工具',
-                        style: TextStyle(
+                      Text(
+                        context.l10n.widgetCardTitle,
+                        style: const TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '支援桌面 Widget，隨時在手機主畫面檢視今日精進、連續天數與每週累計。精進數據已自動即時同步。',
+                        context.l10n.widgetCardBody,
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark ? Colors.white70 : Colors.black54,
@@ -1145,7 +1191,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                         onPressed: () async {
                           await vm.refreshWidgetData();
                           if (mounted) {
-                            AppToast.show(context, '已同步最新數據至桌面小工具');
+                            AppToast.show(context, context.l10n.widgetSyncedToast);
                           }
                         },
                         onLongPress: () async {
@@ -1155,7 +1201,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                         },
                         icon: Icon(Icons.sync_rounded, size: 16, color: primary),
                         label: Text(
-                          '立即同步桌面小工具',
+                          context.l10n.widgetSyncNow,
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.bold,
@@ -1181,25 +1227,26 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
     Color primary,
     bool isDark,
   ) {
-    final pkg = diag['packageName'] ?? '未知';
+    final l10n = context.l10n;
+    final pkg = diag['packageName'] ?? l10n.diagUnknown;
     final ver = '${diag['version']}+${diag['buildNumber']}';
-    final candidateGroups = (diag['candidateGroups'] as List?)?.join('\n') ?? '無';
+    final candidateGroups = (diag['candidateGroups'] as List?)?.join('\n') ?? l10n.diagNone;
     final groupData = diag['groupData'] as Map<String, dynamic>? ?? {};
     final installedWidgets = (diag['installedWidgets'] as List?) ?? [];
 
     final buffer = StringBuffer();
-    buffer.writeln('=== 桌面小工具診斷報告 ===');
-    buffer.writeln('應用套件識別碼 (Package ID): $pkg');
-    buffer.writeln('應用版本 (Version): $ver');
-    buffer.writeln('\n[候選 App Group 清單]');
+    buffer.writeln(l10n.diagReportTitle);
+    buffer.writeln(l10n.diagPackageId('$pkg'));
+    buffer.writeln(l10n.diagVersion(ver));
+    buffer.writeln('\n${l10n.diagCandidateGroups}');
     buffer.writeln(candidateGroups);
-    buffer.writeln('\n[各群組數據讀取測試]');
+    buffer.writeln('\n${l10n.diagGroupData}');
     groupData.forEach((k, v) {
       buffer.writeln('- $k: $v');
     });
-    buffer.writeln('\n[系統已安裝小工具]');
+    buffer.writeln('\n${l10n.diagInstalledWidgets}');
     if (installedWidgets.isEmpty) {
-      buffer.writeln('無 (尚未偵測到主畫面已加入小工具)');
+      buffer.writeln(l10n.diagNoWidgets);
     } else {
       for (final w in installedWidgets) {
         buffer.writeln('- $w');
@@ -1217,9 +1264,9 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
           children: [
             Icon(Icons.developer_mode_rounded, color: primary, size: 22),
             const SizedBox(width: 8),
-            const Text(
-              '小工具診斷資訊',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            Text(
+              l10n.diagDialogTitle,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -1255,7 +1302,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                     border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                   ),
                   child: Text(
-                    '💡 診斷提示：iOS 桌面小工具必須依賴 Apple 官方簽署之 App Group 跨進程共享數據。若透過免費個人 Apple ID 經由 Sideloadly 側載，Apple 會限制該權限導致小工具顯示未連線；若使用付費開發者帳號或 TestFlight 簽署，則可完整即時同步。',
+                    l10n.diagHint,
                     style: TextStyle(
                       fontSize: 11,
                       color: isDark ? Colors.amber[200] : Colors.amber[900],
@@ -1271,15 +1318,15 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
           TextButton.icon(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: diagString));
-              AppToast.show(context, '已複製診斷報告至剪貼簿');
+              AppToast.show(context, l10n.diagCopiedToast);
             },
             icon: const Icon(Icons.copy_rounded, size: 16),
-            label: const Text('複製報告'),
+            label: Text(l10n.diagCopy),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: primary),
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('關閉'),
+            child: Text(l10n.commonClose),
           ),
         ],
       ),

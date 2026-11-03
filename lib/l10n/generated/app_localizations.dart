@@ -651,6 +651,426 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{seconds} 秒'**
   String autoRemainingSeconds(int seconds);
+
+  /// Tooltip：年月選擇器上一年
+  ///
+  /// In zh, this message translates to:
+  /// **'上一年'**
+  String get calendarPrevYear;
+
+  /// Tooltip：年月選擇器下一年
+  ///
+  /// In zh, this message translates to:
+  /// **'下一年'**
+  String get calendarNextYear;
+
+  /// 年份顯示
+  ///
+  /// In zh, this message translates to:
+  /// **'{year} 年'**
+  String calendarYearLabel(int year);
+
+  /// 年月選擇器月份格；monthShort 為英文月份縮寫，中文不使用
+  ///
+  /// In zh, this message translates to:
+  /// **'{month} 月'**
+  String calendarMonthChip(int month, String monthShort);
+
+  /// 年月選擇器：回到本月
+  ///
+  /// In zh, this message translates to:
+  /// **'回到本月'**
+  String get calendarBackToThisMonth;
+
+  /// 修改當日聲數對話框標題
+  ///
+  /// In zh, this message translates to:
+  /// **'手動修改功課聲數'**
+  String get calendarEditTitle;
+
+  /// 修改對話框內的日期；monthName 為英文月份，中文不使用
+  ///
+  /// In zh, this message translates to:
+  /// **'日期：{year}年{month}月{day}日'**
+  String calendarEditDateLabel(int year, int month, int day, String monthName);
+
+  /// 修改對話框輸入框 label
+  ///
+  /// In zh, this message translates to:
+  /// **'今日功課聲數'**
+  String get calendarEditFieldLabel;
+
+  /// 修改對話框輸入框 placeholder
+  ///
+  /// In zh, this message translates to:
+  /// **'請輸入念佛聲數'**
+  String get calendarEditFieldHint;
+
+  /// 修改對話框儲存按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'確認儲存'**
+  String get calendarEditSave;
+
+  /// Toast：已更新當日聲數
+  ///
+  /// In zh, this message translates to:
+  /// **'已更新功課紀錄為 {count} 聲'**
+  String calendarEditSavedToast(int count);
+
+  /// 提醒時間選擇器標題
+  ///
+  /// In zh, this message translates to:
+  /// **'選擇每日念佛提醒時間'**
+  String get reminderPickerHelp;
+
+  /// Toast：已設定提醒時間；time 為 HH:mm
+  ///
+  /// In zh, this message translates to:
+  /// **'已設定每日 {time} 定時提醒'**
+  String reminderSetToast(String time);
+
+  /// 月曆頂部連續天數
+  ///
+  /// In zh, this message translates to:
+  /// **'連續精進 {days} 天'**
+  String streakBanner(int days);
+
+  /// 連續 7 天以上的小徽章
+  ///
+  /// In zh, this message translates to:
+  /// **'精進不懈'**
+  String get streakBadge;
+
+  /// 已有連續天數時的鼓勵語
+  ///
+  /// In zh, this message translates to:
+  /// **'念念相續，功德無量！繼續保持今日精進。'**
+  String get streakEncourageActive;
+
+  /// 尚無連續天數時的鼓勵語
+  ///
+  /// In zh, this message translates to:
+  /// **'今日開啟第一聲佛號，建立每日精進習慣！'**
+  String get streakEncourageStart;
+
+  /// 統計卡：今日功課
+  ///
+  /// In zh, this message translates to:
+  /// **'今日功課'**
+  String get metricToday;
+
+  /// 統計卡：本週累計
+  ///
+  /// In zh, this message translates to:
+  /// **'本週累計'**
+  String get metricWeek;
+
+  /// 統計卡：本月累計
+  ///
+  /// In zh, this message translates to:
+  /// **'本月累計'**
+  String get metricMonth;
+
+  /// 統計卡今日：每日目標與進度
+  ///
+  /// In zh, this message translates to:
+  /// **'目標 {goal} ({percent}%)'**
+  String metricTodayGoal(int goal, int percent);
+
+  /// 統計卡今日：未設定每日目標
+  ///
+  /// In zh, this message translates to:
+  /// **'無目標'**
+  String get metricNoGoal;
+
+  /// 統計卡本週副標
+  ///
+  /// In zh, this message translates to:
+  /// **'週一至週日'**
+  String get metricWeekSubtitle;
+
+  /// 統計卡本月副標；monthShort 為英文月份縮寫
+  ///
+  /// In zh, this message translates to:
+  /// **'{month}月總和'**
+  String metricMonthSubtitle(int month, String monthShort);
+
+  /// 一萬以上的精簡數字；tenThousands = n/10000、thousands = n/1000 (皆一位小數)
+  ///
+  /// In zh, this message translates to:
+  /// **'{tenThousands}萬'**
+  String compactNumber(String tenThousands, String thousands);
+
+  /// 統計卡數值旁的單位 (英文留空)
+  ///
+  /// In zh, this message translates to:
+  /// **'聲'**
+  String get metricUnit;
+
+  /// Tooltip：上一個月
+  ///
+  /// In zh, this message translates to:
+  /// **'上一月'**
+  String get calendarPrevMonth;
+
+  /// Tooltip：下一個月
+  ///
+  /// In zh, this message translates to:
+  /// **'下一月'**
+  String get calendarNextMonth;
+
+  /// 月曆標頭；monthName 為英文月份全名
+  ///
+  /// In zh, this message translates to:
+  /// **'{year} 年 {month} 月'**
+  String calendarMonthTitle(int year, int month, String monthName);
+
+  /// 月曆：跳回今天按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'今天'**
+  String get calendarToday;
+
+  /// 星期列：星期日
+  ///
+  /// In zh, this message translates to:
+  /// **'日'**
+  String get weekdaySun;
+
+  /// 星期列：星期一
+  ///
+  /// In zh, this message translates to:
+  /// **'一'**
+  String get weekdayMon;
+
+  /// 星期列：星期二
+  ///
+  /// In zh, this message translates to:
+  /// **'二'**
+  String get weekdayTue;
+
+  /// 星期列：星期三
+  ///
+  /// In zh, this message translates to:
+  /// **'三'**
+  String get weekdayWed;
+
+  /// 星期列：星期四
+  ///
+  /// In zh, this message translates to:
+  /// **'四'**
+  String get weekdayThu;
+
+  /// 星期列：星期五
+  ///
+  /// In zh, this message translates to:
+  /// **'五'**
+  String get weekdayFri;
+
+  /// 星期列：星期六
+  ///
+  /// In zh, this message translates to:
+  /// **'六'**
+  String get weekdaySat;
+
+  /// 選中日期卡片標題
+  ///
+  /// In zh, this message translates to:
+  /// **'{year} 年 {month} 月 {day} 日'**
+  String calendarSelectedDate(int year, int month, int day, String monthName);
+
+  /// 選中日期為今天的小徽章
+  ///
+  /// In zh, this message translates to:
+  /// **'今日'**
+  String get calendarTodayBadge;
+
+  /// 選中日期卡片：修改聲數按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'修改數值'**
+  String get calendarEditButton;
+
+  /// 選中日期聲數後的單位
+  ///
+  /// In zh, this message translates to:
+  /// **'聲佛號'**
+  String get calendarCountUnit;
+
+  /// 選中日期手動 / 自動明細
+  ///
+  /// In zh, this message translates to:
+  /// **'手動: {manual} · 自動: {auto}'**
+  String calendarBreakdown(int manual, int auto);
+
+  /// 選中日期已達每日目標
+  ///
+  /// In zh, this message translates to:
+  /// **'福慧圓滿，共成佛道！'**
+  String get calendarGoalReached;
+
+  /// 選中日期尚未達成每日目標
+  ///
+  /// In zh, this message translates to:
+  /// **'持續精進...'**
+  String get calendarGoalInProgress;
+
+  /// 每日目標設定面板標題
+  ///
+  /// In zh, this message translates to:
+  /// **'設定每日功課目標'**
+  String get dailyGoalSheetTitle;
+
+  /// 月曆設定卡：每日目標列標題
+  ///
+  /// In zh, this message translates to:
+  /// **'每日功課目標'**
+  String get dailyGoalRowTitle;
+
+  /// 每日目標列說明
+  ///
+  /// In zh, this message translates to:
+  /// **'以當日手動 + 自動總聲數計算達成'**
+  String get dailyGoalRowSubtitle;
+
+  /// 每日目標列右側數值
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 聲'**
+  String dailyGoalValue(int count);
+
+  /// 月曆設定卡：提醒開關標題
+  ///
+  /// In zh, this message translates to:
+  /// **'每日定時念佛提醒'**
+  String get reminderTitle;
+
+  /// Toast：開啟提醒
+  ///
+  /// In zh, this message translates to:
+  /// **'已開啟每日定時提醒'**
+  String get reminderEnabledToast;
+
+  /// Toast：關閉提醒
+  ///
+  /// In zh, this message translates to:
+  /// **'已關閉定時提醒'**
+  String get reminderDisabledToast;
+
+  /// 提醒時間列；time 為 HH:mm
+  ///
+  /// In zh, this message translates to:
+  /// **'每天 {time} 推播提醒'**
+  String reminderDailyAt(String time);
+
+  /// 提醒時間列：更換時間
+  ///
+  /// In zh, this message translates to:
+  /// **'更換時間'**
+  String get reminderChangeTime;
+
+  /// 月曆設定卡：桌面小工具標題
+  ///
+  /// In zh, this message translates to:
+  /// **'iOS / Android 桌面小工具'**
+  String get widgetCardTitle;
+
+  /// 桌面小工具說明
+  ///
+  /// In zh, this message translates to:
+  /// **'支援桌面 Widget，隨時在手機主畫面檢視今日精進、連續天數與每週累計。精進數據已自動即時同步。'**
+  String get widgetCardBody;
+
+  /// Toast：已同步小工具
+  ///
+  /// In zh, this message translates to:
+  /// **'已同步最新數據至桌面小工具'**
+  String get widgetSyncedToast;
+
+  /// 按鈕：立即同步小工具 (長按顯示診斷)
+  ///
+  /// In zh, this message translates to:
+  /// **'立即同步桌面小工具'**
+  String get widgetSyncNow;
+
+  /// 診斷報告：未知值
+  ///
+  /// In zh, this message translates to:
+  /// **'未知'**
+  String get diagUnknown;
+
+  /// 診斷報告：無資料
+  ///
+  /// In zh, this message translates to:
+  /// **'無'**
+  String get diagNone;
+
+  /// 診斷報告首行
+  ///
+  /// In zh, this message translates to:
+  /// **'=== 桌面小工具診斷報告 ==='**
+  String get diagReportTitle;
+
+  /// 診斷報告：套件 ID
+  ///
+  /// In zh, this message translates to:
+  /// **'應用套件識別碼 (Package ID): {pkg}'**
+  String diagPackageId(String pkg);
+
+  /// 診斷報告：版本
+  ///
+  /// In zh, this message translates to:
+  /// **'應用版本 (Version): {ver}'**
+  String diagVersion(String ver);
+
+  /// 診斷報告段落標題
+  ///
+  /// In zh, this message translates to:
+  /// **'[候選 App Group 清單]'**
+  String get diagCandidateGroups;
+
+  /// 診斷報告段落標題
+  ///
+  /// In zh, this message translates to:
+  /// **'[各群組數據讀取測試]'**
+  String get diagGroupData;
+
+  /// 診斷報告段落標題
+  ///
+  /// In zh, this message translates to:
+  /// **'[系統已安裝小工具]'**
+  String get diagInstalledWidgets;
+
+  /// 診斷報告：未安裝小工具
+  ///
+  /// In zh, this message translates to:
+  /// **'無 (尚未偵測到主畫面已加入小工具)'**
+  String get diagNoWidgets;
+
+  /// 診斷對話框標題
+  ///
+  /// In zh, this message translates to:
+  /// **'小工具診斷資訊'**
+  String get diagDialogTitle;
+
+  /// 診斷對話框說明
+  ///
+  /// In zh, this message translates to:
+  /// **'💡 診斷提示：iOS 桌面小工具必須依賴 Apple 官方簽署之 App Group 跨進程共享數據。若透過免費個人 Apple ID 經由 Sideloadly 側載，Apple 會限制該權限導致小工具顯示未連線；若使用付費開發者帳號或 TestFlight 簽署，則可完整即時同步。'**
+  String get diagHint;
+
+  /// Toast：已複製診斷報告
+  ///
+  /// In zh, this message translates to:
+  /// **'已複製診斷報告至剪貼簿'**
+  String get diagCopiedToast;
+
+  /// 按鈕：複製診斷報告
+  ///
+  /// In zh, this message translates to:
+  /// **'複製報告'**
+  String get diagCopy;
 }
 
 class _AppLocalizationsDelegate

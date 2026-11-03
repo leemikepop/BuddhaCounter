@@ -468,5 +468,404 @@
         "type": "int"
       }
     }
+  },
+  "calendarPrevYear": "上一年",
+  "@calendarPrevYear": {
+    "description": "Tooltip：年月選擇器上一年"
+  },
+  "calendarNextYear": "下一年",
+  "@calendarNextYear": {
+    "description": "Tooltip：年月選擇器下一年"
+  },
+  "calendarYearLabel": "{year} 年",
+  "@calendarYearLabel": {
+    "description": "年份顯示",
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarMonthChip": "{month} 月",
+  "@calendarMonthChip": {
+    "description": "年月選擇器月份格；monthShort 為英文月份縮寫，中文不使用",
+    "placeholders": {
+      "month": {
+        "type": "int"
+      },
+      "monthShort": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarBackToThisMonth": "回到本月",
+  "@calendarBackToThisMonth": {
+    "description": "年月選擇器：回到本月"
+  },
+  "calendarEditTitle": "手動修改功課聲數",
+  "@calendarEditTitle": {
+    "description": "修改當日聲數對話框標題"
+  },
+  "calendarEditDateLabel": "日期：{year}年{month}月{day}日",
+  "@calendarEditDateLabel": {
+    "description": "修改對話框內的日期；monthName 為英文月份，中文不使用",
+    "placeholders": {
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      },
+      "monthName": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarEditFieldLabel": "今日功課聲數",
+  "@calendarEditFieldLabel": {
+    "description": "修改對話框輸入框 label"
+  },
+  "calendarEditFieldHint": "請輸入念佛聲數",
+  "@calendarEditFieldHint": {
+    "description": "修改對話框輸入框 placeholder"
+  },
+  "calendarEditSave": "確認儲存",
+  "@calendarEditSave": {
+    "description": "修改對話框儲存按鈕"
+  },
+  "calendarEditSavedToast": "已更新功課紀錄為 {count} 聲",
+  "@calendarEditSavedToast": {
+    "description": "Toast：已更新當日聲數",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reminderPickerHelp": "選擇每日念佛提醒時間",
+  "@reminderPickerHelp": {
+    "description": "提醒時間選擇器標題"
+  },
+  "reminderSetToast": "已設定每日 {time} 定時提醒",
+  "@reminderSetToast": {
+    "description": "Toast：已設定提醒時間；time 為 HH:mm",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "streakBanner": "連續精進 {days} 天",
+  "@streakBanner": {
+    "description": "月曆頂部連續天數",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "streakBadge": "精進不懈",
+  "@streakBadge": {
+    "description": "連續 7 天以上的小徽章"
+  },
+  "streakEncourageActive": "念念相續，功德無量！繼續保持今日精進。",
+  "@streakEncourageActive": {
+    "description": "已有連續天數時的鼓勵語"
+  },
+  "streakEncourageStart": "今日開啟第一聲佛號，建立每日精進習慣！",
+  "@streakEncourageStart": {
+    "description": "尚無連續天數時的鼓勵語"
+  },
+  "metricToday": "今日功課",
+  "@metricToday": {
+    "description": "統計卡：今日功課"
+  },
+  "metricWeek": "本週累計",
+  "@metricWeek": {
+    "description": "統計卡：本週累計"
+  },
+  "metricMonth": "本月累計",
+  "@metricMonth": {
+    "description": "統計卡：本月累計"
+  },
+  "metricTodayGoal": "目標 {goal} ({percent}%)",
+  "@metricTodayGoal": {
+    "description": "統計卡今日：每日目標與進度",
+    "placeholders": {
+      "goal": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "metricNoGoal": "無目標",
+  "@metricNoGoal": {
+    "description": "統計卡今日：未設定每日目標"
+  },
+  "metricWeekSubtitle": "週一至週日",
+  "@metricWeekSubtitle": {
+    "description": "統計卡本週副標"
+  },
+  "metricMonthSubtitle": "{month}月總和",
+  "@metricMonthSubtitle": {
+    "description": "統計卡本月副標；monthShort 為英文月份縮寫",
+    "placeholders": {
+      "month": {
+        "type": "int"
+      },
+      "monthShort": {
+        "type": "String"
+      }
+    }
+  },
+  "compactNumber": "{tenThousands}萬",
+  "@compactNumber": {
+    "description": "一萬以上的精簡數字；tenThousands = n/10000、thousands = n/1000 (皆一位小數)",
+    "placeholders": {
+      "tenThousands": {
+        "type": "String"
+      },
+      "thousands": {
+        "type": "String"
+      }
+    }
+  },
+  "metricUnit": "聲",
+  "@metricUnit": {
+    "description": "統計卡數值旁的單位 (英文留空)"
+  },
+  "calendarPrevMonth": "上一月",
+  "@calendarPrevMonth": {
+    "description": "Tooltip：上一個月"
+  },
+  "calendarNextMonth": "下一月",
+  "@calendarNextMonth": {
+    "description": "Tooltip：下一個月"
+  },
+  "calendarMonthTitle": "{year} 年 {month} 月",
+  "@calendarMonthTitle": {
+    "description": "月曆標頭；monthName 為英文月份全名",
+    "placeholders": {
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      },
+      "monthName": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarToday": "今天",
+  "@calendarToday": {
+    "description": "月曆：跳回今天按鈕"
+  },
+  "weekdaySun": "日",
+  "@weekdaySun": {
+    "description": "星期列：星期日"
+  },
+  "weekdayMon": "一",
+  "@weekdayMon": {
+    "description": "星期列：星期一"
+  },
+  "weekdayTue": "二",
+  "@weekdayTue": {
+    "description": "星期列：星期二"
+  },
+  "weekdayWed": "三",
+  "@weekdayWed": {
+    "description": "星期列：星期三"
+  },
+  "weekdayThu": "四",
+  "@weekdayThu": {
+    "description": "星期列：星期四"
+  },
+  "weekdayFri": "五",
+  "@weekdayFri": {
+    "description": "星期列：星期五"
+  },
+  "weekdaySat": "六",
+  "@weekdaySat": {
+    "description": "星期列：星期六"
+  },
+  "calendarSelectedDate": "{year} 年 {month} 月 {day} 日",
+  "@calendarSelectedDate": {
+    "description": "選中日期卡片標題",
+    "placeholders": {
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      },
+      "monthName": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarTodayBadge": "今日",
+  "@calendarTodayBadge": {
+    "description": "選中日期為今天的小徽章"
+  },
+  "calendarEditButton": "修改數值",
+  "@calendarEditButton": {
+    "description": "選中日期卡片：修改聲數按鈕"
+  },
+  "calendarCountUnit": "聲佛號",
+  "@calendarCountUnit": {
+    "description": "選中日期聲數後的單位"
+  },
+  "calendarBreakdown": "手動: {manual} · 自動: {auto}",
+  "@calendarBreakdown": {
+    "description": "選中日期手動 / 自動明細",
+    "placeholders": {
+      "manual": {
+        "type": "int"
+      },
+      "auto": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarGoalReached": "福慧圓滿，共成佛道！",
+  "@calendarGoalReached": {
+    "description": "選中日期已達每日目標"
+  },
+  "calendarGoalInProgress": "持續精進...",
+  "@calendarGoalInProgress": {
+    "description": "選中日期尚未達成每日目標"
+  },
+  "dailyGoalSheetTitle": "設定每日功課目標",
+  "@dailyGoalSheetTitle": {
+    "description": "每日目標設定面板標題"
+  },
+  "dailyGoalRowTitle": "每日功課目標",
+  "@dailyGoalRowTitle": {
+    "description": "月曆設定卡：每日目標列標題"
+  },
+  "dailyGoalRowSubtitle": "以當日手動 + 自動總聲數計算達成",
+  "@dailyGoalRowSubtitle": {
+    "description": "每日目標列說明"
+  },
+  "dailyGoalValue": "{count} 聲",
+  "@dailyGoalValue": {
+    "description": "每日目標列右側數值",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reminderTitle": "每日定時念佛提醒",
+  "@reminderTitle": {
+    "description": "月曆設定卡：提醒開關標題"
+  },
+  "reminderEnabledToast": "已開啟每日定時提醒",
+  "@reminderEnabledToast": {
+    "description": "Toast：開啟提醒"
+  },
+  "reminderDisabledToast": "已關閉定時提醒",
+  "@reminderDisabledToast": {
+    "description": "Toast：關閉提醒"
+  },
+  "reminderDailyAt": "每天 {time} 推播提醒",
+  "@reminderDailyAt": {
+    "description": "提醒時間列；time 為 HH:mm",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderChangeTime": "更換時間",
+  "@reminderChangeTime": {
+    "description": "提醒時間列：更換時間"
+  },
+  "widgetCardTitle": "iOS / Android 桌面小工具",
+  "@widgetCardTitle": {
+    "description": "月曆設定卡：桌面小工具標題"
+  },
+  "widgetCardBody": "支援桌面 Widget，隨時在手機主畫面檢視今日精進、連續天數與每週累計。精進數據已自動即時同步。",
+  "@widgetCardBody": {
+    "description": "桌面小工具說明"
+  },
+  "widgetSyncedToast": "已同步最新數據至桌面小工具",
+  "@widgetSyncedToast": {
+    "description": "Toast：已同步小工具"
+  },
+  "widgetSyncNow": "立即同步桌面小工具",
+  "@widgetSyncNow": {
+    "description": "按鈕：立即同步小工具 (長按顯示診斷)"
+  },
+  "diagUnknown": "未知",
+  "@diagUnknown": {
+    "description": "診斷報告：未知值"
+  },
+  "diagNone": "無",
+  "@diagNone": {
+    "description": "診斷報告：無資料"
+  },
+  "diagReportTitle": "=== 桌面小工具診斷報告 ===",
+  "@diagReportTitle": {
+    "description": "診斷報告首行"
+  },
+  "diagPackageId": "應用套件識別碼 (Package ID): {pkg}",
+  "@diagPackageId": {
+    "description": "診斷報告：套件 ID",
+    "placeholders": {
+      "pkg": {
+        "type": "String"
+      }
+    }
+  },
+  "diagVersion": "應用版本 (Version): {ver}",
+  "@diagVersion": {
+    "description": "診斷報告：版本",
+    "placeholders": {
+      "ver": {
+        "type": "String"
+      }
+    }
+  },
+  "diagCandidateGroups": "[候選 App Group 清單]",
+  "@diagCandidateGroups": {
+    "description": "診斷報告段落標題"
+  },
+  "diagGroupData": "[各群組數據讀取測試]",
+  "@diagGroupData": {
+    "description": "診斷報告段落標題"
+  },
+  "diagInstalledWidgets": "[系統已安裝小工具]",
+  "@diagInstalledWidgets": {
+    "description": "診斷報告段落標題"
+  },
+  "diagNoWidgets": "無 (尚未偵測到主畫面已加入小工具)",
+  "@diagNoWidgets": {
+    "description": "診斷報告：未安裝小工具"
+  },
+  "diagDialogTitle": "小工具診斷資訊",
+  "@diagDialogTitle": {
+    "description": "診斷對話框標題"
+  },
+  "diagHint": "💡 診斷提示：iOS 桌面小工具必須依賴 Apple 官方簽署之 App Group 跨進程共享數據。若透過免費個人 Apple ID 經由 Sideloadly 側載，Apple 會限制該權限導致小工具顯示未連線；若使用付費開發者帳號或 TestFlight 簽署，則可完整即時同步。",
+  "@diagHint": {
+    "description": "診斷對話框說明"
+  },
+  "diagCopiedToast": "已複製診斷報告至剪貼簿",
+  "@diagCopiedToast": {
+    "description": "Toast：已複製診斷報告"
+  },
+  "diagCopy": "複製報告",
+  "@diagCopy": {
+    "description": "按鈕：複製診斷報告"
   }
 }

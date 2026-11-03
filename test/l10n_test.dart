@@ -9,6 +9,8 @@ import 'package:buddha_counter/ui/legacy/screens/legacy_settings_screen.dart';
 import 'package:buddha_counter/ui/modern/screens/modern_counter_screen.dart';
 import 'package:buddha_counter/ui/modern/views/modern_counter_view.dart';
 import 'package:buddha_counter/ui/modern/views/modern_timer_view.dart';
+import 'package:buddha_counter/ui/modern/views/modern_calendar_view.dart';
+import 'package:buddha_counter/l10n/l10n_dates.dart';
 
 import 'helpers/test_app.dart';
 
@@ -173,6 +175,39 @@ void main() {
       vm.clearAutoStopCondition();
       await tester.pump();
       expect(find.text('Continuous'), findsOneWidget);
+    });
+  });
+
+  group('practice calendar', () {
+    testWidgets('english month title, weekdays and daily goal row',
+        (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        deviceLocales: const [Locale('en')],
+      );
+      await tester.pumpWidget(
+          liveLocaleApp(vm, const Scaffold(body: ModernCalendarView())));
+      await tester.pumpAndSettle();
+
+      final now = DateTime.now();
+      expect(find.text('${englishMonthName(now.month)} ${now.year}'),
+          findsOneWidget);
+      expect(find.text('Mon'), findsOneWidget);
+      expect(find.text('Today'), findsWidgets);
+      expect(find.text('Daily goal'), findsOneWidget);
+      expect(find.text('Goal 108 (0%)'), findsOneWidget);
+    });
+
+    test('english month helpers', () {
+      expect(englishMonthName(11), 'November');
+      expect(englishMonthShort(1), 'Jan');
     });
   });
 
