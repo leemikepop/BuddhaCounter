@@ -21,8 +21,6 @@ class AudioService {
   final ChantAudioHandler _handler;
   ChantAudioHandler get handler => _handler;
 
-  AudioPlayer get musicPlayer => _handler.musicPlayer;
-
   bool get isPlaying => _handler.isPlaying;
 
   int get currentSongId => _handler.currentSongId;
@@ -34,8 +32,8 @@ class AudioService {
   Stream<int> get onCurrentSongChanged => _handler.onCurrentSongChanged;
   Stream<bool> get onPlayStateChanged => _handler.onPlayStateChanged;
 
-  Future<Duration?> getCurrentPosition() => _handler.musicPlayer.getCurrentPosition();
-  Future<Duration?> getDuration() => _handler.musicPlayer.getDuration();
+  Future<Duration?> getCurrentPosition() => _handler.getCurrentPosition();
+  Future<Duration?> getDuration() => _handler.getDuration();
 
   /// 點擊音效 (木魚 / 引磬) 的 Android 音訊設定：不搶音訊焦點、不保持喚醒。
   /// iOS 不使用：iOS 只有一份全域 session，由 [ChantAudioHandler.configureIosAudioSession] 統一設定。

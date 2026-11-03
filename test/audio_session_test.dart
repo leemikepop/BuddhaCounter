@@ -78,19 +78,18 @@ void main() {
     }
   });
 
-  test('Android: music and click-sound players each get their own context',
+  test('Android: the music player and click-sound players each get their own context',
       () async {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     await createAudioStack();
 
     final perPlayer = contextCalls(playerCalls).toList();
-    final musicIds = {'chant_music_player', 'chant_standby_player'};
-    final musicCalls = perPlayer
-        .where((c) => musicIds.contains((c.arguments as Map)['playerId']));
+    final musicCalls = perPlayer.where(
+        (c) => (c.arguments as Map)['playerId'] == 'chant_music_player');
     final sfxCalls = perPlayer.where((c) =>
         ((c.arguments as Map)['playerId'] as String).startsWith('sfx_pool_'));
 
-    expect(musicCalls.length, 2, reason: 'music players must get gain focus');
+    expect(musicCalls.length, 1, reason: 'the music player must get gain focus');
     expect(sfxCalls.length, 6, reason: 'click sounds must not take focus');
     for (final c in musicCalls) {
       expect((c.arguments as Map)['audioFocus'], AndroidAudioFocus.gain.value);

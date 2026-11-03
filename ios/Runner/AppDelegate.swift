@@ -12,5 +12,9 @@ import UIKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    // 佛曲無縫循環播放器 (見 ChantLoopPlayer.swift)
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "ChantLoopPlayer") {
+      ChantLoopPlayer.register(with: registrar)
+    }
   }
 }

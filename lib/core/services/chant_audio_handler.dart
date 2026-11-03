@@ -8,17 +8,15 @@ import 'package:path_provider/path_provider.dart';
 import '../../l10n/app_language.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../constants/chant_songs.dart';
+import 'chant_music_engine.dart';
+import 'ios_loop_chant_engine.dart';
 
 /// 佛曲媒體播放會話處理器 (整合 Android MediaSession 與 iOS NowPlayingCenter / RemoteCommandCenter)
 /// 支援系統通知欄、鎖定畫面、控制中心、動態島、耳機線控 (AirPods) 播放/暫停/上一首/下一首與進度控制
+///
+/// 實際發聲交給 [ChantMusicEngine]：iOS 用原生 AVPlayerLooper (無縫循環)，Android 用 audioplayers。
 class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
-  final AudioPlayer _musicPlayer = AudioPlayer(playerId: 'chant_music_player');
-  final AudioPlayer _standbyPlayer = AudioPlayer(playerId: 'chant_standby_player');
-  late AudioPlayer _activePlayer = _musicPlayer;
-
-  AudioPlayer get musicPlayer => _activePlayer;
-
-  File? _currentSongFile;
+  final ChantMusicEngine _engine;
 
   bool _isPlaying = false;
   bool get isPlaying => _isPlaying;
@@ -109,7 +107,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  TimerPositionUpdater? _positionUpdater;
+  Timer? _positionTimer;
 
   /// 系統通知欄 / 鎖定畫面文字使用的翻譯
   AppLocalizations _l10n = lookupAppLocalizations(kZhHant);
@@ -146,133 +144,95 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  ChantAudioHandler() {
+  ChantAudioHandler({ChantMusicEngine? engine})
+      : _engine = engine ??
+            (_isIOS
+                ? IosLoopChantEngine()
+                : AudioplayersChantEngine(audioContext: musicAudioContext)) {
     _initFuture = _initAudioPlayer();
   }
 
   Future<void> _initAudioPlayer() async {
-    // 關鍵效能優化：覆蓋 audioplayers 6.x 預設的 FramePositionUpdater（原本會在 90/120Hz 每一幀跨執行緒呼叫 getCurrentPosition），
-    // 改為 250ms 定時更新，大幅降低 Platform MethodChannel 與主執行緒負擔
-    _positionUpdater = TimerPositionUpdater(
-      interval: const Duration(milliseconds: 250),
-      getPosition: () => _activePlayer.getCurrentPosition(),
-    );
-    _musicPlayer.positionUpdater = _positionUpdater;
-    _standbyPlayer.positionUpdater = null;
-
-    // 核心進度監聽：直接監聽 _positionUpdater 的 positionStream，
-    // 其 getPosition 回呼隨時動態查詢當前活躍的 _activePlayer，
-    // 不論活躍播放器在 _musicPlayer 與 _standbyPlayer 之間如何交替切換，
-    // 均以穩定的 250ms 定時推播，杜絕切換後進度推播中斷或卡在 100%
-    _positionUpdater!.positionStream.listen((pos) {
-      final prev = _currentPosition;
-      _currentPosition = pos;
-      if (!_positionController.isClosed) {
-        _positionController.add(pos);
-      }
-      if (_isPlaying &&
-          prev > const Duration(seconds: 2) &&
-          pos < const Duration(milliseconds: 800)) {
-        _broadcastPlaybackState();
-      }
-    });
-
-    void bindListeners(AudioPlayer player) {
-      // 監聽播放器狀態
-      player.onPlayerStateChanged.listen((state) {
-        if (player != _activePlayer) return;
-        if (!_playerStateController.isClosed) {
-          _playerStateController.add(state);
-        }
-        if (_isSwitchingTrack && state != PlayerState.playing) {
-          // 切歌準備期間忽略底層 MediaPlayer reset/stop 產生的暫態非播放事件，避免誤觸暫停迴圈
-          return;
-        }
-        if (state == PlayerState.completed && _releaseMode == ReleaseMode.loop) {
-          _positionUpdater?.start();
-          return;
-        }
-        final nextPlaying = (state == PlayerState.playing);
-        _setPlayState(nextPlaying);
-        _broadcastPlaybackState();
-      });
-
-      // 監聽長度更新
-      player.onDurationChanged.listen((dur) {
-        if (dur > Duration.zero) {
-          _currentDuration = dur;
-          if (!_durationController.isClosed) {
-            _durationController.add(dur);
-          }
-          if (mediaItem.value != null) {
-            mediaItem.add(mediaItem.value!.copyWith(duration: dur));
-          }
-        }
-      });
-
-      // 監聽播放完成
-      player.onPlayerComplete.listen((_) async {
-        if (player != _activePlayer) return;
-        if (!_playerCompleteController.isClosed) {
-          _playerCompleteController.add(null);
-        }
-        if (!_isPlaying || _isSwitchingTrack) return;
-        if (_releaseMode == ReleaseMode.loop) {
-          if (Platform.isIOS) {
-            // iOS 雙播放器無縫乒乓緩衝（Ping-Pong Double Buffering）：
-            // 備援播放器已在後台完成音檔載入與解碼並定位在第 0 幀，
-            // 立即無延遲啟動備援播放器，徹底規避 AVPlayer seek(0) 產生的 800ms 解碼空檔！
-            final nextPlayer =
-                (_activePlayer == _musicPlayer) ? _standbyPlayer : _musicPlayer;
-            final prevPlayer = _activePlayer;
-            _activePlayer = nextPlayer;
-            _currentPosition = Duration.zero;
-            // 關鍵 UI 即時重設：立即將進度廣播至 0，杜絕進度條卡在 100% 假死
-            if (!_positionController.isClosed) {
-              _positionController.add(Duration.zero);
-            }
-            _positionUpdater?.start();
-            nextPlayer.resume().catchError((_) {});
-            _broadcastPlaybackState();
-            if (_currentSongFile != null) {
-              prevPlayer
-                  .setSource(DeviceFileSource(_currentSongFile!.path,
-                      mimeType: 'audio/ogg'))
-                  .catchError((_) {});
-            }
-            return;
-          }
-          _positionUpdater?.start();
-          return;
-        } else {
-          await skipToNext();
-        }
-      });
-    }
-
-    bindListeners(_musicPlayer);
-    bindListeners(_standbyPlayer);
+    _engine.onStateChanged.listen(_onEngineState);
+    _engine.onDurationChanged.listen(_onEngineDuration);
+    _engine.onComplete.listen((_) => _onEngineComplete());
 
     // 廣播初始佇列 (Queue)
     final queueItems = ChantConstants.allSongs.map(_queueItemFor).toList();
     queue.add(queueItems);
 
     try {
-      if (Platform.isIOS) {
-        await _musicPlayer.setReleaseMode(ReleaseMode.stop);
-        await _standbyPlayer.setReleaseMode(ReleaseMode.stop);
-      } else {
-        await _musicPlayer.setReleaseMode(ReleaseMode.loop);
-      }
-      if (_isIOS) {
-        await configureIosAudioSession();
-      } else {
-        await _musicPlayer.setAudioContext(musicAudioContext);
-        await _standbyPlayer.setAudioContext(musicAudioContext);
-      }
+      await configureIosAudioSession();
+      await _engine.init();
     } catch (e) {
       debugPrint('ChantAudioHandler: player setup failed: $e');
     }
+  }
+
+  // 進度以 250ms 定時查詢 (不逐幀跨執行緒呼叫)，系統通知欄 / 鎖定畫面會依 updatePosition + speed 自行推算
+  void _startPositionTicker() {
+    _positionTimer ??= Timer.periodic(
+      const Duration(milliseconds: 250),
+      (_) => _pollPosition(),
+    );
+  }
+
+  void _stopPositionTicker() {
+    _positionTimer?.cancel();
+    _positionTimer = null;
+  }
+
+  Future<void> _pollPosition() async {
+    final pos = await _engine.getPosition().catchError((_) => null);
+    if (pos == null || _positionTimer == null) return;
+    final prev = _currentPosition;
+    _currentPosition = pos;
+    if (!_positionController.isClosed) {
+      _positionController.add(pos);
+    }
+    // 切勿每次進度更新都廣播 (會造成 IPC 與主執行緒阻塞)；僅在單曲循環回到開頭時同步一次系統進度
+    if (_isPlaying &&
+        prev > const Duration(seconds: 2) &&
+        pos < const Duration(milliseconds: 800)) {
+      _broadcastPlaybackState();
+    }
+  }
+
+  void _onEngineState(PlayerState state) {
+    if (!_playerStateController.isClosed) {
+      _playerStateController.add(state);
+    }
+    if (_isSwitchingTrack && state != PlayerState.playing) {
+      // 切歌準備期間忽略底層 reset/stop 產生的暫態非播放事件，避免誤觸暫停迴圈
+      return;
+    }
+    if (state == PlayerState.completed && _releaseMode == ReleaseMode.loop) {
+      // 單曲循環由引擎原生接回開頭，completed 只是暫態
+      return;
+    }
+    _setPlayState(state == PlayerState.playing);
+    _broadcastPlaybackState();
+  }
+
+  void _onEngineDuration(Duration dur) {
+    if (dur <= Duration.zero) return;
+    _currentDuration = dur;
+    if (!_durationController.isClosed) {
+      _durationController.add(dur);
+    }
+    if (mediaItem.value != null) {
+      mediaItem.add(mediaItem.value!.copyWith(duration: dur));
+    }
+  }
+
+  Future<void> _onEngineComplete() async {
+    if (!_playerCompleteController.isClosed) {
+      _playerCompleteController.add(null);
+    }
+    if (!_isPlaying || _isSwitchingTrack) return;
+    // 單曲循環由引擎原生處理，切勿在此 seek(0) / resume()，否則會打斷音訊管線造成停頓
+    if (_releaseMode == ReleaseMode.loop) return;
+    await skipToNext();
   }
 
   void _broadcastPlaybackState() {
@@ -367,30 +327,13 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       final file = await _prepareSongFile(song);
       if (reqId != _playRequestId || !_isPlaying) return;
 
-      _currentSongFile = file;
-      _activePlayer = _musicPlayer;
-      _standbyPlayer.stop().catchError((_) {});
-
-      if (Platform.isIOS && _releaseMode == ReleaseMode.loop) {
-        await _musicPlayer.setReleaseMode(ReleaseMode.stop).catchError((_) {});
-        await _standbyPlayer.setReleaseMode(ReleaseMode.stop).catchError((_) {});
-        await _musicPlayer.play(
-          DeviceFileSource(file.path, mimeType: 'audio/ogg'),
-        );
-        if (reqId != _playRequestId) return;
-        _standbyPlayer
-            .setSource(DeviceFileSource(file.path, mimeType: 'audio/ogg'))
-            .catchError((_) {});
-      } else {
-        await _musicPlayer.play(
-          DeviceFileSource(file.path, mimeType: 'audio/ogg'),
-        );
-        if (reqId != _playRequestId) return;
-        await _musicPlayer.setReleaseMode(_releaseMode).catchError((_) {});
-      }
+      await _engine.playFile(file.path,
+          looping: _releaseMode == ReleaseMode.loop);
+      if (reqId != _playRequestId) return;
 
       _isSwitchingTrack = false;
-      final dur = await _activePlayer.getDuration().catchError((_) => null);
+      _startPositionTicker();
+      final dur = await _engine.getDuration().catchError((_) => null);
       if (reqId != _playRequestId) return;
       if (dur != null && dur > Duration.zero) {
         _currentDuration = dur;
@@ -435,9 +378,9 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     _isSwitchingTrack = false;
     _setPlayState(true);
     _broadcastPlaybackState();
-    _positionUpdater?.start();
-    if (_activePlayer.state == PlayerState.paused) {
-      await _activePlayer.resume().catchError((_) {});
+    if (_engine.state == PlayerState.paused) {
+      _startPositionTicker();
+      await _engine.resume().catchError((_) {});
     } else {
       await playSong(_currentSongId);
     }
@@ -449,8 +392,8 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     _isSwitchingTrack = false;
     _setPlayState(false);
     _broadcastPlaybackState();
-    _positionUpdater?.stop();
-    await _activePlayer.pause().catchError((_) {});
+    _stopPositionTicker();
+    await _engine.pause().catchError((_) {});
   }
 
   @override
@@ -462,10 +405,8 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     if (!_positionController.isClosed) {
       _positionController.add(Duration.zero);
     }
-    _positionUpdater?.stop();
-    await _musicPlayer.stop().catchError((_) {});
-    await _standbyPlayer.stop().catchError((_) {});
-    _activePlayer = _musicPlayer;
+    _stopPositionTicker();
+    await _engine.stop().catchError((_) {});
     playbackState.add(playbackState.value.copyWith(
       processingState: AudioProcessingState.idle,
       playing: false,
@@ -481,7 +422,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     if (!_positionController.isClosed) {
       _positionController.add(position);
     }
-    await _activePlayer.seek(position).catchError((_) {});
+    await _engine.seek(position).catchError((_) {});
     _broadcastPlaybackState();
   }
 
@@ -506,7 +447,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
         await playSong(songId);
       }
     } else {
-      if (_currentSongId == songId && _activePlayer.state == PlayerState.paused) {
+      if (_currentSongId == songId && _engine.state == PlayerState.paused) {
         await play();
       } else {
         await playSong(songId);
@@ -516,21 +457,16 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
 
   Future<void> setReleaseMode(ReleaseMode mode) async {
     _releaseMode = mode;
-    if (Platform.isIOS) {
-      final effectiveMode =
-          (mode == ReleaseMode.loop) ? ReleaseMode.stop : mode;
-      await _musicPlayer.setReleaseMode(effectiveMode);
-      await _standbyPlayer.setReleaseMode(effectiveMode);
-    } else {
-      await _musicPlayer.setReleaseMode(mode);
-    }
+    await _engine.setLooping(mode == ReleaseMode.loop);
   }
 
+  Future<Duration?> getCurrentPosition() => _engine.getPosition();
+
+  Future<Duration?> getDuration() => _engine.getDuration();
+
   Future<void> disposePlayer() async {
-    _positionUpdater?.stop();
     await stop();
-    await _musicPlayer.dispose();
-    await _standbyPlayer.dispose();
+    await _engine.dispose();
     await _currentSongController.close();
     await _playStateController.close();
     await _positionController.close();
