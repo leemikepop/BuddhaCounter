@@ -143,9 +143,23 @@ class CounterViewModel extends ChangeNotifier {
   bool _vibrationEnabled = true;
   bool get vibrationEnabled => _vibrationEnabled;
 
+  /// 手動計數目標聲數 (僅與手動計數 [count] 比較)
   int _targetCount = 108;
   int get targetCount => _targetCount;
   double get targetProgress => _targetCount > 0 ? (_count / _targetCount).clamp(0.0, 1.0) : 0.0;
+
+  /// 自動計數目標聲數 (僅與自動計數 [autoCount] 比較)，念滿即自動停止；與定時停止互斥
+  int _autoTargetCount = 0;
+  int get autoTargetCount => _autoTargetCount;
+  double get autoTargetProgress => _autoTargetCount > 0
+      ? (_autoCount / _autoTargetCount).clamp(0.0, 1.0)
+      : 0.0;
+  bool get isAutoTargetReached =>
+      _autoTargetCount > 0 && _autoCount >= _autoTargetCount;
+
+  /// 每日功課目標聲數 (與當日手動 + 自動總聲數比較)，於功課月曆設定
+  int _dailyTargetCount = 108;
+  int get dailyTargetCount => _dailyTargetCount;
 
   bool _fullscreenTap = false;
   bool get fullscreenTap => _fullscreenTap;
@@ -221,6 +235,13 @@ class CounterViewModel extends ChangeNotifier {
         : (tmStr == 'system' ? ThemeMode.system : ThemeMode.light);
     _vibrationEnabled = _storage.getVibrationEnabled();
     _targetCount = _storage.getTargetCount();
+    _dailyTargetCount = _storage.getDailyTargetCount();
+    _autoTargetCount = _storage.getAutoTargetCount();
+    // 聲數目標與定時停止互斥：若兩者同時存在 (理論上不應發生)，以既有的定時停止為準
+    if (_autoTargetCount > 0 && _autoStopMinutes > 0) {
+      _autoTargetCount = 0;
+      _storage.setAutoTargetCount(0);
+    }
     _fullscreenTap = _storage.getFullscreenTap();
     _hasSeenModernGuide = _storage.getSeenModernGuide();
     final maxHxIdx = ChantConstants.huiXiangItems.length - 1;
@@ -394,7 +415,8 @@ class CounterViewModel extends ChangeNotifier {
     if (_count > 0) {
       _count--;
       _storage.setCounter(_count);
-      _practiceRecords.adjustCount(DateTime.now(), -1);
+      // 僅扣除今日記錄的手動分項，保留手動 / 自動明細
+      _practiceRecords.addCount(DateTime.now(), manual: -1);
       _storage.setLastActiveDate(
           PracticeRecordService.formatDateKey(DateTime.now()));
       if (_vibrationEnabled) {
@@ -526,10 +548,48 @@ class CounterViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 設定定時停止分鐘數 (0 = 不限)；設定大於 0 時會清空自動計數聲數目標 (兩者互斥)
   void setAutoStopMinutes(int mins) {
     _autoStopMinutes = mins;
     _storage.setAutoStopMinutes(mins);
+    if (mins > 0 && _autoTargetCount != 0) {
+      _autoTargetCount = 0;
+      _storage.setAutoTargetCount(0);
+    }
     notifyListeners();
+  }
+
+  /// 設定自動計數聲數目標 (0 = 不限)；設定大於 0 時會清空定時停止 (兩者互斥)
+  void setAutoTargetCount(int val) {
+    _autoTargetCount = val;
+    _storage.setAutoTargetCount(val);
+    if (val > 0 && _autoStopMinutes != 0) {
+      _autoStopMinutes = 0;
+      _storage.setAutoStopMinutes(0);
+    }
+    notifyListeners();
+  }
+
+  /// 同時清空聲數目標與定時停止 (持續播放)
+  void clearAutoStopCondition() {
+    _autoTargetCount = 0;
+    _autoStopMinutes = 0;
+    _storage.setAutoTargetCount(0);
+    _storage.setAutoStopMinutes(0);
+    notifyListeners();
+  }
+
+  /// 定時停止已經過進度比例 (0.0 累進至 1.0)，供自動計數圓環顯示
+  double get autoStopElapsedProgress {
+    if (_autoStopMinutes <= 0) return 0.0;
+    return (_autoElapsedSeconds / (_autoStopMinutes * 60)).clamp(0.0, 1.0);
+  }
+
+  /// 定時停止剩餘秒數 (未設定時為 0)
+  int get autoStopRemainingSeconds {
+    if (_autoStopMinutes <= 0) return 0;
+    final remaining = _autoStopMinutes * 60 - _autoElapsedSeconds;
+    return remaining < 0 ? 0 : remaining;
   }
 
   /// 定時停止剩餘進度比例 (1.0 倒數至 0.0)
@@ -635,6 +695,37 @@ class CounterViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 累加一聲自動計數並寫入今日記錄。
+  /// 回傳 true 代表此聲「剛好跨過」聲數目標 (由未達成變為達成)；
+  /// 已達標後再按開始繼續念時不會再次觸發，因此不會一開始就立刻被停止。
+  bool _recordAutoBeat() {
+    checkDateRollover();
+    final wasBelowTarget = _autoCount < _autoTargetCount;
+    _autoCount++;
+    _storage.setAutoCounter(_autoCount);
+    _practiceRecords.addCount(DateTime.now(), auto: 1);
+    _storage.setLastActiveDate(
+        PracticeRecordService.formatDateKey(DateTime.now()));
+    return _autoTargetCount > 0 &&
+        wasBelowTarget &&
+        _autoCount >= _autoTargetCount;
+  }
+
+  /// 自動計數減一 (同步扣除今日記錄的自動分項)
+  void decrementAuto() {
+    checkDateRollover();
+    if (_autoCount <= 0) return;
+    _autoCount--;
+    _storage.setAutoCounter(_autoCount);
+    _practiceRecords.addCount(DateTime.now(), auto: -1);
+    _storage.setLastActiveDate(
+        PracticeRecordService.formatDateKey(DateTime.now()));
+    if (_vibrationEnabled) {
+      HapticFeedback.selectionClick();
+    }
+    notifyListeners();
+  }
+
   /// 音訊節拍同步計數處理演算法 (支援精確標記點與固定週期雙模式，具備防拖曳跳躍保護)
   void _processAudioPosition(Duration pos, int bb) {
     if (_isScrubbing) return; // 拖動進度條期間忽略進度推播，防誤算
@@ -665,6 +756,7 @@ class CounterViewModel extends ChangeNotifier {
     }
 
     var beatChanged = false;
+    var targetJustReached = false;
 
     if (song.hasMarkers) {
       // --- 模式 A：精準標記點 (Phrase Markers / Cue Points) 模式 ---
@@ -673,15 +765,11 @@ class CounterViewModel extends ChangeNotifier {
         final markerMs = song.phraseMarkersMs[_nextMarkerIndex];
         // 防跳躍安全機制：只有進度正常流過（與標記差距小於 3 秒）時才累加，避免因跳轉未攔截而暴增
         if (posMs - markerMs <= 3000) {
-          checkDateRollover();
-          _autoCount++;
-          _storage.setAutoCounter(_autoCount);
-          _practiceRecords.addCount(DateTime.now(), auto: 1);
-          _storage.setLastActiveDate(
-              PracticeRecordService.formatDateKey(DateTime.now()));
+          if (_recordAutoBeat()) targetJustReached = true;
           beatChanged = true;
         }
         _nextMarkerIndex++;
+        if (targetJustReached) break;
       }
     } else {
       // --- 模式 B：向下相容之固定週期 (bb) 模式 ---
@@ -689,14 +777,10 @@ class CounterViewModel extends ChangeNotifier {
         final jump = (posMs - _targetNextBeatMs) ~/ bb;
         if (jump <= 1) {
           while (posMs >= _targetNextBeatMs) {
-            checkDateRollover();
-            _autoCount++;
-            _storage.setAutoCounter(_autoCount);
-            _practiceRecords.addCount(DateTime.now(), auto: 1);
-            _storage.setLastActiveDate(
-                PracticeRecordService.formatDateKey(DateTime.now()));
+            if (_recordAutoBeat()) targetJustReached = true;
             _targetNextBeatMs += bb;
             beatChanged = true;
+            if (targetJustReached) break;
           }
         } else {
           // 跳轉過大（例如 seek 遺留），對齊至下一拍但不累加跳過的時間
@@ -706,6 +790,12 @@ class CounterViewModel extends ChangeNotifier {
     }
 
     _lastPositionMs = posMs;
+
+    // 念滿自動計數聲數目標：自動停止播放 (stopAutoCount 內部已通知 UI)
+    if (targetJustReached) {
+      stopAutoCount();
+      return;
+    }
 
     // 關鍵效能提升：進度條已由獨立 audioPositionListenable 局部驅動，此處僅在計數遞增（或經典模式開啟秒數顯示）時才通知主樹
     if (beatChanged) {
@@ -944,9 +1034,17 @@ class CounterViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 設定手動計數目標 (僅影響手動計數圓環)
   void setTargetCount(int val) {
     _targetCount = val;
     _storage.setTargetCount(val);
+    notifyListeners();
+  }
+
+  /// 設定每日功課目標 (功課月曆、今日達成狀態與桌面小工具)
+  void setDailyTargetCount(int val) {
+    _dailyTargetCount = val;
+    _storage.setDailyTargetCount(val);
     _practiceRecords.syncWidget();
     notifyListeners();
   }

@@ -5,6 +5,7 @@ import '../../../core/services/practice_record_service.dart';
 import '../../../core/services/widget_service.dart';
 import '../../../features/counter/counter_view_model.dart';
 import '../../common/app_toast.dart';
+import '../widgets/goal_picker.dart';
 
 /// 現代禪意功課月曆與精進表記視圖 (Practice Calendar & Daily History)
 /// 特色：
@@ -337,7 +338,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
             todayCount: todayCount,
             weeklyCount: weeklyCount,
             monthlyCount: monthlyCount,
-            targetCount: vm.targetCount,
+            targetCount: vm.dailyTargetCount,
             primary: primary,
             isDark: isDark,
           ),
@@ -739,7 +740,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
         final isToday = cellKey == todayKey;
         final isSelected = cellKey == selectedKey;
         final isTargetAchieved =
-            vm.targetCount > 0 && count >= vm.targetCount;
+            vm.dailyTargetCount > 0 && count >= vm.dailyTargetCount;
 
         return InkWell(
           borderRadius: BorderRadius.circular(10),
@@ -828,7 +829,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
     final dateStr =
         '${_selectedDate.year} 年 ${_selectedDate.month} 月 ${_selectedDate.day} 日';
     final count = record.totalCount;
-    final target = vm.targetCount;
+    final target = vm.dailyTargetCount;
     final progress = target > 0 ? (count / target).clamp(0.0, 1.0) : 0.0;
 
     return Card(
@@ -983,6 +984,57 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // 每日功課目標設定（與手動 / 自動計數目標各自獨立，比較當日總聲數）
+            InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () => showCountGoalPicker(
+                context,
+                title: '設定每日功課目標',
+                current: vm.dailyTargetCount,
+                onSelected: vm.setDailyTargetCount,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  children: [
+                    Icon(Icons.flag_outlined, size: 20, color: primary),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '每日功課目標',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            '以當日手動 + 自動總聲數計算達成',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      vm.dailyTargetCount > 0
+                          ? '${vm.dailyTargetCount} 聲'
+                          : '不限目標',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: primary,
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded,
+                        size: 18, color: Colors.grey),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(height: 24),
+
             // 提醒開關與時間設定
             Row(
               children: [

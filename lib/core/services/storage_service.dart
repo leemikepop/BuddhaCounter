@@ -56,6 +56,8 @@ class StorageService {
   static const String keyThemeMode = 'pref_theme_mode';
   static const String keyVibrationEnabled = 'pref_vibration_enabled';
   static const String keyTargetCount = 'pref_target_count';
+  static const String keyAutoTargetCount = 'pref_auto_target_count';
+  static const String keyDailyTargetCount = 'pref_daily_target_count';
   static const String keyFullscreenTap = 'pref_fullscreen_tap';
   static const String keyOrientationLocked = 'pref_orientation_locked';
   static const String keySeenModernGuide = 'pref_seen_modern_guide';
@@ -150,8 +152,27 @@ class StorageService {
   Future<void> setVibrationEnabled(bool val) =>
       _prefs.setBool(keyVibrationEnabled, val);
 
+  /// 手動計數目標聲數 (0 = 不限)
   int getTargetCount() => _prefs.getInt(keyTargetCount) ?? 108;
   Future<void> setTargetCount(int val) => _prefs.setInt(keyTargetCount, val);
+
+  /// 自動計數目標聲數 (0 = 不限)：念滿即自動停止，與定時停止 [getAutoStopMinutes] 互斥
+  int getAutoTargetCount() => _prefs.getInt(keyAutoTargetCount) ?? 0;
+  Future<void> setAutoTargetCount(int val) =>
+      _prefs.setInt(keyAutoTargetCount, val);
+
+  /// 每日功課目標聲數 (0 = 不限)，比較對象為當日手動 + 自動總聲數
+  /// 舊版升級時尚無獨立設定，首次讀取即沿用原手動目標並寫回，之後兩者各自獨立
+  int getDailyTargetCount() {
+    final stored = _prefs.getInt(keyDailyTargetCount);
+    if (stored != null) return stored;
+    final inherited = getTargetCount();
+    _prefs.setInt(keyDailyTargetCount, inherited);
+    return inherited;
+  }
+
+  Future<void> setDailyTargetCount(int val) =>
+      _prefs.setInt(keyDailyTargetCount, val);
 
   bool getFullscreenTap() => _prefs.getBool(keyFullscreenTap) ?? false;
   Future<void> setFullscreenTap(bool val) =>

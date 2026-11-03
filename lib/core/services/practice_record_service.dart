@@ -167,7 +167,7 @@ class PracticeRecordService {
   Future<void> syncWidget() async {
     final now = DateTime.now();
     final todayCount = getCount(now);
-    final target = _storage.getTargetCount();
+    final target = _storage.getDailyTargetCount();
     final weekly = getWeeklyTotal(now);
     final monthly = getMonthlyTotal(now.year, now.month);
     final streak = calculateStreak(now);
@@ -196,7 +196,7 @@ class PracticeRecordService {
   /// 取得指定日期總聲數
   int getCount(DateTime date) => getRecord(date).totalCount;
 
-  /// 新增指定日期的計數 (手動累加或自動累加)
+  /// 新增指定日期的計數 (手動累加或自動累加；傳入負值即為減一，各分項最低為 0)
   Future<void> addCount(DateTime date, {int manual = 0, int auto = 0}) async {
     final key = formatDateKey(date);
     final rec = _records[key] ??
@@ -207,8 +207,8 @@ class PracticeRecordService {
           totalCount: 0,
         );
 
-    rec.manualCount += manual;
-    rec.autoCount += auto;
+    rec.manualCount = (rec.manualCount + manual).clamp(0, 999999999);
+    rec.autoCount = (rec.autoCount + auto).clamp(0, 999999999);
     rec.totalCount = rec.manualCount + rec.autoCount;
     _records[key] = rec;
     await _saveRecordsOnly();

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -333,6 +334,7 @@ void main() {
       final storage = await StorageService.init();
       final audio = AudioService();
       final vm = CounterViewModel(storage: storage, audio: audio);
+      vm.clearAutoStopCondition();
 
       await tester.pumpWidget(
         ChangeNotifierProvider<CounterViewModel>.value(
@@ -349,8 +351,16 @@ void main() {
       // Verify clean Zen disc contains auto count number
       expect(find.text(vm.autoCount.toString()), findsOneWidget);
       expect(find.text('聲 · 遍'), findsOneWidget);
-      // Verify CircularProgressIndicator has been removed
+      // 持續播放 (無停止條件) 時不顯示進度環
       expect(find.byType(CircularProgressIndicator), findsNothing);
+
+      // 設定停止條件後顯示「靜態」進度環 (有明確 value，絕非無限轉圈動畫)
+      vm.setAutoTargetCount(108);
+      await tester.pump();
+      final ring = tester.widget<CircularProgressIndicator>(
+          find.byType(CircularProgressIndicator));
+      expect(ring.value, isNotNull);
+      vm.clearAutoStopCondition();
     });
 
     test('AudioService maintains loop mode and exposes onPlayerComplete stream',
@@ -574,24 +584,35 @@ void main() {
       );
       await tester.pump();
 
-      // 點擊定時停止設定按鈕打開 BottomSheet
-      await tester.tap(find.textContaining('定時停止'));
+      // 先設定聲數目標，驗證之後設定定時會將其清空 (二擇一)
+      vm.setAutoTargetCount(500);
+      await tester.pump();
+      expect(find.text('目標 500'), findsOneWidget);
+
+      // 點擊自動停止設定按鈕打開 BottomSheet
+      await tester.tap(find.text('目標 500'));
       await tester.pumpAndSettle();
 
-      // 驗證標題已更新為「設定定時停止時長」
-      expect(find.text('設定定時停止時長'), findsOneWidget);
+      expect(find.text('設定自動停止'), findsOneWidget);
+      expect(find.text('念滿聲數停止'), findsOneWidget);
+      expect(find.text('定時停止'), findsOneWidget);
 
-      // 輸入自訂分鐘數 25
-      await tester.enterText(find.byType(TextField), '25');
+      // 於定時停止區塊 (第二個輸入框) 輸入自訂分鐘數 25
+      final minutesField = find.byType(TextField).last;
+      await tester.ensureVisible(minutesField);
+      await tester.enterText(minutesField, '25');
       await tester.pump();
 
-      // 點擊「設定」按鈕
-      await tester.tap(find.widgetWithText(FilledButton, '設定'));
+      // 點擊定時區塊的「設定」按鈕
+      final setBtn = find.widgetWithText(FilledButton, '設定').last;
+      await tester.ensureVisible(setBtn);
+      await tester.tap(setBtn);
       await tester.pumpAndSettle();
 
-      // 驗證 ViewModel 與外層按鈕顯示已更新為 25 分鐘
+      // 驗證 ViewModel 與外層按鈕顯示已更新為 25 分鐘，且聲數目標被清空
       expect(vm.autoStopMinutes, 25);
-      expect(find.text('定時停止：25 分鐘'), findsOneWidget);
+      expect(vm.autoTargetCount, 0);
+      expect(find.text('定時 25 分'), findsOneWidget);
     });
 
     test('Orientation lock toggles and updates StorageService', () async {
@@ -867,7 +888,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 驗證底部對話框出現
-      expect(find.text('設定今日目標'), findsOneWidget);
+      expect(find.text('設定手動計數目標'), findsOneWidget);
       expect(find.text('或自訂目標聲數：'), findsOneWidget);
 
       // 輸入自訂目標 888 聲
@@ -1410,6 +1431,233 @@ void main() {
       await tester.pumpAndSettle();
     });
   });
+
+  group('Independent Manual / Auto / Daily Goals Tests', () {
+    test('Daily goal inherits legacy target once, then stays independent',
+        () async {
+      SharedPreferences.setMockInitialValues({
+        StorageService.keyTargetCount: 500,
+      });
+      final storage = await StorageService.init();
+
+      // 舊版升級：首次讀取沿用原目標並寫回
+      expect(storage.getDailyTargetCount(), 500);
+      expect(storage.getAutoTargetCount(), 0);
+
+      // 之後修改手動目標不會連動每日目標
+      await storage.setTargetCount(108);
+      expect(storage.getDailyTargetCount(), 500);
+
+      await storage.setDailyTargetCount(1000);
+      expect(storage.getTargetCount(), 108);
+      expect(storage.getDailyTargetCount(), 1000);
+    });
+
+    test('ViewModel exposes separate manual, auto, and daily goals', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(storage: storage, audio: AudioService());
+
+      vm.setTargetCount(300);
+      vm.setDailyTargetCount(2000);
+      vm.setAutoTargetCount(50);
+
+      expect(vm.targetCount, 300);
+      expect(vm.dailyTargetCount, 2000);
+      expect(vm.autoTargetCount, 50);
+      expect(storage.getTargetCount(), 300);
+      expect(storage.getDailyTargetCount(), 2000);
+      expect(storage.getAutoTargetCount(), 50);
+    });
+
+    test('Auto count goal and timed stop are mutually exclusive', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(storage: storage, audio: AudioService());
+
+      vm.setAutoTargetCount(108);
+      expect(vm.autoTargetCount, 108);
+      expect(vm.autoStopMinutes, 0);
+
+      // 設定定時 -> 聲數目標被清空
+      vm.setAutoStopMinutes(30);
+      expect(vm.autoStopMinutes, 30);
+      expect(vm.autoTargetCount, 0);
+      expect(storage.getAutoTargetCount(), 0);
+
+      // 設定聲數 -> 定時被清空
+      vm.setAutoTargetCount(1000);
+      expect(vm.autoTargetCount, 1000);
+      expect(vm.autoStopMinutes, 0);
+      expect(storage.getAutoStopMinutes(), 0);
+
+      // 清除 -> 兩者皆為 0 (持續播放)
+      vm.clearAutoStopCondition();
+      expect(vm.autoTargetCount, 0);
+      expect(vm.autoStopMinutes, 0);
+    });
+
+    test('Conflicting stored stop settings resolve to timed stop on load',
+        () async {
+      SharedPreferences.setMockInitialValues({
+        StorageService.keyAutoTargetCount: 108,
+        StorageService.keyAutoStopMinutes: 20,
+      });
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(storage: storage, audio: AudioService());
+      expect(vm.autoStopMinutes, 20);
+      expect(vm.autoTargetCount, 0);
+    });
+
+    test('Auto target progress and time progress getters', () async {
+      SharedPreferences.setMockInitialValues({
+        StorageService.keyAutoCounter: 54,
+        StorageService.keyAutoElapsedSeconds: 300,
+      });
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(storage: storage, audio: AudioService());
+
+      vm.setAutoTargetCount(108);
+      expect(vm.autoTargetProgress, closeTo(0.5, 1e-9));
+      expect(vm.isAutoTargetReached, isFalse);
+
+      vm.setAutoStopMinutes(10);
+      expect(vm.autoTargetProgress, 0.0);
+      expect(vm.autoStopElapsedProgress, closeTo(0.5, 1e-9));
+      expect(vm.autoStopRemainingSeconds, 300);
+    });
+
+    test('decrementAuto and decrement only touch their own record portion',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(storage: storage, audio: AudioService());
+      final today = DateTime.now();
+
+      await vm.practiceRecords.addCount(today, manual: 0, auto: 5);
+      await storage.setAutoCounter(5);
+      final vm2 = CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        practiceRecords: vm.practiceRecords,
+      );
+      vm2.increment();
+      vm2.increment();
+      expect(vm2.practiceRecords.getRecord(today).manualCount, 2);
+      expect(vm2.practiceRecords.getRecord(today).autoCount, 5);
+
+      vm2.decrementAuto();
+      expect(vm2.autoCount, 4);
+      expect(storage.getAutoCounter(), 4);
+      expect(vm2.practiceRecords.getRecord(today).autoCount, 4);
+      expect(vm2.practiceRecords.getRecord(today).manualCount, 2);
+
+      vm2.decrement();
+      expect(vm2.count, 1);
+      expect(vm2.practiceRecords.getRecord(today).manualCount, 1);
+      expect(vm2.practiceRecords.getRecord(today).autoCount, 4);
+      expect(vm2.todayPracticeCount, 5);
+
+      // 自動計數為 0 時減一不會變成負數
+      vm2.resetAutoCount();
+      vm2.decrementAuto();
+      expect(vm2.autoCount, 0);
+    });
+
+    testWidgets('Auto count stops once when goal is reached, then can continue',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final handler = _FakePositionAudioHandler();
+      final vm = CounterViewModel(
+        storage: storage,
+        audio: AudioService(handler: handler),
+      );
+      final song = ChantConstants.getSongById(vm.currentSongId);
+      final markers = song.phraseMarkersMs;
+      expect(markers.length, greaterThanOrEqualTo(5));
+
+      Future<void> emit(int ms) async {
+        handler.positions.add(Duration(milliseconds: ms));
+        await tester.pump();
+      }
+
+      vm.resetAutoCount();
+      vm.setAutoTargetCount(3);
+      vm.startAutoCount();
+      expect(vm.isAutoCounting, isTrue);
+
+      // 起始進度歸零，解除「等待重新開始」保護
+      await emit(0);
+      await emit(markers[0] + 10);
+      await emit(markers[1] + 10);
+      expect(vm.autoCount, 2);
+      expect(vm.isAutoCounting, isTrue);
+
+      // 第 3 聲念滿目標 -> 自動停止
+      await emit(markers[2] + 10);
+      expect(vm.autoCount, 3);
+      expect(vm.isAutoTargetReached, isTrue);
+      expect(vm.isAutoCounting, isFalse);
+
+      // 停止後的進度推播不再累加
+      await emit(markers[3] + 10);
+      expect(vm.autoCount, 3);
+
+      // 已達標後再按開始：繼續念，不會一開始就被停止
+      vm.startAutoCount();
+      await emit(0);
+      await emit(markers[0] + 10);
+      expect(vm.autoCount, 4);
+      expect(vm.isAutoCounting, isTrue);
+
+      vm.stopAutoCount();
+      vm.dispose();
+    });
+
+    testWidgets('ModernTimerView shows goal ring, 減一, 重置 and single start button',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({
+        StorageService.keyAutoCounter: 27,
+      });
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(storage: storage, audio: AudioService());
+      vm.setAutoTargetCount(108);
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider<CounterViewModel>.value(
+          value: vm,
+          child: const MaterialApp(home: Scaffold(body: ModernTimerView())),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('目標 108'), findsOneWidget);
+      expect(find.text('目標 108 · 25%'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('重置'), findsOneWidget);
+      expect(find.text('開始'), findsOneWidget);
+
+      await tester.tap(find.text('減一'));
+      await tester.pump();
+      expect(vm.autoCount, 26);
+
+      // 清除停止條件 -> 不顯示進度環
+      vm.clearAutoStopCondition();
+      await tester.pump();
+      expect(find.text('持續播放'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+    });
+  });
+}
+
+/// 可手動推送播放進度的音訊處理器，用以模擬佛號節拍跨過標記點
+class _FakePositionAudioHandler extends ChantAudioHandler {
+  final StreamController<Duration> positions =
+      StreamController<Duration>.broadcast();
+
+  @override
+  Stream<Duration> get onPositionChanged => positions.stream;
 }
 
 class _CountingAudioHandler extends ChantAudioHandler {

@@ -1,161 +1,113 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
 import '../../common/app_toast.dart';
+import '../widgets/goal_picker.dart';
 
 /// 現代禪意【自動計數】專屬視圖
-/// 版面風格統一模仿手動計數：頂部碼表、圓形計數盤、下方大播放鈕與定時設定
+/// 版面風格統一模仿手動計數：頂部碼表、圓形計數盤 (含自動停止進度環)、
+/// 自動停止設定 / 減一 / 重置小按鈕列、下方開始暫停大按鈕
 class ModernTimerView extends StatelessWidget {
   const ModernTimerView({super.key});
 
-  void _showStopTimerPicker(BuildContext context, CounterViewModel vm) {
-    final minutesOptions = [0, 15, 30, 45, 60, 90];
-    final customController = TextEditingController(
-      text: (!minutesOptions.contains(vm.autoStopMinutes) && vm.autoStopMinutes > 0)
-          ? vm.autoStopMinutes.toString()
-          : '',
-    );
+  static const double _ringSize = 256;
+  static const Color _reachedColor = Color(0xFF4CAF50);
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+  /// 自動停止設定面板：「念滿聲數」與「定時停止」二擇一，設定其中一項會清空另一項
+  void _showStopConditionPicker(BuildContext context, CounterViewModel vm) {
+    showGoalSheet(
+      context,
+      title: '設定自動停止',
       builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        final theme = Theme.of(ctx);
+        final muted = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+        void done(String message) {
+          Navigator.pop(ctx);
+          AppToast.show(context, message);
+        }
 
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+        Widget sectionTitle(IconData icon, String text) => Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 10),
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        '設定定時停止時長',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.close_rounded),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [
-                      ...minutesOptions.map((m) {
-                        final label = (m == 0) ? '持續播放' : '$m 分鐘';
-                        final isSel = vm.autoStopMinutes == m;
-                        return ChoiceChip(
-                          label: Text(label),
-                          selected: isSel,
-                          onSelected: (val) {
-                            if (val) {
-                              vm.setAutoStopMinutes(m);
-                              Navigator.pop(ctx);
-                              AppToast.show(
-                                context,
-                                m == 0 ? '已設定為持續播放' : '已設定定時停止：$m 分鐘',
-                              );
-                            }
-                          },
-                        );
-                      }),
-                      if (!minutesOptions.contains(vm.autoStopMinutes) &&
-                          vm.autoStopMinutes > 0)
-                        ChoiceChip(
-                          label: Text('${vm.autoStopMinutes} 分鐘 (自訂)'),
-                          selected: true,
-                          onSelected: (_) {},
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 8),
+                  Icon(icon, size: 18, color: theme.colorScheme.primary),
+                  const SizedBox(width: 6),
                   Text(
-                    '或自訂分鐘數：',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(ctx).colorScheme.onSurface,
-                    ),
+                    text,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 46,
-                          child: TextField(
-                            controller: customController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            decoration: InputDecoration(
-                              hintText: '輸入分鐘數 (如 20)',
-                              suffixText: '分鐘',
-                              filled: true,
-                              fillColor: isDark
-                                  ? const Color(0xFF242732)
-                                  : const Color(0xFFF7F3EB),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 10,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        onPressed: () {
-                          final mins = int.tryParse(customController.text.trim());
-                          if (mins != null && mins > 0) {
-                            vm.setAutoStopMinutes(mins);
-                            Navigator.pop(ctx);
-                            AppToast.show(context, '已設定定時停止：$mins 分鐘');
-                          } else {
-                            AppToast.show(context, '請輸入大於 0 的有效分鐘數');
-                          }
-                        },
-                        child: const Text('設定'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
                 ],
               ),
+            );
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 14),
+              child: Text(
+                '聲數與時間只能擇一，設定其中一項會清空另一項。',
+                style: TextStyle(fontSize: 12.5, color: muted),
+              ),
             ),
-          ),
+            sectionTitle(Icons.flag_outlined, '念滿聲數停止'),
+            PresetValuePicker(
+              presets: const [108, 500, 1000, 5000, 10000],
+              current: vm.autoTargetCount,
+              chipLabel: (v) => '$v 聲',
+              customChipLabel: (v) => '$v 聲 (自訂)',
+              customPrompt: '或自訂目標聲數：',
+              hintText: '輸入目標 (如 500)',
+              suffixText: '聲',
+              invalidMessage: '請輸入大於 0 的有效目標數字',
+              onSelected: (v) {
+                vm.setAutoTargetCount(v);
+                done('已設定念滿 $v 聲自動停止');
+              },
+              onDeselected: () {
+                vm.setAutoTargetCount(0);
+                done('已取消聲數目標，持續播放');
+              },
+            ),
+            const SizedBox(height: 12),
+            const Divider(),
+            const SizedBox(height: 12),
+            sectionTitle(Icons.hourglass_bottom_rounded, '定時停止'),
+            PresetValuePicker(
+              presets: const [15, 30, 45, 60, 90],
+              current: vm.autoStopMinutes,
+              chipLabel: (m) => '$m 分鐘',
+              customChipLabel: (m) => '$m 分鐘 (自訂)',
+              customPrompt: '或自訂分鐘數：',
+              hintText: '輸入分鐘數 (如 20)',
+              suffixText: '分鐘',
+              invalidMessage: '請輸入大於 0 的有效分鐘數',
+              onSelected: (m) {
+                vm.setAutoStopMinutes(m);
+                done('已設定定時停止：$m 分鐘');
+              },
+              onDeselected: () {
+                vm.setAutoStopMinutes(0);
+                done('已取消定時停止，持續播放');
+              },
+            ),
+            if (vm.autoTargetCount > 0 || vm.autoStopMinutes > 0) ...[
+              const SizedBox(height: 12),
+              Center(
+                child: TextButton.icon(
+                  onPressed: () {
+                    vm.clearAutoStopCondition();
+                    done('已清除設定，持續播放');
+                  },
+                  icon: const Icon(Icons.all_inclusive_rounded, size: 18),
+                  label: const Text('清除設定，持續播放'),
+                ),
+              ),
+            ],
+          ],
         );
       },
     );
@@ -197,6 +149,36 @@ class ModernTimerView extends StatelessWidget {
     final primary = theme.colorScheme.primary;
     final surface = theme.colorScheme.surface;
     final song = ChantConstants.getSongById(vm.currentSongId);
+
+    // 自動停止條件 (念滿聲數 / 定時停止二擇一)
+    final countGoal = vm.autoTargetCount;
+    final timeGoal = vm.autoStopMinutes;
+    final hasStopGoal = countGoal > 0 || timeGoal > 0;
+    final double ringProgress =
+        countGoal > 0 ? vm.autoTargetProgress : vm.autoStopElapsedProgress;
+    final bool isGoalReached = countGoal > 0
+        ? vm.isAutoTargetReached
+        : (timeGoal > 0 && vm.autoStopRemainingSeconds == 0);
+    final String? goalLabel;
+    if (countGoal > 0) {
+      goalLabel = isGoalReached
+          ? '達成 $countGoal 聲'
+          : '目標 $countGoal · ${(ringProgress * 100).toInt()}%';
+    } else if (timeGoal > 0) {
+      goalLabel = isGoalReached
+          ? '定時 $timeGoal 分 · 已到'
+          : '定時 $timeGoal 分 · 剩 ${_formatRemaining(vm.autoStopRemainingSeconds)}';
+    } else {
+      goalLabel = null;
+    }
+    final String stopLabel = countGoal > 0
+        ? '目標 $countGoal'
+        : (timeGoal > 0 ? '定時 $timeGoal 分' : '持續播放');
+    final IconData stopIcon = countGoal > 0
+        ? Icons.flag_outlined
+        : (timeGoal > 0
+            ? Icons.hourglass_bottom_rounded
+            : Icons.all_inclusive_rounded);
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -280,35 +262,18 @@ class ModernTimerView extends StatelessWidget {
           ),
           const SizedBox(height: 18),
 
-          // 核心圓形計數盤（模仿手動計數圓盤視覺風格，移除動態轉圈進度環，消弭卡頓）
+          // 核心圓形計數盤 + 自動停止進度環
+          // 依聲數：顯示聲數進度；依時間：顯示時間進度；持續播放：不顯示進度環
+          // (靜態進度環僅於數值變動時重繪，非轉圈動畫，不會造成卡頓)
           RepaintBoundary(
             child: GestureDetector(
               onTap: () => vm.toggleAutoCount(),
               behavior: HitTestBehavior.opaque,
               child: Container(
-                width: 240,
-                height: 240,
+                width: _ringSize,
+                height: _ringSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: isDark
-                        ? [
-                            const Color(0xFF282B34),
-                            const Color(0xFF1B1D23),
-                          ]
-                        : [
-                            surface,
-                            const Color(0xFFF7F2E9),
-                          ],
-                  ),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF383C48)
-                        : const Color(0xFFEDE5D8),
-                    width: 1.5,
-                  ),
                   boxShadow: [
                     BoxShadow(
                       color: isDark
@@ -320,64 +285,113 @@ class ModernTimerView extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    Icon(
-                      vm.isAutoCounting
-                          ? Icons.auto_mode_rounded
-                          : Icons.spa_rounded,
-                      size: 26,
-                      color: primary.withValues(alpha: 0.8),
-                    ),
-                    const SizedBox(height: 8),
-                    // 數字顯示（自動調整大字）
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          vm.autoCount.toString(),
-                          style: TextStyle(
-                            fontSize: 62,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -1.0,
-                            color: theme.colorScheme.onSurface,
-                            fontFeatures: const [FontFeature.tabularFigures()],
+                    if (hasStopGoal)
+                      SizedBox(
+                        width: _ringSize,
+                        height: _ringSize,
+                        child: CircularProgressIndicator(
+                          value: ringProgress,
+                          strokeWidth: 6,
+                          backgroundColor: isDark
+                              ? const Color(0xFF2B2E37)
+                              : const Color(0xFFEBE3D5),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            isGoalReached ? _reachedColor : primary,
                           ),
+                          strokeCap: StrokeCap.round,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '聲 · 遍',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: isDark
-                            ? const Color(0xFFA3A199)
-                            : const Color(0xFF756F68),
-                        letterSpacing: 2.0,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // 當前曲目節拍小標籤
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 3,
-                      ),
+                      width: _ringSize - 24,
+                      height: _ringSize - 24,
                       decoration: BoxDecoration(
-                        color: primary.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '每拍 ${(song.effectiveBeatIntervalMs / 1000).toStringAsFixed(2)}s 自動累加',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: primary,
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: isDark
+                              ? [
+                                  const Color(0xFF282B34),
+                                  const Color(0xFF1B1D23),
+                                ]
+                              : [
+                                  surface,
+                                  const Color(0xFFF7F2E9),
+                                ],
                         ),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF383C48)
+                              : const Color(0xFFEDE5D8),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            vm.isAutoCounting
+                                ? Icons.auto_mode_rounded
+                                : Icons.spa_rounded,
+                            size: 26,
+                            color: isGoalReached
+                                ? _reachedColor
+                                : primary.withValues(alpha: 0.8),
+                          ),
+                          const SizedBox(height: 8),
+                          // 數字顯示（自動調整大字）
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                vm.autoCount.toString(),
+                                style: TextStyle(
+                                  fontSize: 58,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -1.0,
+                                  color: theme.colorScheme.onSurface,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures()
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '聲 · 遍',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: isDark
+                                  ? const Color(0xFFA3A199)
+                                  : const Color(0xFF756F68),
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                          if (goalLabel != null) ...[
+                            const SizedBox(height: 10),
+                            _buildPill(
+                              goalLabel,
+                              isGoalReached ? _reachedColor : primary,
+                            ),
+                          ],
+                          const SizedBox(height: 6),
+                          // 當前曲目節拍小標籤
+                          Text(
+                            '每拍 ${(song.effectiveBeatIntervalMs / 1000).toStringAsFixed(2)}s 自動累加',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -387,131 +401,152 @@ class ModernTimerView extends StatelessWidget {
           ),
           const SizedBox(height: 18),
 
-          // 定時停止設定按鈕（模仿手動計數目標按鈕，底附倒數進度條）
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF21232B) : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark
-                    ? const Color(0xFF323642)
-                    : const Color(0xFFEBE3D5),
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(19),
-              child: InkWell(
-                onTap: () => _showStopTimerPicker(context, vm),
-                child: IntrinsicWidth(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.hourglass_bottom_rounded,
-                                size: 15, color: primary),
-                            const SizedBox(width: 6),
-                            Text(
-                              vm.autoStopMinutes > 0
-                                  ? '定時停止：${vm.autoStopMinutes} 分鐘'
-                                  : '定時停止：持續播放',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(Icons.arrow_drop_down, size: 16, color: primary),
-                          ],
-                        ),
+          // 自動停止設定與快速動作（減一、重置）小按鈕列，排版與手動計數一致
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 自動停止設定小按鈕（念滿聲數 / 定時停止二擇一）
+              Flexible(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => _showStopConditionPicker(context, vm),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF21232B) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF323642)
+                            : const Color(0xFFEBE3D5),
                       ),
-                      if (vm.autoStopMinutes > 0)
-                        RepaintBoundary(
-                          child: SizedBox(
-                            height: 2.5,
-                            child: LinearProgressIndicator(
-                              value: vm.autoStopProgress,
-                              minHeight: 2.5,
-                              backgroundColor: isDark
-                                  ? const Color(0xFF2E313D)
-                                  : const Color(0xFFEDE4D5),
-                              valueColor: AlwaysStoppedAnimation<Color>(primary),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(stopIcon, size: 14, color: primary),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            stopLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
                         ),
-                    ],
+                        Icon(Icons.arrow_drop_down, size: 16, color: primary),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
+              const SizedBox(width: 8),
+
+              // 減一 小按鈕
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  side: BorderSide(
+                    color: isDark
+                        ? const Color(0xFF3B3F4E)
+                        : const Color(0xFFDED6C7),
+                  ),
+                ),
+                onPressed: vm.autoCount > 0 ? () => vm.decrementAuto() : null,
+                icon: const Icon(Icons.remove_circle_outline_rounded, size: 14),
+                label: const Text('減一', style: TextStyle(fontSize: 12)),
+              ),
+              const SizedBox(width: 8),
+
+              // 重置 小按鈕（僅重置自動計數，計時保留）
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  foregroundColor: Colors.redAccent,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  side: BorderSide(
+                    color: Colors.redAccent.withValues(alpha: 0.35),
+                  ),
+                ),
+                onPressed: () => _confirmResetAutoCount(context, vm),
+                icon: const Icon(Icons.refresh_rounded, size: 14),
+                label: const Text('重置', style: TextStyle(fontSize: 12)),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
 
-          // 圓形計數盤下方的主控制按鈕列：左邊「重置」計數，右邊「開始」/「暫停」（字數皆為 2 字對齊）
-          Row(
-            children: [
-              // 左邊：計數重置按鈕 (2個字)
-              Expanded(
-                child: FilledButton.tonalIcon(
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                  onPressed: () => _confirmResetAutoCount(context, vm),
-                  icon: const Icon(Icons.restart_alt_rounded, size: 22),
-                  label: const Text(
-                    '重置',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
+          // 主控制按鈕：開始 / 暫停（重置已移至上方小按鈕列）
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: primary,
+                foregroundColor: isDark ? Colors.black : Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                elevation: vm.isAutoCounting ? 0 : 3,
+                shadowColor: primary.withValues(alpha: 0.3),
+              ),
+              onPressed: () => vm.toggleAutoCount(),
+              icon: Icon(
+                vm.isAutoCounting
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
+                size: 24,
+              ),
+              label: Text(
+                vm.isAutoCounting ? '暫停' : '開始',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2.0,
                 ),
               ),
-              const SizedBox(width: 14),
-              // 右邊：開始 / 暫停按鈕 (2個字)
-              Expanded(
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: primary,
-                    foregroundColor: isDark ? Colors.black : Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    elevation: vm.isAutoCounting ? 0 : 3,
-                    shadowColor: primary.withValues(alpha: 0.3),
-                  ),
-                  onPressed: () => vm.toggleAutoCount(),
-                  icon: Icon(
-                    vm.isAutoCounting
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded,
-                    size: 24,
-                  ),
-                  label: Text(
-                    vm.isAutoCounting ? '暫停' : '開始',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 16),
         ],
       ),
     );
+  }
+
+  Widget _buildPill(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: color == _reachedColor ? 0.15 : 0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  static String _formatRemaining(int seconds) {
+    if (seconds >= 60) return '${(seconds / 60).ceil()} 分';
+    return '$seconds 秒';
   }
 }
