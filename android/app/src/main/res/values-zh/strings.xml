@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 简体中文 (马来西亚、新加坡、中国；以及仅标示 zh 的系统) -->
+<resources>
+    <string name="app_name">念佛计数器</string>
+    <string name="widget_name">念佛计数器</string>
+    <string name="widget_description">实时显示今日念佛功课进度与连续精进天数。</string>
+    <string name="widget_title">念佛计数器</string>
+    <string name="widget_refresh">刷新</string>
+    <string name="widget_streak_placeholder">🔥 连续 1 天</string>
+    <string name="widget_streak_none">今日精进念佛</string>
+    <string name="widget_target_placeholder">今日累积功课数</string>
+    <string name="widget_weekly_format">本周: %1$s声</string>
+    <string name="widget_monthly_format">本月: %1$s声</string>
+    <string name="widget_weekly_placeholder">本周: 0声</string>
+    <string name="widget_monthly_placeholder">本月: 0声</string>
+</resources>

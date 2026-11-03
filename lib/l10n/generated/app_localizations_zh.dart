@@ -904,12 +904,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String widgetWeekly(int count) {
-    return '本週: $count聲';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '本週: $countString聲';
   }
 
   @override
   String widgetMonthly(int count) {
-    return '本月: $count聲';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '本月: $countString聲';
   }
 
   @override
@@ -1845,12 +1853,20 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String widgetWeekly(int count) {
-    return '本周: $count声';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '本周: $countString声';
   }
 
   @override
   String widgetMonthly(int count) {
-    return '本月: $count声';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '本月: $countString声';
   }
 
   @override

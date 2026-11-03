@@ -1,6 +1,94 @@
 import WidgetKit
 import SwiftUI
 
+/// 小工具內建文字 (App 尚未同步資料、小工具選單說明時使用)。
+/// 有同步資料時一律優先顯示 App 依使用者語言推送的文字。
+/// 依系統語言：繁中 (Hant / TW / HK / MO)、簡中 (其他 zh)、其餘英文 —— 與 App 端 resolveAppLocale 規則一致。
+enum WidgetStrings {
+    enum Key {
+        case title, description, streakPlaceholder, streakNone, targetPlaceholder
+        case today, notConnected
+    }
+
+    private static let zhHant: [Key: String] = [
+        .title: "念佛計數器",
+        .description: "即時顯示今日念佛功課進度與連續精進天數。",
+        .streakPlaceholder: "🔥 連續 3 天",
+        .streakNone: "今日精進念佛",
+        .targetPlaceholder: "今日功課",
+        .today: "今日",
+        .notConnected: "未連線 (無共享數據)",
+    ]
+
+    private static let zhHans: [Key: String] = [
+        .title: "念佛计数器",
+        .description: "实时显示今日念佛功课进度与连续精进天数。",
+        .streakPlaceholder: "🔥 连续 3 天",
+        .streakNone: "今日精进念佛",
+        .targetPlaceholder: "今日功课",
+        .today: "今日",
+        .notConnected: "未连接 (无共享数据)",
+    ]
+
+    private static let en: [Key: String] = [
+        .title: "Buddha Counter",
+        .description: "Today's practice progress and streak at a glance.",
+        .streakPlaceholder: "🔥 3-day streak",
+        .streakNone: "Practice today",
+        .targetPlaceholder: "Today's practice",
+        .today: "Today",
+        .notConnected: "Not connected (no shared data)",
+    ]
+
+    private enum Lang {
+        case hant, hans, en
+    }
+
+    /// 依手機語言偏好清單順序取第一個支援的語言
+    private static var lang: Lang {
+        for preferred in Locale.preferredLanguages {
+            let id = preferred.lowercased()
+            if id.hasPrefix("zh") {
+                if id.contains("hant") || id.hasSuffix("-tw") || id.hasSuffix("-hk") || id.hasSuffix("-mo") {
+                    return .hant
+                }
+                return .hans
+            }
+            if id.hasPrefix("en") {
+                return .en
+            }
+        }
+        return .en
+    }
+
+    static func t(_ key: Key) -> String {
+        let table: [Key: String]
+        switch lang {
+        case .hant: table = zhHant
+        case .hans: table = zhHans
+        case .en: table = en
+        }
+        return table[key] ?? ""
+    }
+
+    /// 尚未同步時的本週 / 本月文字
+    static func weekly(_ count: Int) -> String {
+        switch lang {
+        case .hant: return "本週: \(count)聲"
+        case .hans: return "本周: \(count)声"
+        case .en: return "Week: \(count)"
+        }
+    }
+
+    static func monthly(_ count: Int) -> String {
+        switch lang {
+        case .hant: return "本月: \(count)聲"
+        case .hans: return "本月: \(count)声"
+        case .en: return "Month: \(count)"
+        }
+    }
+}
+
 struct BuddhaWidgetEntry: TimelineEntry {
     let date: Date
     let todayCount: Int
@@ -11,6 +99,9 @@ struct BuddhaWidgetEntry: TimelineEntry {
     let streakText: String
     let targetText: String
     let dateDisplay: String
+    let widgetTitle: String
+    let weeklyText: String
+    let monthlyText: String
 }
 
 struct BuddhaWidgetProvider: TimelineProvider {
@@ -54,9 +145,12 @@ struct BuddhaWidgetProvider: TimelineProvider {
             weeklyCount: 1080,
             monthlyCount: 3000,
             streakDays: 3,
-            streakText: "🔥 連續 3 天",
-            targetText: "今日功課",
-            dateDisplay: "今日"
+            streakText: WidgetStrings.t(.streakPlaceholder),
+            targetText: WidgetStrings.t(.targetPlaceholder),
+            dateDisplay: WidgetStrings.t(.today),
+            widgetTitle: WidgetStrings.t(.title),
+            weeklyText: WidgetStrings.weekly(1080),
+            monthlyText: WidgetStrings.monthly(3000)
         )
     }
 
@@ -105,14 +199,15 @@ struct BuddhaWidgetProvider: TimelineProvider {
         let weeklyCount = activePrefs.integer(forKey: "weekly_count")
         let monthlyCount = activePrefs.integer(forKey: "monthly_count")
         let streakDays = activePrefs.integer(forKey: "streak_days")
-        let streakText = activePrefs.string(forKey: "streak_text") ?? (streakDays > 0 ? "🔥 連續 \(streakDays) 天" : "今日精進念佛")
-        let defaultTargetText = isConnected
-            ? (targetCount > 0 ? "今日功課" : "今日累積 \(todayCount) 聲")
-            : "未連線 (無共享數據)"
+        let streakText = activePrefs.string(forKey: "streak_text")
+            ?? (streakDays > 0 ? WidgetStrings.t(.streakPlaceholder) : WidgetStrings.t(.streakNone))
         let targetText = isConnected
-            ? (activePrefs.string(forKey: "target_text") ?? defaultTargetText)
-            : "未連線 (無共享數據)"
+            ? (activePrefs.string(forKey: "target_text") ?? WidgetStrings.t(.targetPlaceholder))
+            : WidgetStrings.t(.notConnected)
         let dateDisplay = activePrefs.string(forKey: "date_display") ?? ""
+        let widgetTitle = activePrefs.string(forKey: "widget_title") ?? WidgetStrings.t(.title)
+        let weeklyText = activePrefs.string(forKey: "weekly_text") ?? WidgetStrings.weekly(weeklyCount)
+        let monthlyText = activePrefs.string(forKey: "monthly_text") ?? WidgetStrings.monthly(monthlyCount)
 
         return BuddhaWidgetEntry(
             date: Date(),
@@ -123,7 +218,10 @@ struct BuddhaWidgetProvider: TimelineProvider {
             streakDays: streakDays,
             streakText: streakText,
             targetText: targetText,
-            dateDisplay: dateDisplay
+            dateDisplay: dateDisplay,
+            widgetTitle: widgetTitle,
+            weeklyText: weeklyText,
+            monthlyText: monthlyText
         )
     }
 }
@@ -139,7 +237,7 @@ struct BuddhaCounterWidgetEntryView: View {
     var contentView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text("念佛計數器")
+                Text(entry.widgetTitle)
                     .font(.system(size: 13, weight: .bold))
                     .foregroundColor(Color(red: 0.96, green: 0.62, blue: 0.04))
                 Spacer()
@@ -167,11 +265,11 @@ struct BuddhaCounterWidgetEntryView: View {
             Spacer()
 
             HStack {
-                Text("本週: \(entry.weeklyCount)聲")
+                Text(entry.weeklyText)
                     .font(.system(size: 10))
                     .foregroundColor(Color(white: 0.65))
                 Spacer()
-                Text("本月: \(entry.monthlyCount)聲")
+                Text(entry.monthlyText)
                     .font(.system(size: 10))
                     .foregroundColor(Color(white: 0.65))
             }
@@ -209,8 +307,8 @@ struct BuddhaCounterWidget: Widget {
         StaticConfiguration(kind: kind, provider: BuddhaWidgetProvider()) { entry in
             BuddhaCounterWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("念佛計數器")
-        .description("即時顯示今日念佛功課進度與連續精進天數。")
+        .configurationDisplayName(WidgetStrings.t(.title))
+        .description(WidgetStrings.t(.description))
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

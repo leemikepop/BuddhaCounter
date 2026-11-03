@@ -930,12 +930,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String widgetWeekly(int count) {
-    return 'Week: $count';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Week: $countString';
   }
 
   @override
   String widgetMonthly(int count) {
-    return 'Month: $count';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Month: $countString';
   }
 
   @override

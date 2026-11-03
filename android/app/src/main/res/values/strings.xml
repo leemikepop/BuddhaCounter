@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 預設 (英文)：系統語言非中文時使用 -->
+<resources>
+    <string name="app_name">Buddha Counter</string>
+    <string name="widget_name">Buddha Counter</string>
+    <string name="widget_description">Today\'s practice progress and streak</string>
+    <string name="widget_title">Buddha Counter</string>
+    <string name="widget_refresh">Refresh</string>
+    <string name="widget_streak_placeholder">🔥 1-day streak</string>
+    <string name="widget_streak_none">Practice today</string>
+    <string name="widget_target_placeholder">Today\'s practice</string>
+    <string name="widget_weekly_format">Week: %1$s</string>
+    <string name="widget_monthly_format">Month: %1$s</string>
+    <string name="widget_weekly_placeholder">Week: 0</string>
+    <string name="widget_monthly_placeholder">Month: 0</string>
+</resources>

@@ -15,10 +15,11 @@
         android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/widget_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="念佛計數器"
+            android:text="@string/widget_title"
             android:textColor="#F59E0B"
             android:textSize="13sp"
             android:textStyle="bold" />
@@ -32,7 +33,7 @@
             android:paddingTop="3dp"
             android:paddingEnd="8dp"
             android:paddingBottom="3dp"
-            android:text="🔥 連續 1 天"
+            android:text="@string/widget_streak_placeholder"
             android:textColor="#FFFFFF"
             android:textSize="10sp"
             android:textStyle="bold" />
@@ -44,7 +45,7 @@
             android:layout_marginStart="6dp"
             android:padding="3dp"
             android:src="@drawable/buddha_widget_refresh"
-            android:contentDescription="重新整理" />
+            android:contentDescription="@string/widget_refresh" />
     </LinearLayout>
 
     <!-- 中間今日功課聲數 -->
@@ -68,7 +69,7 @@
             android:id="@+id/widget_target_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="今日累積功課數"
+            android:text="@string/widget_target_placeholder"
             android:textColor="#C5BAA8"
             android:textSize="11sp" />
     </LinearLayout>
@@ -84,7 +85,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="本週: 0聲"
+            android:text="@string/widget_weekly_placeholder"
             android:textColor="#9E9484"
             android:textSize="11sp" />
 
@@ -92,7 +93,7 @@
             android:id="@+id/widget_monthly_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="本月: 0聲"
+            android:text="@string/widget_monthly_placeholder"
             android:textColor="#9E9484"
             android:textSize="11sp" />
     </LinearLayout>

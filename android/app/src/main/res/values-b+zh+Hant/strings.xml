@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 繁體中文 (台灣、香港、澳門) -->
+<resources>
+    <string name="app_name">念佛計數器</string>
+    <string name="widget_name">念佛計數器</string>
+    <string name="widget_description">即時顯示今日念佛功課進度與連續精進天數。</string>
+    <string name="widget_title">念佛計數器</string>
+    <string name="widget_refresh">重新整理</string>
+    <string name="widget_streak_placeholder">🔥 連續 1 天</string>
+    <string name="widget_streak_none">今日精進念佛</string>
+    <string name="widget_target_placeholder">今日累積功課數</string>
+    <string name="widget_weekly_format">本週: %1$s聲</string>
+    <string name="widget_monthly_format">本月: %1$s聲</string>
+    <string name="widget_weekly_placeholder">本週: 0聲</string>
+    <string name="widget_monthly_placeholder">本月: 0聲</string>
+</resources>

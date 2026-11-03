@@ -481,6 +481,26 @@ void main() {
       expect(build(kZhHant, streak: 0).streakText, '今日精進念佛');
     });
 
+    test('home widget weekly/monthly keep thousands separators', () {
+      final zh = buildWidgetTexts(lookupAppLocalizations(kZhHant),
+          todayCount: 0,
+          targetCount: 0,
+          weeklyCount: 12345,
+          monthlyCount: 1234567,
+          streakDays: 0,
+          now: DateTime(2026, 1, 1));
+      expect(zh.weeklyText, '本週: 12,345聲');
+      expect(zh.monthlyText, '本月: 1,234,567聲');
+      final en = buildWidgetTexts(lookupAppLocalizations(kEn),
+          todayCount: 0,
+          targetCount: 0,
+          weeklyCount: 12345,
+          monthlyCount: 0,
+          streakDays: 0,
+          now: DateTime(2026, 1, 1));
+      expect(en.weeklyText, 'Week: 12,345');
+    });
+
     test('language change is pushed to records and notifications', () async {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
