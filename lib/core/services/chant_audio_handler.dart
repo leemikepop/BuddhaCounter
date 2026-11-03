@@ -97,6 +97,23 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     _musicPlayer.positionUpdater = _positionUpdater;
     _standbyPlayer.positionUpdater = null;
 
+    // 核心進度監聽：直接監聽 _positionUpdater 的 positionStream，
+    // 其 getPosition 回呼隨時動態查詢當前活躍的 _activePlayer，
+    // 不論活躍播放器在 _musicPlayer 與 _standbyPlayer 之間如何交替切換，
+    // 均以穩定的 250ms 定時推播，杜絕切換後進度推播中斷或卡在 100%
+    _positionUpdater!.positionStream.listen((pos) {
+      final prev = _currentPosition;
+      _currentPosition = pos;
+      if (!_positionController.isClosed) {
+        _positionController.add(pos);
+      }
+      if (_isPlaying &&
+          prev > const Duration(seconds: 2) &&
+          pos < const Duration(milliseconds: 800)) {
+        _broadcastPlaybackState();
+      }
+    });
+
     void bindListeners(AudioPlayer player) {
       // 監聽播放器狀態
       player.onPlayerStateChanged.listen((state) {
@@ -112,23 +129,6 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
         final nextPlaying = (state == PlayerState.playing);
         _setPlayState(nextPlaying);
         _broadcastPlaybackState();
-      });
-
-      // 監聽播放進度：Android MediaSession 與 iOS NowPlayingCenter 會依 updatePosition + speed 自動推算系統通知欄進度，
-      // 切勿於每次進度更新都呼叫 _broadcastPlaybackState()，否則會造成 Binder/IPC 與主執行緒嚴重阻塞；
-      // 僅在單曲循環回到開頭時同步一次系統進度
-      player.onPositionChanged.listen((pos) {
-        if (player != _activePlayer) return;
-        final prev = _currentPosition;
-        _currentPosition = pos;
-        if (!_positionController.isClosed) {
-          _positionController.add(pos);
-        }
-        if (_isPlaying &&
-            prev > const Duration(seconds: 2) &&
-            pos < const Duration(milliseconds: 800)) {
-          _broadcastPlaybackState();
-        }
       });
 
       // 監聽長度更新
@@ -157,9 +157,13 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
                 (_activePlayer == _musicPlayer) ? _standbyPlayer : _musicPlayer;
             final prevPlayer = _activePlayer;
             _activePlayer = nextPlayer;
+            _currentPosition = Duration.zero;
+            // 關鍵 UI 即時重設：立即將進度廣播至 0，杜絕進度條卡在 100% 假死
+            if (!_positionController.isClosed) {
+              _positionController.add(Duration.zero);
+            }
             _positionUpdater?.start();
             nextPlayer.resume().catchError((_) {});
-            _currentPosition = Duration.zero;
             _broadcastPlaybackState();
             if (_currentSongFile != null) {
               prevPlayer
