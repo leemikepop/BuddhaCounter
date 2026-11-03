@@ -1263,6 +1263,114 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'佛曲清單'**
   String get legacySongListTitle;
+
+  /// 迴向頁佛號
+  ///
+  /// In zh, this message translates to:
+  /// **'南無阿彌陀佛'**
+  String get practiceBuddhaName;
+
+  /// 迴向頁敲引磬後的 Toast
+  ///
+  /// In zh, this message translates to:
+  /// **'合十迴向 功德圓滿'**
+  String get practiceBellToast;
+
+  /// 迴向頁敲引磬按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'引磬'**
+  String get practiceBellButton;
+
+  /// Tooltip：上一則迴向文
+  ///
+  /// In zh, this message translates to:
+  /// **'上一則迴向文'**
+  String get huiXiangPrevTooltip;
+
+  /// Tooltip：下一則迴向文
+  ///
+  /// In zh, this message translates to:
+  /// **'下一則迴向文'**
+  String get huiXiangNextTooltip;
+
+  /// 導覽：功能 1 標題
+  ///
+  /// In zh, this message translates to:
+  /// **'念佛與自動計數'**
+  String get guideFeatureCountTitle;
+
+  /// 導覽：功能 1 說明
+  ///
+  /// In zh, this message translates to:
+  /// **'全螢幕點擊、引磬木魚原音；或隨 {count} 首精選佛曲自動節拍計數。'**
+  String guideFeatureCountDesc(int count);
+
+  /// 導覽：功能 2 標題
+  ///
+  /// In zh, this message translates to:
+  /// **'每日功課表記'**
+  String get guideFeatureCalendarTitle;
+
+  /// 導覽：功能 2 說明
+  ///
+  /// In zh, this message translates to:
+  /// **'最右側月曆隨時查閱每天精進進度，支援自由手動修改增減。'**
+  String get guideFeatureCalendarDesc;
+
+  /// 導覽：功能 3 標題
+  ///
+  /// In zh, this message translates to:
+  /// **'桌面小工具與定時提醒'**
+  String get guideFeatureWidgetTitle;
+
+  /// 導覽：功能 3 說明
+  ///
+  /// In zh, this message translates to:
+  /// **'支援手機桌面 Widget 與每日定時念佛推播提醒，念念相續。'**
+  String get guideFeatureWidgetDesc;
+
+  /// 導覽：功能 4 標題
+  ///
+  /// In zh, this message translates to:
+  /// **'現代與經典雙風格'**
+  String get guideFeatureModeTitle;
+
+  /// 導覽：功能 4 說明
+  ///
+  /// In zh, this message translates to:
+  /// **'右上角一鍵自由切換現代禪意與經典復古模式，修行更隨心。'**
+  String get guideFeatureModeDesc;
+
+  /// 導覽對話框頂部小標籤
+  ///
+  /// In zh, this message translates to:
+  /// **'全新升級重點'**
+  String get guideBadge;
+
+  /// Tooltip：關閉導覽
+  ///
+  /// In zh, this message translates to:
+  /// **'關閉導覽'**
+  String get guideCloseTooltip;
+
+  /// 導覽對話框標題
+  ///
+  /// In zh, this message translates to:
+  /// **'全新功能特色'**
+  String get guideTitle;
+
+  /// 導覽對話框副標
+  ///
+  /// In zh, this message translates to:
+  /// **'專為靜心念佛與拜佛打造的精進夥伴'**
+  String get guideSubtitle;
+
+  /// 導覽對話框完成按鈕
+  ///
+  /// In zh, this message translates to:
+  /// **'開始精進'**
+  String get guideStart;
 }
 
 class _AppLocalizationsDelegate

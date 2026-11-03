@@ -16,6 +16,8 @@ import 'package:buddha_counter/core/constants/chant_songs.dart';
 import 'package:buddha_counter/core/content/chant_content.dart';
 import 'package:buddha_counter/ui/modern/views/modern_player_view.dart';
 import 'package:buddha_counter/ui/modern/widgets/song_list_tile.dart';
+import 'package:buddha_counter/ui/modern/views/modern_practice_view.dart';
+import 'package:buddha_counter/ui/modern/widgets/modern_guide_dialog.dart';
 
 import 'helpers/test_app.dart';
 
@@ -349,6 +351,49 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('No matching chants'), findsOneWidget);
       await disposeAndSettleTimers(tester);
+    });
+  });
+
+  group('dedication view and guide dialog', () {
+    testWidgets('practice view shows english dedication verses',
+        (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        deviceLocales: const [Locale('zh', 'TW')],
+      );
+      vm.setAppLanguage(AppLanguage.en);
+      await tester.pumpWidget(
+          liveLocaleApp(vm, const Scaffold(body: ModernPracticeView())));
+      await tester.pump();
+      await tester.pump();
+
+      final en = chantContentFor(kEn).huiXiangItems.first;
+      expect(find.text(en.title), findsOneWidget);
+      expect(find.text(en.verses.first), findsOneWidget);
+      expect(find.text('Namo Amitabha Buddha'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('guide dialog renders in Simplified Chinese', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      final vm = CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        deviceLocales: const [Locale('zh', 'CN')],
+      );
+      await tester.pumpWidget(liveLocaleApp(
+          vm, const Scaffold(body: Center(child: ModernGuideDialog()))));
+      await tester.pump();
+      expect(find.text('开始精进'), findsOneWidget);
+      expect(find.text('每日功课表记'), findsOneWidget);
     });
   });
 

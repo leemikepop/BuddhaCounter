@@ -694,4 +694,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get legacySongListTitle => 'Chant list';
+
+  @override
+  String get practiceBuddhaName => 'Namo Amitabha Buddha';
+
+  @override
+  String get practiceBellToast => 'Merit dedicated — may it be complete';
+
+  @override
+  String get practiceBellButton => 'Bell';
+
+  @override
+  String get huiXiangPrevTooltip => 'Previous dedication';
+
+  @override
+  String get huiXiangNextTooltip => 'Next dedication';
+
+  @override
+  String get guideFeatureCountTitle => 'Recitation & auto count';
+
+  @override
+  String guideFeatureCountDesc(int count) {
+    return 'Tap anywhere with bell or wooden-fish sounds, or count automatically with $count selected chants.';
+  }
+
+  @override
+  String get guideFeatureCalendarTitle => 'Daily practice log';
+
+  @override
+  String get guideFeatureCalendarDesc =>
+      'Check each day\'s progress in the Calendar tab and edit counts anytime.';
+
+  @override
+  String get guideFeatureWidgetTitle => 'Widget & daily reminder';
+
+  @override
+  String get guideFeatureWidgetDesc =>
+      'Home screen widget and a daily reminder keep your practice going.';
+
+  @override
+  String get guideFeatureModeTitle => 'Zen & Classic styles';
+
+  @override
+  String get guideFeatureModeDesc =>
+      'Switch between Zen and Classic mode from the top-right corner.';
+
+  @override
+  String get guideBadge => 'What\'s new';
+
+  @override
+  String get guideCloseTooltip => 'Close guide';
+
+  @override
+  String get guideTitle => 'New features';
+
+  @override
+  String get guideSubtitle =>
+      'A companion for mindful recitation and prostration';
+
+  @override
+  String get guideStart => 'Get started';
 }

@@ -679,6 +679,62 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get legacySongListTitle => '佛曲清單';
+
+  @override
+  String get practiceBuddhaName => '南無阿彌陀佛';
+
+  @override
+  String get practiceBellToast => '合十迴向 功德圓滿';
+
+  @override
+  String get practiceBellButton => '引磬';
+
+  @override
+  String get huiXiangPrevTooltip => '上一則迴向文';
+
+  @override
+  String get huiXiangNextTooltip => '下一則迴向文';
+
+  @override
+  String get guideFeatureCountTitle => '念佛與自動計數';
+
+  @override
+  String guideFeatureCountDesc(int count) {
+    return '全螢幕點擊、引磬木魚原音；或隨 $count 首精選佛曲自動節拍計數。';
+  }
+
+  @override
+  String get guideFeatureCalendarTitle => '每日功課表記';
+
+  @override
+  String get guideFeatureCalendarDesc => '最右側月曆隨時查閱每天精進進度，支援自由手動修改增減。';
+
+  @override
+  String get guideFeatureWidgetTitle => '桌面小工具與定時提醒';
+
+  @override
+  String get guideFeatureWidgetDesc => '支援手機桌面 Widget 與每日定時念佛推播提醒，念念相續。';
+
+  @override
+  String get guideFeatureModeTitle => '現代與經典雙風格';
+
+  @override
+  String get guideFeatureModeDesc => '右上角一鍵自由切換現代禪意與經典復古模式，修行更隨心。';
+
+  @override
+  String get guideBadge => '全新升級重點';
+
+  @override
+  String get guideCloseTooltip => '關閉導覽';
+
+  @override
+  String get guideTitle => '全新功能特色';
+
+  @override
+  String get guideSubtitle => '專為靜心念佛與拜佛打造的精進夥伴';
+
+  @override
+  String get guideStart => '開始精進';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1356,6 +1412,62 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get legacySongListTitle => '佛曲清单';
+
+  @override
+  String get practiceBuddhaName => '南无阿弥陀佛';
+
+  @override
+  String get practiceBellToast => '合十回向 功德圆满';
+
+  @override
+  String get practiceBellButton => '引磬';
+
+  @override
+  String get huiXiangPrevTooltip => '上一则回向文';
+
+  @override
+  String get huiXiangNextTooltip => '下一则回向文';
+
+  @override
+  String get guideFeatureCountTitle => '念佛与自动计数';
+
+  @override
+  String guideFeatureCountDesc(int count) {
+    return '全屏点击、引磬木鱼原音；或随 $count 首精选佛曲自动节拍计数。';
+  }
+
+  @override
+  String get guideFeatureCalendarTitle => '每日功课表记';
+
+  @override
+  String get guideFeatureCalendarDesc => '最右侧月历随时查阅每天精进进度，支持自由手动修改增减。';
+
+  @override
+  String get guideFeatureWidgetTitle => '桌面小组件与定时提醒';
+
+  @override
+  String get guideFeatureWidgetDesc => '支持手机桌面 Widget 与每日定时念佛推送提醒，念念相续。';
+
+  @override
+  String get guideFeatureModeTitle => '现代与经典双风格';
+
+  @override
+  String get guideFeatureModeDesc => '右上角一键自由切换现代禅意与经典复古模式，修行更随心。';
+
+  @override
+  String get guideBadge => '全新升级重点';
+
+  @override
+  String get guideCloseTooltip => '关闭导览';
+
+  @override
+  String get guideTitle => '全新功能特色';
+
+  @override
+  String get guideSubtitle => '专为静心念佛与拜佛打造的精进伙伴';
+
+  @override
+  String get guideStart => '开始精进';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

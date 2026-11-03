@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/l10n.dart';
 
 /// 現代模式新版介面功能重點導覽 (精簡一頁式)
 class ModernGuideDialog extends StatelessWidget {
@@ -32,26 +34,27 @@ class ModernGuideDialog extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
 
-    final items = const [
+    final l10n = context.l10n;
+    final items = [
       _FeaturePoint(
         icon: Icons.touch_app_rounded,
-        title: '念佛與自動計數',
-        desc: '全螢幕點擊、引磬木魚原音；或隨 31 首精選佛曲自動節拍計數。',
+        title: l10n.guideFeatureCountTitle,
+        desc: l10n.guideFeatureCountDesc(ChantConstants.allSongs.length),
       ),
       _FeaturePoint(
         icon: Icons.calendar_month_rounded,
-        title: '每日功課表記',
-        desc: '最右側月曆隨時查閱每天精進進度，支援自由手動修改增減。',
+        title: l10n.guideFeatureCalendarTitle,
+        desc: l10n.guideFeatureCalendarDesc,
       ),
       _FeaturePoint(
         icon: Icons.widgets_rounded,
-        title: '桌面小工具與定時提醒',
-        desc: '支援手機桌面 Widget 與每日定時念佛推播提醒，念念相續。',
+        title: l10n.guideFeatureWidgetTitle,
+        desc: l10n.guideFeatureWidgetDesc,
       ),
       _FeaturePoint(
         icon: Icons.style_outlined,
-        title: '現代與經典雙風格',
-        desc: '右上角一鍵自由切換現代禪意與經典復古模式，修行更隨心。',
+        title: l10n.guideFeatureModeTitle,
+        desc: l10n.guideFeatureModeDesc,
       ),
     ];
 
@@ -87,7 +90,7 @@ class ModernGuideDialog extends StatelessWidget {
                             size: 14, color: primary),
                         const SizedBox(width: 4),
                         Text(
-                          '全新升級重點',
+                          l10n.guideBadge,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -105,7 +108,7 @@ class ModernGuideDialog extends StatelessWidget {
                       Navigator.of(context).pop();
                       onComplete?.call();
                     },
-                    tooltip: '關閉導覽',
+                    tooltip: l10n.guideCloseTooltip,
                   ),
                 ],
               ),
@@ -124,21 +127,21 @@ class ModernGuideDialog extends StatelessWidget {
                     child: Icon(Icons.spa_rounded, size: 26, color: primary),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '全新功能特色',
-                          style: TextStyle(
+                          l10n.guideTitle,
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
-                          '專為靜心念佛與拜佛打造的精進夥伴',
-                          style: TextStyle(
+                          l10n.guideSubtitle,
+                          style: const TextStyle(
                             fontSize: 12.5,
                             color: Colors.grey,
                           ),
@@ -214,9 +217,10 @@ class ModernGuideDialog extends StatelessWidget {
                   Navigator.of(context).pop();
                   onComplete?.call();
                 },
-                child: const Text(
-                  '開始精進',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                child: Text(
+                  l10n.guideStart,
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ),
             ],

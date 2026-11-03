@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/l10n.dart';
 import '../../common/app_toast.dart';
 import '../../common/swipeable_hui_xiang.dart';
 
@@ -97,7 +98,7 @@ class ModernPracticeView extends StatelessWidget {
 
                 // 南無阿彌陀佛
                 Text(
-                  '南無阿彌陀佛',
+                  context.l10n.practiceBuddhaName,
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -118,10 +119,11 @@ class ModernPracticeView extends StatelessWidget {
                   ),
                   onPressed: () {
                     vm.audioService.playClickSfx(SoundEffectType.bell);
-                    AppToast.show(context, '合十迴向 功德圓滿');
+                    AppToast.show(context, context.l10n.practiceBellToast);
                   },
                   icon: const Icon(Icons.favorite_outline_rounded, size: 18),
-                  label: const Text('引磬', style: TextStyle(fontSize: 15)),
+                  label: Text(context.l10n.practiceBellButton,
+                      style: const TextStyle(fontSize: 15)),
                 ),
               ],
             ),

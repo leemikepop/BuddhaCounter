@@ -9,9 +9,9 @@ String appLanguageLabel(AppLocalizations l10n, AppLanguage v) {
     case AppLanguage.system:
       return l10n.languageFollowSystem;
     case AppLanguage.zhHant:
-      return '繁體中文';
+      return '繁體中文'; // i18n-ignore: endonym
     case AppLanguage.zhHans:
-      return '简体中文';
+      return '简体中文'; // i18n-ignore: endonym
     case AppLanguage.en:
       return 'English';
   }

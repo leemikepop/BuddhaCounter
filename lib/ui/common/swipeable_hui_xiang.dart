@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../../core/constants/chant_songs.dart';
+import '../../l10n/l10n.dart';
 
 /// 支援左右循環滑動切換、且高度隨偈頌行數平滑自適應（無多餘空白）之迴向文輪播組件
 class SwipeableHuiXiangCarousel extends StatefulWidget {
@@ -193,7 +194,7 @@ class _SwipeableHuiXiangCarouselState extends State<SwipeableHuiXiangCarousel> {
                                 minWidth: 32,
                                 minHeight: 32,
                               ),
-                              tooltip: '上一則迴向文',
+                              tooltip: context.l10n.huiXiangPrevTooltip,
                               icon: Icon(
                                 Icons.chevron_left_rounded,
                                 size: 22,
@@ -240,7 +241,7 @@ class _SwipeableHuiXiangCarouselState extends State<SwipeableHuiXiangCarousel> {
                                 minWidth: 32,
                                 minHeight: 32,
                               ),
-                              tooltip: '下一則迴向文',
+                              tooltip: context.l10n.huiXiangNextTooltip,
                               icon: Icon(
                                 Icons.chevron_right_rounded,
                                 size: 22,
