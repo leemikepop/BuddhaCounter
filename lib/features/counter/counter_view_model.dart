@@ -254,6 +254,10 @@ class CounterViewModel extends ChangeNotifier {
     // 監聽播放狀態變化（用以即時更新首頁念佛按鈕顏色等）
     _playerStateSubscription = _audio.onPlayerStateChanged.listen((state) {
       if (_audio.handler.isSwitchingTrack) return;
+      if (state == PlayerState.completed && _audio.releaseMode == ReleaseMode.loop) {
+        // 單曲循環播放時忽略 completed 暫態事件，避免 UI 抖動與全頁 Rebuild 搶佔 CPU / 音訊解碼資源
+        return;
+      }
       if (state == PlayerState.paused && _isAutoCounting && !_audio.isPlaying) {
         pauseAutoCount();
       } else {

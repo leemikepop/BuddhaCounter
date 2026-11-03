@@ -77,6 +77,8 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     ),
   );
 
+  TimerPositionUpdater? _positionUpdater;
+
   ChantAudioHandler() {
     _initFuture = _initAudioPlayer();
   }
@@ -84,10 +86,11 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> _initAudioPlayer() async {
     // 關鍵效能優化：覆蓋 audioplayers 6.x 預設的 FramePositionUpdater（原本會在 90/120Hz 每一幀跨執行緒呼叫 getCurrentPosition），
     // 改為 250ms 定時更新，大幅降低 Platform MethodChannel 與主執行緒負擔
-    _musicPlayer.positionUpdater = TimerPositionUpdater(
+    _positionUpdater = TimerPositionUpdater(
       interval: const Duration(milliseconds: 250),
       getPosition: _musicPlayer.getCurrentPosition,
     );
+    _musicPlayer.positionUpdater = _positionUpdater;
 
     // 監聽播放器狀態
     _musicPlayer.onPlayerStateChanged.listen((state) {
@@ -96,8 +99,9 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
         return;
       }
       if (state == PlayerState.completed && _releaseMode == ReleaseMode.loop) {
-        // 單曲循環模式下原生底層（iOS WrappedMediaPlayer 及 Android MediaPlayer）會自動無縫銜接重播，
-        // 忽略 completed 暫態，避免觸發冗餘的 NowPlayingCenter 廣播或誤切暫停狀態
+        // 單曲循環模式下原生底層（iOS AVPlayerLooper 及 Android MediaPlayer）會自動無縫銜接重播，
+        // 忽略 completed 暫態以避免誤切暫停，並確保 positionUpdater 持續運行
+        _positionUpdater?.start();
         return;
       }
       final nextPlaying = (state == PlayerState.playing);
@@ -138,10 +142,10 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     _musicPlayer.onPlayerComplete.listen((_) async {
       if (!_isPlaying || _isSwitchingTrack) return;
       if (_releaseMode == ReleaseMode.loop) {
-        // 在單曲循環模式下，底層（iOS WrappedMediaPlayer 及 Android MediaPlayer）
-        // 原生均已自動無縫執行 seek(0) 並繼續 resume() 播放。
-        // 切勿在此重複呼叫 seek(0) 或 resume()，否則在 iOS AVPlayer 上會打斷正在預載的解碼管線，
-        // 造成 1~2 秒的卡頓停頓（Stuttering）。
+        // 在單曲循環模式下原生底層（iOS AVPlayerLooper 及 Android MediaPlayer）
+        // 均已原生無縫循環。若在極端情況下收到 complete 事件，確保計時器維持運行，
+        // 且切勿重複呼叫 seek(0) 或 resume() 打斷正在進行的音訊管線。
+        _positionUpdater?.start();
         return;
       } else {
         await skipToNext();
@@ -384,6 +388,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   Future<void> disposePlayer() async {
+    _positionUpdater?.stop();
     await stop();
     await _musicPlayer.dispose();
     await _currentSongController.close();
