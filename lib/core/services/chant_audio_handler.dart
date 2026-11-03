@@ -46,6 +46,14 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       StreamController<Duration>.broadcast();
   Stream<Duration> get onDurationChanged => _durationController.stream;
 
+  final StreamController<PlayerState> _playerStateController =
+      StreamController<PlayerState>.broadcast();
+  Stream<PlayerState> get onPlayerStateChanged => _playerStateController.stream;
+
+  final StreamController<void> _playerCompleteController =
+      StreamController<void>.broadcast();
+  Stream<void> get onPlayerComplete => _playerCompleteController.stream;
+
   void _setPlayState(bool playing) {
     if (_isPlaying == playing) return;
     _isPlaying = playing;
@@ -75,7 +83,6 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     iOS: AudioContextIOS(
       category: AVAudioSessionCategory.playback,
       options: const {
-        AVAudioSessionOptions.mixWithOthers,
         AVAudioSessionOptions.defaultToSpeaker,
       },
     ),
@@ -118,6 +125,9 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       // 監聽播放器狀態
       player.onPlayerStateChanged.listen((state) {
         if (player != _activePlayer) return;
+        if (!_playerStateController.isClosed) {
+          _playerStateController.add(state);
+        }
         if (_isSwitchingTrack && state != PlayerState.playing) {
           // 切歌準備期間忽略底層 MediaPlayer reset/stop 產生的暫態非播放事件，避免誤觸暫停迴圈
           return;
@@ -146,8 +156,11 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
 
       // 監聽播放完成
       player.onPlayerComplete.listen((_) async {
-        if (!_isPlaying || _isSwitchingTrack) return;
         if (player != _activePlayer) return;
+        if (!_playerCompleteController.isClosed) {
+          _playerCompleteController.add(null);
+        }
+        if (!_isPlaying || _isSwitchingTrack) return;
         if (_releaseMode == ReleaseMode.loop) {
           if (Platform.isIOS) {
             // iOS 雙播放器無縫乒乓緩衝（Ping-Pong Double Buffering）：
@@ -208,12 +221,6 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   void _broadcastPlaybackState() {
-    final isReady = _isPlaying ||
-        _activePlayer.state == PlayerState.playing ||
-        _activePlayer.state == PlayerState.paused;
-    final processingState =
-        isReady ? AudioProcessingState.ready : AudioProcessingState.idle;
-
     playbackState.add(
       PlaybackState(
         controls: [
@@ -227,11 +234,11 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
           MediaAction.seekBackward,
         },
         androidCompactActionIndices: const [0, 1, 2], // 顯示上一首、播放/暫停、下一首
-        processingState: processingState,
+        processingState: AudioProcessingState.ready,
         playing: _isPlaying,
         updatePosition: _currentPosition,
         bufferedPosition: _currentPosition,
-        speed: 1.0,
+        speed: _isPlaying ? 1.0 : 0.0,
       ),
     );
   }
@@ -358,13 +365,33 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   @override
+  Future<void> click([MediaButton button = MediaButton.media]) async {
+    switch (button) {
+      case MediaButton.media:
+        if (_isPlaying) {
+          await pause();
+        } else {
+          await play();
+        }
+        break;
+      case MediaButton.next:
+        await skipToNext();
+        break;
+      case MediaButton.previous:
+        await skipToPrevious();
+        break;
+    }
+  }
+
+  @override
   Future<void> play() async {
+    ++_playRequestId;
+    _isSwitchingTrack = false;
+    _setPlayState(true);
+    _broadcastPlaybackState();
+    _positionUpdater?.start();
     if (_activePlayer.state == PlayerState.paused) {
-      ++_playRequestId;
-      _isSwitchingTrack = false;
-      _setPlayState(true);
-      _broadcastPlaybackState();
-      _activePlayer.resume().catchError((_) {});
+      await _activePlayer.resume().catchError((_) {});
     } else {
       await playSong(_currentSongId);
     }
@@ -376,7 +403,8 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     _isSwitchingTrack = false;
     _setPlayState(false);
     _broadcastPlaybackState();
-    _activePlayer.pause().catchError((_) {});
+    _positionUpdater?.stop();
+    await _activePlayer.pause().catchError((_) {});
   }
 
   @override
@@ -388,14 +416,16 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     if (!_positionController.isClosed) {
       _positionController.add(Duration.zero);
     }
-    _musicPlayer.stop().catchError((_) {});
-    _standbyPlayer.stop().catchError((_) {});
+    _positionUpdater?.stop();
+    await _musicPlayer.stop().catchError((_) {});
+    await _standbyPlayer.stop().catchError((_) {});
     _activePlayer = _musicPlayer;
     playbackState.add(playbackState.value.copyWith(
       processingState: AudioProcessingState.idle,
       playing: false,
       updatePosition: Duration.zero,
       bufferedPosition: Duration.zero,
+      speed: 0.0,
     ));
   }
 
@@ -459,5 +489,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     await _playStateController.close();
     await _positionController.close();
     await _durationController.close();
+    await _playerStateController.close();
+    await _playerCompleteController.close();
   }
 }

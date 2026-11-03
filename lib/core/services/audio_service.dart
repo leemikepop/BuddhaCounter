@@ -28,8 +28,8 @@ class AudioService {
 
   Stream<Duration> get onPositionChanged => _handler.onPositionChanged;
   Stream<Duration> get onDurationChanged => _handler.onDurationChanged;
-  Stream<PlayerState> get onPlayerStateChanged => _handler.musicPlayer.onPlayerStateChanged;
-  Stream<void> get onPlayerComplete => _handler.musicPlayer.onPlayerComplete;
+  Stream<PlayerState> get onPlayerStateChanged => _handler.onPlayerStateChanged;
+  Stream<void> get onPlayerComplete => _handler.onPlayerComplete;
   Stream<int> get onCurrentSongChanged => _handler.onCurrentSongChanged;
   Stream<bool> get onPlayStateChanged => _handler.onPlayStateChanged;
 
