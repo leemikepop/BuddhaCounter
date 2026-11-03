@@ -15,12 +15,7 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-    # 只在打版號 tag 時自動建置上傳；平常 push 到 main 不觸發 (需要時可在 Codemagic 網頁手動開始)
-    triggering:
-      events:
-        - tag
-      tag_patterns:
-        - pattern: 'v*'
+    # 不設定 triggering：只能在 Codemagic 網頁手動開始建置 (目前改用 GitHub Actions 上傳 TestFlight)
     scripts:
       - name: Set up code signing settings on Xcode project
         script: |
