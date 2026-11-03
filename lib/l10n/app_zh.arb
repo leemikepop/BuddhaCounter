@@ -899,5 +899,161 @@
   "chantTagSlowSolemn": "慢板",
   "@chantTagSlowSolemn": {
     "description": "佛曲分類：慢板"
+  },
+  "commonPlay": "播放",
+  "@commonPlay": {
+    "description": "通用：播放"
+  },
+  "commonBack": "返回",
+  "@commonBack": {
+    "description": "通用：返回"
+  },
+  "playerArtistAlbumBeat": "{artist} · {album} · 每拍 {seconds} 秒",
+  "@playerArtistAlbumBeat": {
+    "description": "播放器副標：演出者、專輯、每拍秒數 (seconds 為小數兩位字串)",
+    "placeholders": {
+      "artist": {
+        "type": "String"
+      },
+      "album": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "playerArtistBeat": "{artist} · 每拍 {seconds}s",
+  "@playerArtistBeat": {
+    "description": "迷你播放列副標",
+    "placeholders": {
+      "artist": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "miniPlayerSubtitle": "{artist} · 每拍 {seconds}s · 點擊展開播放器",
+  "@miniPlayerSubtitle": {
+    "description": "迷你播放器副標",
+    "placeholders": {
+      "artist": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "playerLoopOne": "單曲循環",
+  "@playerLoopOne": {
+    "description": "Tooltip：目前為單曲循環"
+  },
+  "playerLoopList": "清單播放",
+  "@playerLoopList": {
+    "description": "Tooltip：目前為清單播放"
+  },
+  "playerPrevious": "上一首",
+  "@playerPrevious": {
+    "description": "Tooltip：上一首"
+  },
+  "playerNext": "下一首",
+  "@playerNext": {
+    "description": "Tooltip：下一首"
+  },
+  "playerRewind10": "倒退 10 秒",
+  "@playerRewind10": {
+    "description": "Tooltip：倒退 10 秒"
+  },
+  "playerForward10": "快轉 10 秒",
+  "@playerForward10": {
+    "description": "Tooltip：快轉 10 秒"
+  },
+  "playerSearchHint": "搜尋 {count} 首佛曲名稱...",
+  "@playerSearchHint": {
+    "description": "佛曲頁搜尋框 placeholder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songListAll": "全部 ({count})",
+  "@songListAll": {
+    "description": "分類篩選：全部 (曲目數)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagWithCount": "{tag} ({count})",
+  "@tagWithCount": {
+    "description": "分類篩選晶片：標籤名稱與曲目數",
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playerNoMatch": "無相符的佛曲",
+  "@playerNoMatch": {
+    "description": "佛曲頁搜尋無結果"
+  },
+  "songMenuNoMatch": "無相符佛曲",
+  "@songMenuNoMatch": {
+    "description": "播放器佛曲選單搜尋無結果"
+  },
+  "songMenuExpand": "展開佛曲選單",
+  "@songMenuExpand": {
+    "description": "Tooltip：展開佛曲選單"
+  },
+  "songMenuCollapse": "收合佛曲選單",
+  "@songMenuCollapse": {
+    "description": "Tooltip：收合佛曲選單"
+  },
+  "songMenuHeaderExpanded": "佛曲選單（共 {count} 首） · 點擊收合",
+  "@songMenuHeaderExpanded": {
+    "description": "佛曲選單已展開時的把手文字",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songMenuHeaderCollapsed": "上滑展開佛曲選單（共 {count} 首）",
+  "@songMenuHeaderCollapsed": {
+    "description": "佛曲選單收合時的把手文字",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songMenuSearchHint": "搜尋佛曲名稱、法師或標籤...",
+  "@songMenuSearchHint": {
+    "description": "佛曲選單搜尋框 placeholder"
+  },
+  "songMenuBackToPlayer": "收合回播放器",
+  "@songMenuBackToPlayer": {
+    "description": "Tooltip：收合佛曲選單回播放器"
+  },
+  "songTileBeat": "{seconds}s/拍",
+  "@songTileBeat": {
+    "description": "曲目列：每拍秒數",
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "legacySongListTitle": "佛曲清單",
+  "@legacySongListTitle": {
+    "description": "經典模式佛曲清單頁標題"
   }
 }

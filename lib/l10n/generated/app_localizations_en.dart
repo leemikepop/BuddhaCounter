@@ -604,4 +604,94 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chantTagSlowSolemn => 'Slow';
+
+  @override
+  String get commonPlay => 'Play';
+
+  @override
+  String get commonBack => 'Back';
+
+  @override
+  String playerArtistAlbumBeat(String artist, String album, String seconds) {
+    return '$artist · $album · ${seconds}s per beat';
+  }
+
+  @override
+  String playerArtistBeat(String artist, String seconds) {
+    return '$artist · ${seconds}s per beat';
+  }
+
+  @override
+  String miniPlayerSubtitle(String artist, String seconds) {
+    return '$artist · ${seconds}s per beat · tap to open';
+  }
+
+  @override
+  String get playerLoopOne => 'Repeat one';
+
+  @override
+  String get playerLoopList => 'Play all';
+
+  @override
+  String get playerPrevious => 'Previous';
+
+  @override
+  String get playerNext => 'Next';
+
+  @override
+  String get playerRewind10 => 'Back 10 seconds';
+
+  @override
+  String get playerForward10 => 'Forward 10 seconds';
+
+  @override
+  String playerSearchHint(int count) {
+    return 'Search $count chants...';
+  }
+
+  @override
+  String songListAll(int count) {
+    return 'All ($count)';
+  }
+
+  @override
+  String tagWithCount(String tag, int count) {
+    return '$tag ($count)';
+  }
+
+  @override
+  String get playerNoMatch => 'No matching chants';
+
+  @override
+  String get songMenuNoMatch => 'No matching chants';
+
+  @override
+  String get songMenuExpand => 'Show chant list';
+
+  @override
+  String get songMenuCollapse => 'Hide chant list';
+
+  @override
+  String songMenuHeaderExpanded(int count) {
+    return '$count chants · tap to collapse';
+  }
+
+  @override
+  String songMenuHeaderCollapsed(int count) {
+    return 'Swipe up for $count chants';
+  }
+
+  @override
+  String get songMenuSearchHint => 'Search title, master or tag...';
+
+  @override
+  String get songMenuBackToPlayer => 'Back to player';
+
+  @override
+  String songTileBeat(String seconds) {
+    return '${seconds}s/beat';
+  }
+
+  @override
+  String get legacySongListTitle => 'Chant list';
 }

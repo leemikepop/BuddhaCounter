@@ -1119,6 +1119,150 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'慢板'**
   String get chantTagSlowSolemn;
+
+  /// 通用：播放
+  ///
+  /// In zh, this message translates to:
+  /// **'播放'**
+  String get commonPlay;
+
+  /// 通用：返回
+  ///
+  /// In zh, this message translates to:
+  /// **'返回'**
+  String get commonBack;
+
+  /// 播放器副標：演出者、專輯、每拍秒數 (seconds 為小數兩位字串)
+  ///
+  /// In zh, this message translates to:
+  /// **'{artist} · {album} · 每拍 {seconds} 秒'**
+  String playerArtistAlbumBeat(String artist, String album, String seconds);
+
+  /// 迷你播放列副標
+  ///
+  /// In zh, this message translates to:
+  /// **'{artist} · 每拍 {seconds}s'**
+  String playerArtistBeat(String artist, String seconds);
+
+  /// 迷你播放器副標
+  ///
+  /// In zh, this message translates to:
+  /// **'{artist} · 每拍 {seconds}s · 點擊展開播放器'**
+  String miniPlayerSubtitle(String artist, String seconds);
+
+  /// Tooltip：目前為單曲循環
+  ///
+  /// In zh, this message translates to:
+  /// **'單曲循環'**
+  String get playerLoopOne;
+
+  /// Tooltip：目前為清單播放
+  ///
+  /// In zh, this message translates to:
+  /// **'清單播放'**
+  String get playerLoopList;
+
+  /// Tooltip：上一首
+  ///
+  /// In zh, this message translates to:
+  /// **'上一首'**
+  String get playerPrevious;
+
+  /// Tooltip：下一首
+  ///
+  /// In zh, this message translates to:
+  /// **'下一首'**
+  String get playerNext;
+
+  /// Tooltip：倒退 10 秒
+  ///
+  /// In zh, this message translates to:
+  /// **'倒退 10 秒'**
+  String get playerRewind10;
+
+  /// Tooltip：快轉 10 秒
+  ///
+  /// In zh, this message translates to:
+  /// **'快轉 10 秒'**
+  String get playerForward10;
+
+  /// 佛曲頁搜尋框 placeholder
+  ///
+  /// In zh, this message translates to:
+  /// **'搜尋 {count} 首佛曲名稱...'**
+  String playerSearchHint(int count);
+
+  /// 分類篩選：全部 (曲目數)
+  ///
+  /// In zh, this message translates to:
+  /// **'全部 ({count})'**
+  String songListAll(int count);
+
+  /// 分類篩選晶片：標籤名稱與曲目數
+  ///
+  /// In zh, this message translates to:
+  /// **'{tag} ({count})'**
+  String tagWithCount(String tag, int count);
+
+  /// 佛曲頁搜尋無結果
+  ///
+  /// In zh, this message translates to:
+  /// **'無相符的佛曲'**
+  String get playerNoMatch;
+
+  /// 播放器佛曲選單搜尋無結果
+  ///
+  /// In zh, this message translates to:
+  /// **'無相符佛曲'**
+  String get songMenuNoMatch;
+
+  /// Tooltip：展開佛曲選單
+  ///
+  /// In zh, this message translates to:
+  /// **'展開佛曲選單'**
+  String get songMenuExpand;
+
+  /// Tooltip：收合佛曲選單
+  ///
+  /// In zh, this message translates to:
+  /// **'收合佛曲選單'**
+  String get songMenuCollapse;
+
+  /// 佛曲選單已展開時的把手文字
+  ///
+  /// In zh, this message translates to:
+  /// **'佛曲選單（共 {count} 首） · 點擊收合'**
+  String songMenuHeaderExpanded(int count);
+
+  /// 佛曲選單收合時的把手文字
+  ///
+  /// In zh, this message translates to:
+  /// **'上滑展開佛曲選單（共 {count} 首）'**
+  String songMenuHeaderCollapsed(int count);
+
+  /// 佛曲選單搜尋框 placeholder
+  ///
+  /// In zh, this message translates to:
+  /// **'搜尋佛曲名稱、法師或標籤...'**
+  String get songMenuSearchHint;
+
+  /// Tooltip：收合佛曲選單回播放器
+  ///
+  /// In zh, this message translates to:
+  /// **'收合回播放器'**
+  String get songMenuBackToPlayer;
+
+  /// 曲目列：每拍秒數
+  ///
+  /// In zh, this message translates to:
+  /// **'{seconds}s/拍'**
+  String songTileBeat(String seconds);
+
+  /// 經典模式佛曲清單頁標題
+  ///
+  /// In zh, this message translates to:
+  /// **'佛曲清單'**
+  String get legacySongListTitle;
 }
 
 class _AppLocalizationsDelegate

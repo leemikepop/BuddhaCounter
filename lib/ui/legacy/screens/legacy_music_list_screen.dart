@@ -37,7 +37,7 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('佛曲清單'),
+        title: Text(context.l10n.legacySongListTitle),
         backgroundColor: const Color(0xFF0000FF),
         foregroundColor: Colors.white,
       ),
@@ -54,7 +54,7 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
                 child: Row(
                   children: [
                     ChoiceChip(
-                      label: Text('全部 (${allSongs.length})'),
+                      label: Text(context.l10n.songListAll(allSongs.length)),
                       selected: _selectedTag == null,
                       onSelected: (_) => setState(() => _selectedTag = null),
                       visualDensity: VisualDensity.compact,
@@ -63,7 +63,10 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
                       const SizedBox(width: 6),
                       ChoiceChip(
                         label: Text(
-                          '${chantTagLabel(context.l10n, tag)} (${ChantConstants.countSongsByTag(tag)})',
+                          context.l10n.tagWithCount(
+                            chantTagLabel(context.l10n, tag),
+                            ChantConstants.countSongsByTag(tag),
+                          ),
                         ),
                         selected: _selectedTag == tag,
                         onSelected: (val) {
@@ -166,9 +169,10 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    '返回',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  child: Text(
+                    context.l10n.commonBack,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

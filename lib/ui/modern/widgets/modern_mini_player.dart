@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/counter/counter_view_model.dart';
+import '../../../l10n/l10n.dart';
 
 /// 現代版常駐迷你音樂播放條 (Mini Music Player)
 /// 浮動於各分頁底欄上方，提供快速切換、播放/暫停與展開播放器面板
@@ -87,7 +88,11 @@ class ModernMiniPlayer extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${song.artist} · 每拍 ${(song.effectiveBeatIntervalMs / 1000).toStringAsFixed(2)}s · 點擊展開播放器',
+                        context.l10n.miniPlayerSubtitle(
+                          song.artist,
+                          (song.effectiveBeatIntervalMs / 1000)
+                              .toStringAsFixed(2),
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -110,7 +115,9 @@ class ModernMiniPlayer extends StatelessWidget {
                     color: primary,
                     size: 34,
                   ),
-                  tooltip: vm.isChantPlaying ? '暫停' : '播放',
+                  tooltip: vm.isChantPlaying
+                      ? context.l10n.commonPause
+                      : context.l10n.commonPlay,
                   onPressed: () {
                     vm.toggleChant(vm.currentSongId);
                   },
@@ -123,7 +130,7 @@ class ModernMiniPlayer extends StatelessWidget {
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     size: 26,
                   ),
-                  tooltip: '下一首',
+                  tooltip: context.l10n.playerNext,
                   onPressed: () {
                     vm.playNextSong();
                   },

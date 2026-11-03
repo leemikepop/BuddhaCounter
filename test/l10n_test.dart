@@ -14,6 +14,8 @@ import 'package:buddha_counter/l10n/l10n_dates.dart';
 import 'package:buddha_counter/l10n/chant_tag_labels.dart';
 import 'package:buddha_counter/core/constants/chant_songs.dart';
 import 'package:buddha_counter/core/content/chant_content.dart';
+import 'package:buddha_counter/ui/modern/views/modern_player_view.dart';
+import 'package:buddha_counter/ui/modern/widgets/song_list_tile.dart';
 
 import 'helpers/test_app.dart';
 
@@ -288,6 +290,65 @@ void main() {
       vm.setAppLanguage(AppLanguage.zhHans);
       expect(ChantConstants.huiXiangItems.first.verses.first,
           startsWith('愿我临终'));
+    });
+  });
+
+  group('player and song lists', () {
+    Future<CounterViewModel> zhVm(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      return CounterViewModel(
+        storage: storage,
+        audio: AudioService(),
+        deviceLocales: const [Locale('zh', 'TW')],
+      );
+    }
+
+    ChoiceChip chipWith(WidgetTester tester, String text) =>
+        tester.widget<ChoiceChip>(find.ancestor(
+          of: find.text(text),
+          matching: find.byType(ChoiceChip),
+        ));
+
+    testWidgets('tag filter survives language switch', (tester) async {
+      final vm = await zhVm(tester);
+      await tester.pumpWidget(
+          liveLocaleApp(vm, const Scaffold(body: ModernPlayerView())));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('四字彌陀 (12)'));
+      await tester.pumpAndSettle();
+      final zhCount = find.byType(SongListTile).evaluate().length;
+      expect(zhCount, 12);
+
+      vm.setAppLanguage(AppLanguage.en);
+      await tester.pumpAndSettle();
+      expect(chipWith(tester, '4-char Amitabha (12)').selected, isTrue);
+      expect(chipWith(tester, 'All (31)').selected, isFalse);
+      expect(find.byType(SongListTile).evaluate().length, zhCount);
+      await disposeAndSettleTimers(tester);
+    });
+
+    testWidgets('english search matches localized titles', (tester) async {
+      final vm = await zhVm(tester);
+      vm.setAppLanguage(AppLanguage.en);
+      await tester.pumpWidget(
+          liveLocaleApp(vm, const Scaffold(body: ModernPlayerView())));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Search 31 chants...'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'Ksitigarbha');
+      await tester.pumpAndSettle();
+      expect(find.byType(SongListTile), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), 'zzzz');
+      await tester.pumpAndSettle();
+      expect(find.text('No matching chants'), findsOneWidget);
+      await disposeAndSettleTimers(tester);
     });
   });
 

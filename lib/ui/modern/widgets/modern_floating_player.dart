@@ -146,7 +146,11 @@ class ModernFloatingPlayer extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${song.artist} · 每拍 ${(song.effectiveBeatIntervalMs / 1000).toStringAsFixed(2)}s',
+                                  context.l10n.playerArtistBeat(
+                                    song.artist,
+                                    (song.effectiveBeatIntervalMs / 1000)
+                                        .toStringAsFixed(2),
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -172,7 +176,7 @@ class ModernFloatingPlayer extends StatelessWidget {
                               Icons.skip_previous_rounded,
                               size: 22,
                             ),
-                            tooltip: '上一首',
+                            tooltip: context.l10n.playerPrevious,
                             onPressed: () => vm.playPreviousSong(),
                           ),
 
@@ -191,7 +195,9 @@ class ModernFloatingPlayer extends StatelessWidget {
                               color: primary,
                               size: 34,
                             ),
-                            tooltip: isChantPlaying ? '暫停' : '播放',
+                            tooltip: isChantPlaying
+                                ? context.l10n.commonPause
+                                : context.l10n.commonPlay,
                             onPressed: () => vm.toggleChant(currentSongId),
                           ),
 
@@ -204,7 +210,7 @@ class ModernFloatingPlayer extends StatelessWidget {
                               minHeight: 32,
                             ),
                             icon: const Icon(Icons.skip_next_rounded, size: 22),
-                            tooltip: '下一首',
+                            tooltip: context.l10n.playerNext,
                             onPressed: () => vm.playNextSong(),
                           ),
 
@@ -221,7 +227,7 @@ class ModernFloatingPlayer extends StatelessWidget {
                               color: primary,
                               size: 26,
                             ),
-                            tooltip: '展開佛曲選單',
+                            tooltip: context.l10n.songMenuExpand,
                             onPressed: () => openSongPicker(context),
                           ),
                         ],
@@ -566,7 +572,12 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '${song.artist} · ${song.album} · 每拍 ${(song.effectiveBeatIntervalMs / 1000).toStringAsFixed(2)} 秒',
+                                    context.l10n.playerArtistAlbumBeat(
+                                      song.artist,
+                                      song.album,
+                                      (song.effectiveBeatIntervalMs / 1000)
+                                          .toStringAsFixed(2),
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -703,8 +714,8 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                                   .withValues(alpha: 0.4),
                                         ),
                                         tooltip: releaseMode == ReleaseMode.loop
-                                            ? '單曲循環'
-                                            : '清單播放',
+                                            ? context.l10n.playerLoopOne
+                                            : context.l10n.playerLoopList,
                                         onPressed: () => vm.toggleAudioLoop(),
                                       ),
                                       // 倒退 10 秒
@@ -712,7 +723,7 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                         icon: const Icon(
                                           Icons.replay_10_rounded,
                                         ),
-                                        tooltip: '倒退 10 秒',
+                                        tooltip: context.l10n.playerRewind10,
                                         onPressed: () =>
                                             vm.seekAudioRelative(-10),
                                       ),
@@ -722,7 +733,7 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                           Icons.skip_previous_rounded,
                                           size: 28,
                                         ),
-                                        tooltip: '上一首',
+                                        tooltip: context.l10n.playerPrevious,
                                         onPressed: () => vm.playPreviousSong(),
                                       ),
                                       // 播放 / 暫停
@@ -744,7 +755,9 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                             size: 30,
                                           ),
                                           tooltip:
-                                              isChantPlaying ? '暫停' : '播放',
+                                              isChantPlaying
+                                                  ? context.l10n.commonPause
+                                                  : context.l10n.commonPlay,
                                           onPressed: () =>
                                               vm.toggleChant(currentSongId),
                                         ),
@@ -755,7 +768,7 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                           Icons.skip_next_rounded,
                                           size: 28,
                                         ),
-                                        tooltip: '下一首',
+                                        tooltip: context.l10n.playerNext,
                                         onPressed: () => vm.playNextSong(),
                                       ),
                                       // 快轉 10 秒
@@ -763,7 +776,7 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                         icon: const Icon(
                                           Icons.forward_10_rounded,
                                         ),
-                                        tooltip: '快轉 10 秒',
+                                        tooltip: context.l10n.playerForward10,
                                         onPressed: () =>
                                             vm.seekAudioRelative(10),
                                       ),
@@ -776,7 +789,9 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                           color: primary,
                                         ),
                                         tooltip:
-                                            _isExpanded ? '收合佛曲選單' : '展開佛曲選單',
+                                            _isExpanded
+                                                ? context.l10n.songMenuCollapse
+                                                : context.l10n.songMenuExpand,
                                         onPressed: _toggleSheetExpansion,
                                       ),
                                     ],
@@ -813,8 +828,14 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                           const SizedBox(width: 4),
                                           Text(
                                             _isExpanded
-                                                ? '佛曲選單（共 ${ChantConstants.allSongs.length} 首） · 點擊收合'
-                                                : '上滑展開佛曲選單（共 ${ChantConstants.allSongs.length} 首）',
+                                                ? context.l10n
+                                                    .songMenuHeaderExpanded(
+                                                        ChantConstants
+                                                            .allSongs.length)
+                                                : context.l10n
+                                                    .songMenuHeaderCollapsed(
+                                                        ChantConstants
+                                                            .allSongs.length),
                                             style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w600,
@@ -856,7 +877,8 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                       controller: _searchController,
                                       onTap: _expandSheetIfNeeded,
                                       decoration: InputDecoration(
-                                        hintText: '搜尋佛曲名稱、法師或標籤...',
+                                        hintText:
+                                            context.l10n.songMenuSearchHint,
                                         hintStyle: TextStyle(
                                           fontSize: 13,
                                           color: isDark
@@ -904,7 +926,7 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                   if (_isExpanded) ...[
                                     const SizedBox(width: 8),
                                     IconButton(
-                                      tooltip: '收合回播放器',
+                                      tooltip: context.l10n.songMenuBackToPlayer,
                                       style: IconButton.styleFrom(
                                         backgroundColor: isDark
                                             ? const Color(0xFF242732)
@@ -932,14 +954,18 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                                 children: [
                                   _buildTagChip(
                                     label:
-                                        '全部 (${ChantConstants.allSongs.length})',
+                                        context.l10n.songListAll(
+                                            ChantConstants.allSongs.length),
                                     tagValue: null,
                                   ),
                                   for (final tag in availableTags) ...[
                                     const SizedBox(width: 8),
                                     _buildTagChip(
                                       label:
-                                          '${chantTagLabel(context.l10n, tag)} (${ChantConstants.countSongsByTag(tag)})',
+                                          context.l10n.tagWithCount(
+                                            chantTagLabel(context.l10n, tag),
+                                            ChantConstants.countSongsByTag(tag),
+                                          ),
                                       tagValue: tag,
                                     ),
                                   ],
@@ -959,7 +985,7 @@ class _UnifiedPlayerBottomSheetState extends State<_UnifiedPlayerBottomSheet> {
                           padding: const EdgeInsets.symmetric(vertical: 48),
                           child: Center(
                             child: Text(
-                              '無相符佛曲',
+                              context.l10n.songMenuNoMatch,
                               style: TextStyle(
                                 color: isDark
                                     ? const Color(0xFFA3A199)

@@ -125,7 +125,12 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          '${currentSong.artist} · ${currentSong.album} · 每拍 ${(currentSong.effectiveBeatIntervalMs / 1000).toStringAsFixed(2)} 秒',
+                          context.l10n.playerArtistAlbumBeat(
+                            currentSong.artist,
+                            currentSong.album,
+                            (currentSong.effectiveBeatIntervalMs / 1000)
+                                .toStringAsFixed(2),
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -149,7 +154,9 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
                           : theme.colorScheme.onSurface.withValues(alpha: 0.4),
                       size: 22,
                     ),
-                    tooltip: releaseMode == ReleaseMode.loop ? '單曲循環' : '清單播放',
+                    tooltip: releaseMode == ReleaseMode.loop
+                        ? context.l10n.playerLoopOne
+                        : context.l10n.playerLoopList,
                     onPressed: () => vm.toggleAudioLoop(),
                   ),
                 ],
@@ -249,14 +256,14 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
                   // 上一首
                   IconButton(
                     icon: const Icon(Icons.skip_previous_rounded, size: 28),
-                    tooltip: '上一首',
+                    tooltip: context.l10n.playerPrevious,
                     onPressed: () => vm.playPreviousSong(),
                   ),
 
                   // 倒退 10 秒
                   IconButton(
                     icon: const Icon(Icons.replay_10_rounded, size: 24),
-                    tooltip: '倒退 10 秒',
+                    tooltip: context.l10n.playerRewind10,
                     onPressed: () => vm.seekAudioRelative(-10),
                   ),
 
@@ -283,7 +290,9 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
                         color: isDark ? Colors.black : Colors.white,
                         size: 34,
                       ),
-                      tooltip: isChantPlaying ? '暫停' : '播放',
+                      tooltip: isChantPlaying
+                          ? context.l10n.commonPause
+                          : context.l10n.commonPlay,
                       onPressed: () => vm.toggleChant(currentSongId),
                     ),
                   ),
@@ -291,14 +300,14 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
                   // 快轉 10 秒
                   IconButton(
                     icon: const Icon(Icons.forward_10_rounded, size: 24),
-                    tooltip: '快轉 10 秒',
+                    tooltip: context.l10n.playerForward10,
                     onPressed: () => vm.seekAudioRelative(10),
                   ),
 
                   // 下一首
                   IconButton(
                     icon: const Icon(Icons.skip_next_rounded, size: 28),
-                    tooltip: '下一首',
+                    tooltip: context.l10n.playerNext,
                     onPressed: () => vm.playNextSong(),
                   ),
                 ],
@@ -313,7 +322,8 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: '搜尋 31 首佛曲名稱...',
+              hintText:
+                  context.l10n.playerSearchHint(ChantConstants.allSongs.length),
               hintStyle: TextStyle(
                 fontSize: 13,
                 color: isDark
@@ -367,11 +377,16 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              _buildFilterChip('全部 (${ChantConstants.allSongs.length})', null),
+              _buildFilterChip(
+                  context.l10n.songListAll(ChantConstants.allSongs.length),
+                  null),
               for (final tag in ChantConstants.availableTags) ...[
                 const SizedBox(width: 8),
                 _buildFilterChip(
-                  '${chantTagLabel(context.l10n, tag)} (${ChantConstants.countSongsByTag(tag)})',
+                  context.l10n.tagWithCount(
+                    chantTagLabel(context.l10n, tag),
+                    ChantConstants.countSongsByTag(tag),
+                  ),
                   tag,
                 ),
               ],
@@ -385,7 +400,7 @@ class _ModernPlayerViewState extends State<ModernPlayerView> {
           child: filteredSongs.isEmpty
               ? Center(
                   child: Text(
-                    '無相符的佛曲',
+                    context.l10n.playerNoMatch,
                     style: TextStyle(
                       color: isDark
                           ? const Color(0xFFA3A199)

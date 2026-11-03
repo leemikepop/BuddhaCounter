@@ -20,8 +20,8 @@ class SongListTile extends StatelessWidget {
     required this.onTogglePlay,
   });
 
-  String _formatBeatSec(int beatMs) {
-    return '${(beatMs / 1000).toStringAsFixed(2)}s/拍';
+  String _formatBeatSec(AppLocalizations l10n, int beatMs) {
+    return l10n.songTileBeat((beatMs / 1000).toStringAsFixed(2));
   }
 
   @override
@@ -157,7 +157,7 @@ class SongListTile extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              _formatBeatSec(song.effectiveBeatIntervalMs),
+                              _formatBeatSec(context.l10n, song.effectiveBeatIntervalMs),
                               style: TextStyle(
                                 fontSize: 10,
                                 color: pillFg,
@@ -190,7 +190,9 @@ class SongListTile extends StatelessWidget {
                         : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     size: 28,
                   ),
-                  tooltip: (isSelected && isPlaying) ? '暫停' : '播放',
+                  tooltip: (isSelected && isPlaying)
+                      ? context.l10n.commonPause
+                      : context.l10n.commonPlay,
                   onPressed: onTogglePlay,
                 ),
               ],

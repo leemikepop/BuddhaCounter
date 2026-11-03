@@ -589,6 +589,96 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chantTagSlowSolemn => '慢板';
+
+  @override
+  String get commonPlay => '播放';
+
+  @override
+  String get commonBack => '返回';
+
+  @override
+  String playerArtistAlbumBeat(String artist, String album, String seconds) {
+    return '$artist · $album · 每拍 $seconds 秒';
+  }
+
+  @override
+  String playerArtistBeat(String artist, String seconds) {
+    return '$artist · 每拍 ${seconds}s';
+  }
+
+  @override
+  String miniPlayerSubtitle(String artist, String seconds) {
+    return '$artist · 每拍 ${seconds}s · 點擊展開播放器';
+  }
+
+  @override
+  String get playerLoopOne => '單曲循環';
+
+  @override
+  String get playerLoopList => '清單播放';
+
+  @override
+  String get playerPrevious => '上一首';
+
+  @override
+  String get playerNext => '下一首';
+
+  @override
+  String get playerRewind10 => '倒退 10 秒';
+
+  @override
+  String get playerForward10 => '快轉 10 秒';
+
+  @override
+  String playerSearchHint(int count) {
+    return '搜尋 $count 首佛曲名稱...';
+  }
+
+  @override
+  String songListAll(int count) {
+    return '全部 ($count)';
+  }
+
+  @override
+  String tagWithCount(String tag, int count) {
+    return '$tag ($count)';
+  }
+
+  @override
+  String get playerNoMatch => '無相符的佛曲';
+
+  @override
+  String get songMenuNoMatch => '無相符佛曲';
+
+  @override
+  String get songMenuExpand => '展開佛曲選單';
+
+  @override
+  String get songMenuCollapse => '收合佛曲選單';
+
+  @override
+  String songMenuHeaderExpanded(int count) {
+    return '佛曲選單（共 $count 首） · 點擊收合';
+  }
+
+  @override
+  String songMenuHeaderCollapsed(int count) {
+    return '上滑展開佛曲選單（共 $count 首）';
+  }
+
+  @override
+  String get songMenuSearchHint => '搜尋佛曲名稱、法師或標籤...';
+
+  @override
+  String get songMenuBackToPlayer => '收合回播放器';
+
+  @override
+  String songTileBeat(String seconds) {
+    return '${seconds}s/拍';
+  }
+
+  @override
+  String get legacySongListTitle => '佛曲清單';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1176,6 +1266,96 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get chantTagSlowSolemn => '慢板';
+
+  @override
+  String get commonPlay => '播放';
+
+  @override
+  String get commonBack => '返回';
+
+  @override
+  String playerArtistAlbumBeat(String artist, String album, String seconds) {
+    return '$artist · $album · 每拍 $seconds 秒';
+  }
+
+  @override
+  String playerArtistBeat(String artist, String seconds) {
+    return '$artist · 每拍 ${seconds}s';
+  }
+
+  @override
+  String miniPlayerSubtitle(String artist, String seconds) {
+    return '$artist · 每拍 ${seconds}s · 点击展开播放器';
+  }
+
+  @override
+  String get playerLoopOne => '单曲循环';
+
+  @override
+  String get playerLoopList => '列表播放';
+
+  @override
+  String get playerPrevious => '上一首';
+
+  @override
+  String get playerNext => '下一首';
+
+  @override
+  String get playerRewind10 => '后退 10 秒';
+
+  @override
+  String get playerForward10 => '快进 10 秒';
+
+  @override
+  String playerSearchHint(int count) {
+    return '搜索 $count 首佛曲名称...';
+  }
+
+  @override
+  String songListAll(int count) {
+    return '全部 ($count)';
+  }
+
+  @override
+  String tagWithCount(String tag, int count) {
+    return '$tag ($count)';
+  }
+
+  @override
+  String get playerNoMatch => '无相符的佛曲';
+
+  @override
+  String get songMenuNoMatch => '无相符佛曲';
+
+  @override
+  String get songMenuExpand => '展开佛曲菜单';
+
+  @override
+  String get songMenuCollapse => '收起佛曲菜单';
+
+  @override
+  String songMenuHeaderExpanded(int count) {
+    return '佛曲菜单（共 $count 首） · 点击收起';
+  }
+
+  @override
+  String songMenuHeaderCollapsed(int count) {
+    return '上滑展开佛曲菜单（共 $count 首）';
+  }
+
+  @override
+  String get songMenuSearchHint => '搜索佛曲名称、法师或标签...';
+
+  @override
+  String get songMenuBackToPlayer => '收起回播放器';
+
+  @override
+  String songTileBeat(String seconds) {
+    return '${seconds}s/拍';
+  }
+
+  @override
+  String get legacySongListTitle => '佛曲清单';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
