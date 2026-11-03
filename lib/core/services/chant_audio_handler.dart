@@ -9,9 +9,13 @@ import '../constants/chant_songs.dart';
 /// 佛曲媒體播放會話處理器 (整合 Android MediaSession 與 iOS NowPlayingCenter / RemoteCommandCenter)
 /// 支援系統通知欄、鎖定畫面、控制中心、動態島、耳機線控 (AirPods) 播放/暫停/上一首/下一首與進度控制
 class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
-  final AudioPlayer _musicPlayer = AudioPlayer();
+  final AudioPlayer _musicPlayer = AudioPlayer(playerId: 'chant_music_player');
+  final AudioPlayer _standbyPlayer = AudioPlayer(playerId: 'chant_standby_player');
+  late AudioPlayer _activePlayer = _musicPlayer;
 
-  AudioPlayer get musicPlayer => _musicPlayer;
+  AudioPlayer get musicPlayer => _activePlayer;
+
+  File? _currentSongFile;
 
   bool _isPlaying = false;
   bool get isPlaying => _isPlaying;
@@ -88,69 +92,93 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     // 改為 250ms 定時更新，大幅降低 Platform MethodChannel 與主執行緒負擔
     _positionUpdater = TimerPositionUpdater(
       interval: const Duration(milliseconds: 250),
-      getPosition: _musicPlayer.getCurrentPosition,
+      getPosition: () => _activePlayer.getCurrentPosition(),
     );
     _musicPlayer.positionUpdater = _positionUpdater;
+    _standbyPlayer.positionUpdater = null;
 
-    // 監聽播放器狀態
-    _musicPlayer.onPlayerStateChanged.listen((state) {
-      if (_isSwitchingTrack && state != PlayerState.playing) {
-        // 切歌準備期間忽略底層 MediaPlayer reset/stop 產生的暫態非播放事件，避免誤觸暫停迴圈
-        return;
-      }
-      if (state == PlayerState.completed && _releaseMode == ReleaseMode.loop) {
-        // 單曲循環模式下原生底層（iOS AVPlayerLooper 及 Android MediaPlayer）會自動無縫銜接重播，
-        // 忽略 completed 暫態以避免誤切暫停，並確保 positionUpdater 持續運行
-        _positionUpdater?.start();
-        return;
-      }
-      final nextPlaying = (state == PlayerState.playing);
-      _setPlayState(nextPlaying);
-      _broadcastPlaybackState();
-    });
-
-    // 監聽播放進度：Android MediaSession 與 iOS NowPlayingCenter 會依 updatePosition + speed 自動推算系統通知欄進度，
-    // 切勿於每次進度更新都呼叫 _broadcastPlaybackState()，否則會造成 Binder/IPC 與主執行緒嚴重阻塞；
-    // 僅在單曲循環回到開頭時同步一次系統進度
-    _musicPlayer.onPositionChanged.listen((pos) {
-      final prev = _currentPosition;
-      _currentPosition = pos;
-      if (!_positionController.isClosed) {
-        _positionController.add(pos);
-      }
-      if (_isPlaying &&
-          prev > const Duration(seconds: 2) &&
-          pos < const Duration(milliseconds: 800)) {
+    void bindListeners(AudioPlayer player) {
+      // 監聽播放器狀態
+      player.onPlayerStateChanged.listen((state) {
+        if (player != _activePlayer) return;
+        if (_isSwitchingTrack && state != PlayerState.playing) {
+          // 切歌準備期間忽略底層 MediaPlayer reset/stop 產生的暫態非播放事件，避免誤觸暫停迴圈
+          return;
+        }
+        if (state == PlayerState.completed && _releaseMode == ReleaseMode.loop) {
+          _positionUpdater?.start();
+          return;
+        }
+        final nextPlaying = (state == PlayerState.playing);
+        _setPlayState(nextPlaying);
         _broadcastPlaybackState();
-      }
-    });
+      });
 
-    // 監聽長度更新
-    _musicPlayer.onDurationChanged.listen((dur) {
-      if (dur > Duration.zero) {
-        _currentDuration = dur;
-        if (!_durationController.isClosed) {
-          _durationController.add(dur);
+      // 監聽播放進度：Android MediaSession 與 iOS NowPlayingCenter 會依 updatePosition + speed 自動推算系統通知欄進度，
+      // 切勿於每次進度更新都呼叫 _broadcastPlaybackState()，否則會造成 Binder/IPC 與主執行緒嚴重阻塞；
+      // 僅在單曲循環回到開頭時同步一次系統進度
+      player.onPositionChanged.listen((pos) {
+        if (player != _activePlayer) return;
+        final prev = _currentPosition;
+        _currentPosition = pos;
+        if (!_positionController.isClosed) {
+          _positionController.add(pos);
         }
-        if (mediaItem.value != null) {
-          mediaItem.add(mediaItem.value!.copyWith(duration: dur));
+        if (_isPlaying &&
+            prev > const Duration(seconds: 2) &&
+            pos < const Duration(milliseconds: 800)) {
+          _broadcastPlaybackState();
         }
-      }
-    });
+      });
 
-    // 監聽播放完成
-    _musicPlayer.onPlayerComplete.listen((_) async {
-      if (!_isPlaying || _isSwitchingTrack) return;
-      if (_releaseMode == ReleaseMode.loop) {
-        // 在單曲循環模式下原生底層（iOS AVPlayerLooper 及 Android MediaPlayer）
-        // 均已原生無縫循環。若在極端情況下收到 complete 事件，確保計時器維持運行，
-        // 且切勿重複呼叫 seek(0) 或 resume() 打斷正在進行的音訊管線。
-        _positionUpdater?.start();
-        return;
-      } else {
-        await skipToNext();
-      }
-    });
+      // 監聽長度更新
+      player.onDurationChanged.listen((dur) {
+        if (dur > Duration.zero) {
+          _currentDuration = dur;
+          if (!_durationController.isClosed) {
+            _durationController.add(dur);
+          }
+          if (mediaItem.value != null) {
+            mediaItem.add(mediaItem.value!.copyWith(duration: dur));
+          }
+        }
+      });
+
+      // 監聽播放完成
+      player.onPlayerComplete.listen((_) async {
+        if (!_isPlaying || _isSwitchingTrack) return;
+        if (player != _activePlayer) return;
+        if (_releaseMode == ReleaseMode.loop) {
+          if (Platform.isIOS) {
+            // iOS 雙播放器無縫乒乓緩衝（Ping-Pong Double Buffering）：
+            // 備援播放器已在後台完成音檔載入與解碼並定位在第 0 幀，
+            // 立即無延遲啟動備援播放器，徹底規避 AVPlayer seek(0) 產生的 800ms 解碼空檔！
+            final nextPlayer =
+                (_activePlayer == _musicPlayer) ? _standbyPlayer : _musicPlayer;
+            final prevPlayer = _activePlayer;
+            _activePlayer = nextPlayer;
+            _positionUpdater?.start();
+            nextPlayer.resume().catchError((_) {});
+            _currentPosition = Duration.zero;
+            _broadcastPlaybackState();
+            if (_currentSongFile != null) {
+              prevPlayer
+                  .setSource(DeviceFileSource(_currentSongFile!.path,
+                      mimeType: 'audio/ogg'))
+                  .catchError((_) {});
+            }
+            return;
+          }
+          _positionUpdater?.start();
+          return;
+        } else {
+          await skipToNext();
+        }
+      });
+    }
+
+    bindListeners(_musicPlayer);
+    bindListeners(_standbyPlayer);
 
     // 廣播初始佇列 (Queue)
     final queueItems = ChantConstants.allSongs.map((s) {
@@ -164,15 +192,21 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     queue.add(queueItems);
 
     try {
-      await _musicPlayer.setReleaseMode(ReleaseMode.loop);
+      if (Platform.isIOS) {
+        await _musicPlayer.setReleaseMode(ReleaseMode.stop);
+        await _standbyPlayer.setReleaseMode(ReleaseMode.stop);
+      } else {
+        await _musicPlayer.setReleaseMode(ReleaseMode.loop);
+      }
       await _musicPlayer.setAudioContext(_musicAudioContext);
+      await _standbyPlayer.setAudioContext(_musicAudioContext);
     } catch (_) {}
   }
 
   void _broadcastPlaybackState() {
     final isReady = _isPlaying ||
-        _musicPlayer.state == PlayerState.playing ||
-        _musicPlayer.state == PlayerState.paused;
+        _activePlayer.state == PlayerState.playing ||
+        _activePlayer.state == PlayerState.paused;
     final processingState =
         isReady ? AudioProcessingState.ready : AudioProcessingState.idle;
 
@@ -276,14 +310,30 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       final file = await _prepareSongFile(song);
       if (reqId != _playRequestId || !_isPlaying) return;
 
-      await _musicPlayer.play(
-        DeviceFileSource(file.path, mimeType: 'audio/ogg'),
-      );
-      if (reqId != _playRequestId) return;
+      _currentSongFile = file;
+      _activePlayer = _musicPlayer;
+      _standbyPlayer.stop().catchError((_) {});
+
+      if (Platform.isIOS && _releaseMode == ReleaseMode.loop) {
+        await _musicPlayer.setReleaseMode(ReleaseMode.stop).catchError((_) {});
+        await _standbyPlayer.setReleaseMode(ReleaseMode.stop).catchError((_) {});
+        await _musicPlayer.play(
+          DeviceFileSource(file.path, mimeType: 'audio/ogg'),
+        );
+        if (reqId != _playRequestId) return;
+        _standbyPlayer
+            .setSource(DeviceFileSource(file.path, mimeType: 'audio/ogg'))
+            .catchError((_) {});
+      } else {
+        await _musicPlayer.play(
+          DeviceFileSource(file.path, mimeType: 'audio/ogg'),
+        );
+        if (reqId != _playRequestId) return;
+        await _musicPlayer.setReleaseMode(_releaseMode).catchError((_) {});
+      }
 
       _isSwitchingTrack = false;
-      await _musicPlayer.setReleaseMode(_releaseMode).catchError((_) {});
-      final dur = await _musicPlayer.getDuration().catchError((_) => null);
+      final dur = await _activePlayer.getDuration().catchError((_) => null);
       if (reqId != _playRequestId) return;
       if (dur != null && dur > Duration.zero) {
         _currentDuration = dur;
@@ -305,12 +355,12 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> play() async {
-    if (_musicPlayer.state == PlayerState.paused) {
+    if (_activePlayer.state == PlayerState.paused) {
       ++_playRequestId;
       _isSwitchingTrack = false;
       _setPlayState(true);
       _broadcastPlaybackState();
-      _musicPlayer.resume().catchError((_) {});
+      _activePlayer.resume().catchError((_) {});
     } else {
       await playSong(_currentSongId);
     }
@@ -322,7 +372,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     _isSwitchingTrack = false;
     _setPlayState(false);
     _broadcastPlaybackState();
-    _musicPlayer.pause().catchError((_) {});
+    _activePlayer.pause().catchError((_) {});
   }
 
   @override
@@ -335,6 +385,8 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       _positionController.add(Duration.zero);
     }
     _musicPlayer.stop().catchError((_) {});
+    _standbyPlayer.stop().catchError((_) {});
+    _activePlayer = _musicPlayer;
     playbackState.add(playbackState.value.copyWith(
       processingState: AudioProcessingState.idle,
       playing: false,
@@ -349,7 +401,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     if (!_positionController.isClosed) {
       _positionController.add(position);
     }
-    await _musicPlayer.seek(position).catchError((_) {});
+    await _activePlayer.seek(position).catchError((_) {});
     _broadcastPlaybackState();
   }
 
@@ -374,7 +426,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
         await playSong(songId);
       }
     } else {
-      if (_currentSongId == songId && _musicPlayer.state == PlayerState.paused) {
+      if (_currentSongId == songId && _activePlayer.state == PlayerState.paused) {
         await play();
       } else {
         await playSong(songId);
@@ -384,13 +436,21 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
 
   Future<void> setReleaseMode(ReleaseMode mode) async {
     _releaseMode = mode;
-    await _musicPlayer.setReleaseMode(mode);
+    if (Platform.isIOS) {
+      final effectiveMode =
+          (mode == ReleaseMode.loop) ? ReleaseMode.stop : mode;
+      await _musicPlayer.setReleaseMode(effectiveMode);
+      await _standbyPlayer.setReleaseMode(effectiveMode);
+    } else {
+      await _musicPlayer.setReleaseMode(mode);
+    }
   }
 
   Future<void> disposePlayer() async {
     _positionUpdater?.stop();
     await stop();
     await _musicPlayer.dispose();
+    await _standbyPlayer.dispose();
     await _currentSongController.close();
     await _playStateController.close();
     await _positionController.close();
