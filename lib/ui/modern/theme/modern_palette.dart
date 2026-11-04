@@ -34,6 +34,13 @@ class ModernPalette {
   Color get chipBorder => _pick(0xFFEBE3D5, 0xFF323642);
   Color get outlinedButtonBorder => _pick(0xFFDED6C7, 0xFF3B3F4E);
 
+  // --- 功課月曆卡片 ---
+  Color get panel => _pick(0xFFFCFAF7, 0xFF1E212A);
+  Color get panelBorder => _pick(0xFFE8E0D4, 0xFF2C2F3A);
+
+  /// 已達成每日目標 (月曆格、進度條)
+  static const Color achieved = Color(0xFFF59E0B);
+
   // --- 浮動播放條 ---
   Color get raisedCard => isDark ? const Color(0xFF20232B) : Colors.white;
   Color get raisedCardBorder => _pick(0xFFEBE3D5, 0xFF323644);
