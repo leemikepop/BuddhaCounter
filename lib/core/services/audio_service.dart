@@ -122,7 +122,8 @@ class AudioService {
 
   ReleaseMode get releaseMode => _handler.releaseMode;
 
-  Future<void> setReleaseMode(ReleaseMode mode) => _handler.setReleaseMode(mode);
+  Future<void> setReleaseMode(ReleaseMode mode) =>
+      _handler.setReleaseMode(mode);
 
   void dispose() {
     for (final player in _sfxPool) {

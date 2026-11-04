@@ -268,7 +268,8 @@ class AudioMetadataReader {
     return raw.replaceAll('\x00', '').trim();
   }
 
-  static String _decodeUtf16(Uint8List bytes, {required bool bigEndianDefault}) {
+  static String _decodeUtf16(Uint8List bytes,
+      {required bool bigEndianDefault}) {
     if (bytes.length < 2) return '';
     var offset = 0;
     var isBigEndian = bigEndianDefault;
@@ -290,4 +291,3 @@ class AudioMetadataReader {
     return String.fromCharCodes(codeUnits);
   }
 }
-

@@ -45,9 +45,8 @@ WidgetTexts buildWidgetTexts(
             targetCount,
           )
         : l10n.widgetTodayNoGoal(todayCount),
-    streakText: streakDays > 0
-        ? l10n.widgetStreak(streakDays)
-        : l10n.widgetStreakNone,
+    streakText:
+        streakDays > 0 ? l10n.widgetStreak(streakDays) : l10n.widgetStreakNone,
     widgetTitle: l10n.appTitle,
     weeklyText: l10n.widgetWeekly(weeklyCount),
     monthlyText: l10n.widgetMonthly(monthlyCount),
@@ -142,16 +141,31 @@ class WidgetService {
       for (final gid in groups) {
         try {
           await HomeWidget.setAppGroupId(gid);
-          await HomeWidget.saveWidgetData<int>('today_count', todayCount, appGroupId: gid);
-          await HomeWidget.saveWidgetData<int>('target_count', targetCount, appGroupId: gid);
-          await HomeWidget.saveWidgetData<int>('weekly_count', weeklyCount, appGroupId: gid);
-          await HomeWidget.saveWidgetData<int>('monthly_count', monthlyCount, appGroupId: gid);
-          await HomeWidget.saveWidgetData<int>('streak_days', streakDays, appGroupId: gid);
-          await HomeWidget.saveWidgetData<String>('date_display', texts.dateDisplay, appGroupId: gid);
-          await HomeWidget.saveWidgetData<String>('widget_title', texts.widgetTitle, appGroupId: gid);
-          await HomeWidget.saveWidgetData<String>('weekly_text', texts.weeklyText, appGroupId: gid);
-          await HomeWidget.saveWidgetData<String>('monthly_text', texts.monthlyText, appGroupId: gid);
-          await HomeWidget.saveWidgetData<String>('refresh_label', texts.refreshLabel, appGroupId: gid);
+          await HomeWidget.saveWidgetData<int>('today_count', todayCount,
+              appGroupId: gid);
+          await HomeWidget.saveWidgetData<int>('target_count', targetCount,
+              appGroupId: gid);
+          await HomeWidget.saveWidgetData<int>('weekly_count', weeklyCount,
+              appGroupId: gid);
+          await HomeWidget.saveWidgetData<int>('monthly_count', monthlyCount,
+              appGroupId: gid);
+          await HomeWidget.saveWidgetData<int>('streak_days', streakDays,
+              appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>(
+              'date_display', texts.dateDisplay,
+              appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>(
+              'widget_title', texts.widgetTitle,
+              appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>(
+              'weekly_text', texts.weeklyText,
+              appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>(
+              'monthly_text', texts.monthlyText,
+              appGroupId: gid);
+          await HomeWidget.saveWidgetData<String>(
+              'refresh_label', texts.refreshLabel,
+              appGroupId: gid);
           await HomeWidget.saveWidgetData<String>(
             'streak_text',
             texts.streakText,

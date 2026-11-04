@@ -1,10 +1,12 @@
 import 'dart:ui';
 
 /// 繁體中文 (台灣、香港、澳門)
-const Locale kZhHant = Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant');
+const Locale kZhHant =
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant');
 
 /// 簡體中文 (馬來西亞、新加坡、中國)
-const Locale kZhHans = Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans');
+const Locale kZhHans =
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans');
 
 /// 英文 (其他所有地區)
 const Locale kEn = Locale('en');

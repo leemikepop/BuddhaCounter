@@ -125,7 +125,9 @@ class _SwipeableHuiXiangCarouselState extends State<SwipeableHuiXiangCarousel> {
 
   void _jumpToItem(int targetIdx) {
     final count = widget.items.length;
-    if (!_pageController.hasClients || count <= 1 || targetIdx == _activeIndex) {
+    if (!_pageController.hasClients ||
+        count <= 1 ||
+        targetIdx == _activeIndex) {
       return;
     }
     final currentPage =

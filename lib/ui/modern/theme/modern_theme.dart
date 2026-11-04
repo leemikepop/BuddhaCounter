@@ -8,7 +8,7 @@ class ModernTheme {
   static const Color lightCard = Color(0xFFF5EFE6);
   static const Color lightCardBorder = Color(0xFFEBE3D5);
   static const Color lightPrimary = Color(0xFF8C5E32); // 沉木棕
-  static const Color lightAccent = Color(0xFFC59F54);  // 沉香金
+  static const Color lightAccent = Color(0xFFC59F54); // 沉香金
   static const Color lightTextPrimary = Color(0xFF2C2825); // 墨黑
   static const Color lightTextSecondary = Color(0xFF756F68); // 淡墨灰
   static const Color lightDivider = Color(0xFFEBE4D8);

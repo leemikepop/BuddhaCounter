@@ -157,7 +157,8 @@ class SongListTile extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              _formatBeatSec(context.l10n, song.effectiveBeatIntervalMs),
+                              _formatBeatSec(
+                                  context.l10n, song.effectiveBeatIntervalMs),
                               style: TextStyle(
                                 fontSize: 10,
                                 color: pillFg,
