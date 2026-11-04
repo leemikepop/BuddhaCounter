@@ -15,9 +15,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonCancel => '取消';
 
   @override
-  String get commonConfirm => '確認';
-
-  @override
   String get commonSet => '設定';
 
   @override
@@ -563,11 +560,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String miniPlayerSubtitle(String artist, String seconds) {
-    return '$artist · 每拍 ${seconds}s · 點擊展開播放器';
-  }
-
-  @override
   String get playerLoopOne => '單曲循環';
 
   @override
@@ -586,11 +578,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get playerForward10 => '快轉 10 秒';
 
   @override
-  String playerSearchHint(int count) {
-    return '搜尋 $count 首佛曲名稱...';
-  }
-
-  @override
   String songListAll(int count) {
     return '全部 ($count)';
   }
@@ -599,9 +586,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String tagWithCount(String tag, int count) {
     return '$tag ($count)';
   }
-
-  @override
-  String get playerNoMatch => '無相符的佛曲';
 
   @override
   String get songMenuNoMatch => '無相符佛曲';
@@ -766,9 +750,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get legacyTryModern => '立即體驗新版';
 
   @override
-  String get legacyUnlockedToast => '已解除鎖定';
-
-  @override
   String get legacySwitchToModern => '切換至現代模式';
 
   @override
@@ -918,9 +899,6 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get commonCancel => '取消';
-
-  @override
-  String get commonConfirm => '确认';
 
   @override
   String get commonSet => '设定';
@@ -1468,11 +1446,6 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   }
 
   @override
-  String miniPlayerSubtitle(String artist, String seconds) {
-    return '$artist · 每拍 ${seconds}s · 点击展开播放器';
-  }
-
-  @override
   String get playerLoopOne => '单曲循环';
 
   @override
@@ -1491,11 +1464,6 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get playerForward10 => '快进 10 秒';
 
   @override
-  String playerSearchHint(int count) {
-    return '搜索 $count 首佛曲名称...';
-  }
-
-  @override
   String songListAll(int count) {
     return '全部 ($count)';
   }
@@ -1504,9 +1472,6 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String tagWithCount(String tag, int count) {
     return '$tag ($count)';
   }
-
-  @override
-  String get playerNoMatch => '无相符的佛曲';
 
   @override
   String get songMenuNoMatch => '无相符佛曲';
@@ -1669,9 +1634,6 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get legacyTryModern => '立即体验新版';
-
-  @override
-  String get legacyUnlockedToast => '已解除锁定';
 
   @override
   String get legacySwitchToModern => '切换至现代模式';

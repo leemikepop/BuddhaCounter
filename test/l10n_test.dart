@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:buddha_counter/core/services/audio_service.dart';
+import 'package:buddha_counter/core/services/notification_service.dart';
 import 'package:buddha_counter/core/services/storage_service.dart';
-import 'package:buddha_counter/features/counter/counter_view_model.dart';
+import 'package:buddha_counter/app/app_controllers.dart';
 import 'package:buddha_counter/l10n/l10n.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_settings_screen.dart';
 import 'package:buddha_counter/ui/modern/screens/modern_counter_screen.dart';
@@ -16,7 +17,7 @@ import 'package:buddha_counter/l10n/l10n_dates.dart';
 import 'package:buddha_counter/l10n/chant_tag_labels.dart';
 import 'package:buddha_counter/core/constants/chant_songs.dart';
 import 'package:buddha_counter/core/content/chant_content.dart';
-import 'package:buddha_counter/ui/modern/views/modern_player_view.dart';
+import 'package:buddha_counter/ui/modern/widgets/player_sheet/player_sheet.dart';
 import 'package:buddha_counter/ui/modern/widgets/song_list_tile.dart';
 import 'package:buddha_counter/ui/modern/views/modern_practice_view.dart';
 import 'package:buddha_counter/ui/modern/widgets/modern_guide_dialog.dart';
@@ -91,38 +92,38 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
       const device = [Locale('en', 'MY')];
-      final vm = CounterViewModel(
+      final app = AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: device,
       );
-      expect(vm.appLanguage, AppLanguage.system);
-      expect(vm.locale, kEn);
+      expect(app.locale.appLanguage, AppLanguage.system);
+      expect(app.locale.locale, kEn);
 
-      vm.setAppLanguage(AppLanguage.zhHans);
-      expect(vm.locale, kZhHans);
+      app.locale.setAppLanguage(AppLanguage.zhHans);
+      expect(app.locale.locale, kZhHans);
 
-      final vm2 = CounterViewModel(
+      final app2 = AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: device,
       );
-      expect(vm2.appLanguage, AppLanguage.zhHans);
-      expect(vm2.locale, kZhHans);
+      expect(app2.locale.appLanguage, AppLanguage.zhHans);
+      expect(app2.locale.locale, kZhHans);
       expect(storage.getAppLanguage(), AppLanguage.zhHans);
 
-      vm2.setAppLanguage(AppLanguage.system);
-      vm2.updateDeviceLocales(const [Locale('zh', 'HK')]);
-      expect(vm2.locale, kZhHant);
+      app2.locale.setAppLanguage(AppLanguage.system);
+      app2.locale.updateDeviceLocales(const [Locale('zh', 'HK')]);
+      expect(app2.locale.locale, kZhHant);
     });
   });
 
   group('modern shell and manual counter', () {
-    Future<CounterViewModel> vmFor(Locale device) async {
+    Future<AppControllers> appFor(Locale device) async {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
       await storage.setSeenModernGuide(true);
-      return CounterViewModel(
+      return AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: [device],
@@ -130,14 +131,14 @@ void main() {
     }
 
     testWidgets('manual counter renders in en and zh_Hans', (tester) async {
-      final vm = await vmFor(const Locale('en'));
+      final app = await appFor(const Locale('en'));
       await tester.pumpWidget(
-          liveLocaleApp(vm, const Scaffold(body: ModernCounterView())));
+          liveLocaleApp(app, const Scaffold(body: ModernCounterView())));
       await tester.pump();
       expect(find.text('Goal 108'), findsOneWidget);
       expect(find.text('Goal 108 · 0%'), findsOneWidget);
 
-      vm.setAppLanguage(AppLanguage.zhHans);
+      app.locale.setAppLanguage(AppLanguage.zhHans);
       await tester.pumpAndSettle();
       expect(find.text('目标 108'), findsOneWidget);
       expect(find.text('声 · 拜'), findsOneWidget);
@@ -148,9 +149,9 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final vm = await vmFor(const Locale('en'));
-      vm.setUiMode(AppUiMode.modern);
-      await tester.pumpWidget(liveLocaleApp(vm, const ModernCounterScreen()));
+      final app = await appFor(const Locale('en'));
+      app.settings.setUiMode(AppUiMode.modern);
+      await tester.pumpWidget(liveLocaleApp(app, const ModernCounterScreen()));
       await tester.pumpAndSettle();
       for (final label in ['Manual', 'Auto', 'Dedication', 'Calendar']) {
         expect(find.text(label), findsWidgets, reason: label);
@@ -166,14 +167,14 @@ void main() {
         StorageService.keyAutoCounter: 27,
       });
       final storage = await StorageService.init();
-      final vm = CounterViewModel(
+      final app = AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: const [Locale('en', 'US')],
       );
-      vm.setAutoTargetCount(108);
+      app.autoCount.setTargetCount(108);
       await tester.pumpWidget(
-          liveLocaleApp(vm, const Scaffold(body: ModernTimerView())));
+          liveLocaleApp(app, const Scaffold(body: ModernTimerView())));
       await tester.pump();
 
       expect(find.text('Goal 108'), findsOneWidget);
@@ -182,12 +183,12 @@ void main() {
       expect(find.text('Reset'), findsOneWidget);
       expect(find.text('Start'), findsOneWidget);
 
-      vm.setAutoStopMinutes(30);
+      app.autoCount.setStopMinutes(30);
       await tester.pump();
       expect(find.text('30 min'), findsOneWidget);
       expect(find.text('Timer 30 min · 30 min left'), findsOneWidget);
 
-      vm.clearAutoStopCondition();
+      app.autoCount.clearStopCondition();
       await tester.pump();
       expect(find.text('Continuous'), findsOneWidget);
     });
@@ -202,13 +203,13 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
-      final vm = CounterViewModel(
+      final app = AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: const [Locale('en')],
       );
       await tester.pumpWidget(
-          liveLocaleApp(vm, const Scaffold(body: ModernCalendarView())));
+          liveLocaleApp(app, const Scaffold(body: ModernCalendarView())));
       await tester.pumpAndSettle();
 
       final now = DateTime.now();
@@ -283,34 +284,36 @@ void main() {
           expect(chantTagLabel(l10n, t), isNotEmpty);
         }
       }
-      expect(chantTagLabel(lookupAppLocalizations(kZhHant),
-          ChantTag.fourCharAmitabha), '四字彌陀');
+      expect(
+          chantTagLabel(
+              lookupAppLocalizations(kZhHant), ChantTag.fourCharAmitabha),
+          '四字彌陀');
     });
 
     test('view model applies content locale on language change', () async {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
-      final vm = CounterViewModel(
+      final app = AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: const [Locale('zh', 'TW')],
       );
       expect(ChantConstants.huiXiangItems.first.title, '大回向西方文');
-      vm.setAppLanguage(AppLanguage.zhHans);
-      expect(ChantConstants.huiXiangItems.first.verses.first,
-          startsWith('愿我临终'));
+      app.locale.setAppLanguage(AppLanguage.zhHans);
+      expect(
+          ChantConstants.huiXiangItems.first.verses.first, startsWith('愿我临终'));
     });
   });
 
   group('player and song lists', () {
-    Future<CounterViewModel> zhVm(WidgetTester tester) async {
+    Future<AppControllers> zhVm(WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
-      return CounterViewModel(
+      return AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: const [Locale('zh', 'TW')],
@@ -324,9 +327,9 @@ void main() {
         ));
 
     testWidgets('tag filter survives language switch', (tester) async {
-      final vm = await zhVm(tester);
-      await tester.pumpWidget(
-          liveLocaleApp(vm, const Scaffold(body: ModernPlayerView())));
+      final app = await zhVm(tester);
+      await tester.pumpWidget(liveLocaleApp(
+          app, const Scaffold(body: PlayerSheet(initiallyExpanded: true))));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('四字彌陀 (12)'));
@@ -334,7 +337,7 @@ void main() {
       final zhCount = find.byType(SongListTile).evaluate().length;
       expect(zhCount, 12);
 
-      vm.setAppLanguage(AppLanguage.en);
+      app.locale.setAppLanguage(AppLanguage.en);
       await tester.pumpAndSettle();
       expect(chipWith(tester, '4-char Amitabha (12)').selected, isTrue);
       expect(chipWith(tester, 'All (31)').selected, isFalse);
@@ -343,13 +346,13 @@ void main() {
     });
 
     testWidgets('english search matches localized titles', (tester) async {
-      final vm = await zhVm(tester);
-      vm.setAppLanguage(AppLanguage.en);
-      await tester.pumpWidget(
-          liveLocaleApp(vm, const Scaffold(body: ModernPlayerView())));
+      final app = await zhVm(tester);
+      app.locale.setAppLanguage(AppLanguage.en);
+      await tester.pumpWidget(liveLocaleApp(
+          app, const Scaffold(body: PlayerSheet(initiallyExpanded: true))));
       await tester.pumpAndSettle();
 
-      expect(find.text('Search 31 chants...'), findsOneWidget);
+      expect(find.text('Search title, master or tag...'), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'Ksitigarbha');
       await tester.pumpAndSettle();
       expect(find.byType(SongListTile), findsOneWidget);
@@ -370,14 +373,14 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
-      final vm = CounterViewModel(
+      final app = AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: const [Locale('zh', 'TW')],
       );
-      vm.setAppLanguage(AppLanguage.en);
+      app.locale.setAppLanguage(AppLanguage.en);
       await tester.pumpWidget(
-          liveLocaleApp(vm, const Scaffold(body: ModernPracticeView())));
+          liveLocaleApp(app, const Scaffold(body: ModernPracticeView())));
       await tester.pump();
       await tester.pump();
 
@@ -391,13 +394,13 @@ void main() {
     testWidgets('guide dialog renders in Simplified Chinese', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
-      final vm = CounterViewModel(
+      final app = AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: const [Locale('zh', 'CN')],
       );
       await tester.pumpWidget(liveLocaleApp(
-          vm, const Scaffold(body: Center(child: ModernGuideDialog()))));
+          app, const Scaffold(body: Center(child: ModernGuideDialog()))));
       await tester.pump();
       expect(find.text('开始精进'), findsOneWidget);
       expect(find.text('每日功课表记'), findsOneWidget);
@@ -405,7 +408,7 @@ void main() {
   });
 
   group('classic mode screens', () {
-    Future<CounterViewModel> enVm(WidgetTester tester) async {
+    Future<AppControllers> enVm(WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -413,7 +416,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
       await storage.setOrientationLocked(false);
-      return CounterViewModel(
+      return AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: const [Locale('en', 'GB')],
@@ -422,18 +425,18 @@ void main() {
 
     testWidgets('legacy counter, settings and about render in English',
         (tester) async {
-      final vm = await enVm(tester);
-      await tester.pumpWidget(liveLocaleApp(vm, const LegacyCounterScreen()));
+      final app = await enVm(tester);
+      await tester.pumpWidget(liveLocaleApp(app, const LegacyCounterScreen()));
       await tester.pump();
       expect(find.text('Manual'), findsOneWidget);
       expect(find.text('Namo Amitabha Buddha'), findsWidgets);
 
-      await tester.pumpWidget(liveLocaleApp(vm, const LegacySettingsScreen()));
+      await tester.pumpWidget(liveLocaleApp(app, const LegacySettingsScreen()));
       await tester.pump();
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('Wooden fish 1'), findsOneWidget);
 
-      await tester.pumpWidget(liveLocaleApp(vm, const LegacyAboutScreen()));
+      await tester.pumpWidget(liveLocaleApp(app, const LegacyAboutScreen()));
       await tester.pump();
       expect(find.text("A-Chung's Corner"), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -447,8 +450,10 @@ void main() {
           expect(soundEffectLabel(l10n, t), isNotEmpty);
         }
       }
-      expect(soundEffectLabel(lookupAppLocalizations(kZhHant),
-          SoundEffectType.woodfish2), '木魚二 (經典原音)');
+      expect(
+          soundEffectLabel(
+              lookupAppLocalizations(kZhHant), SoundEffectType.woodfish2),
+          '木魚二 (經典原音)');
     });
   });
 
@@ -504,16 +509,18 @@ void main() {
     test('language change is pushed to records and notifications', () async {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
-      final vm = CounterViewModel(
+      final notifications = NotificationService(storage);
+      final app = AppControllers.create(
         storage: storage,
         audio: AudioService(),
+        notifications: notifications,
         deviceLocales: const [Locale('zh', 'TW')],
       );
-      expect(vm.practiceRecords.locale, kZhHant);
-      expect(vm.notifications.locale, kZhHant);
-      vm.setAppLanguage(AppLanguage.en);
-      expect(vm.practiceRecords.locale, kEn);
-      expect(vm.notifications.locale, kEn);
+      expect(app.practice.records.locale, kZhHant);
+      expect(notifications.locale, kZhHant);
+      app.locale.setAppLanguage(AppLanguage.en);
+      expect(app.practice.records.locale, kEn);
+      expect(notifications.locale, kEn);
     });
 
     testWidgets(
@@ -522,31 +529,31 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
       final handler = _RefreshCountingHandler();
-      final vm = CounterViewModel(
+      final app = AppControllers.create(
         storage: storage,
         audio: AudioService(handler: handler),
         deviceLocales: const [Locale('zh', 'TW')],
       );
-      final markers =
-          ChantConstants.getSongById(vm.currentSongId).phraseMarkersMs;
+      final markers = ChantConstants.getSongById(app.playback.currentSongId)
+          .phraseMarkersMs;
       Future<void> emit(int ms) async {
         handler.positions.add(Duration(milliseconds: ms));
         await tester.pump();
       }
 
-      vm.clearAutoStopCondition();
-      vm.resetAutoCount();
-      vm.startAutoCount();
+      app.autoCount.clearStopCondition();
+      app.practice.resetAutoCount();
+      app.autoCount.start();
       await tester.pump();
       await emit(0);
       await emit(markers[0] + 10);
       await emit(markers[1] + 10);
-      expect(vm.autoCount, 2);
+      expect(app.practice.autoCount, 2);
 
       final before = handler.refreshCalls;
-      vm.setAppLanguage(AppLanguage.en);
+      app.locale.setAppLanguage(AppLanguage.en);
       await tester.pump();
-      expect(vm.isAutoCounting, isTrue);
+      expect(app.autoCount.isCounting, isTrue);
       expect(handler.refreshCalls, before + 1);
       expect(handler.queue.value.first.title, contains('Amitabha'));
       if (handler.mediaItem.value != null) {
@@ -554,9 +561,9 @@ void main() {
       }
 
       await emit(markers[2] + 10);
-      expect(vm.autoCount, 3);
-      vm.stopAutoCount();
-      vm.dispose();
+      expect(app.practice.autoCount, 3);
+      app.autoCount.stop();
+      app.dispose();
     });
   });
 
@@ -566,10 +573,15 @@ void main() {
       realFont = await loadRealLatinFont();
     });
 
-    for (final lang in [AppLanguage.en, AppLanguage.zhHans, AppLanguage.zhHant]) {
+    for (final lang in [
+      AppLanguage.en,
+      AppLanguage.zhHans,
+      AppLanguage.zhHant
+    ]) {
       testWidgets('no overflow in ${lang.storageValue}', (tester) async {
         if (!realFont) {
-          markTestSkipped('Flutter SDK Roboto not found; widths would be unrealistic');
+          markTestSkipped(
+              'Flutter SDK Roboto not found; widths would be unrealistic');
           return;
         }
         tester.view.physicalSize = const Size(320, 640);
@@ -583,17 +595,18 @@ void main() {
         final storage = await StorageService.init();
         await storage.setSeenModernGuide(true);
         await storage.setOrientationLocked(false);
-        final vm = CounterViewModel(
+        final app = AppControllers.create(
           storage: storage,
           audio: AudioService(),
           deviceLocales: const [Locale('zh', 'TW')],
         );
-        vm.setAppLanguage(lang);
-        vm.setAutoTargetCount(10000);
-        vm.setTargetCount(10000);
-        vm.setUiMode(AppUiMode.modern);
+        app.locale.setAppLanguage(lang);
+        app.autoCount.setTargetCount(10000);
+        app.practice.setTargetCount(10000);
+        app.settings.setUiMode(AppUiMode.modern);
 
-        await tester.pumpWidget(liveLocaleApp(vm, const ModernCounterScreen()));
+        await tester
+            .pumpWidget(liveLocaleApp(app, const ModernCounterScreen()));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: 'manual tab');
 
@@ -605,16 +618,18 @@ void main() {
         }
 
         await tester.pumpWidget(
-            liveLocaleApp(vm, const Scaffold(body: ModernTimerView())));
+            liveLocaleApp(app, const Scaffold(body: ModernTimerView())));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: 'auto count view');
 
-        vm.setUiMode(AppUiMode.legacy);
-        await tester.pumpWidget(liveLocaleApp(vm, const LegacyCounterScreen()));
+        app.settings.setUiMode(AppUiMode.legacy);
+        await tester
+            .pumpWidget(liveLocaleApp(app, const LegacyCounterScreen()));
         await tester.pump();
         expect(tester.takeException(), isNull, reason: 'legacy counter');
 
-        await tester.pumpWidget(liveLocaleApp(vm, const LegacySettingsScreen()));
+        await tester
+            .pumpWidget(liveLocaleApp(app, const LegacySettingsScreen()));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: 'legacy settings');
         await disposeAndSettleTimers(tester);
@@ -623,11 +638,11 @@ void main() {
   });
 
   group('language picker', () {
-    Future<CounterViewModel> newVm() async {
+    Future<AppControllers> newVm() async {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
       await storage.setSeenModernGuide(true);
-      return CounterViewModel(
+      return AppControllers.create(
         storage: storage,
         audio: AudioService(),
         deviceLocales: const [Locale('zh', 'TW')],
@@ -644,9 +659,9 @@ void main() {
     testWidgets('drawer language item switches app to English and back',
         (tester) async {
       useTallScreen(tester);
-      final vm = await newVm();
-      vm.setUiMode(AppUiMode.modern);
-      await tester.pumpWidget(liveLocaleApp(vm, const ModernCounterScreen()));
+      final app = await newVm();
+      app.settings.setUiMode(AppUiMode.modern);
+      await tester.pumpWidget(liveLocaleApp(app, const ModernCounterScreen()));
       await tester.pumpAndSettle();
 
       tester.state<ScaffoldState>(find.byType(Scaffold).first).openDrawer();
@@ -656,14 +671,14 @@ void main() {
       await tester.tap(find.text('English'));
       await tester.pumpAndSettle();
 
-      expect(vm.appLanguage, AppLanguage.en);
+      expect(app.locale.appLanguage, AppLanguage.en);
       expect(find.text('Language'), findsOneWidget);
 
       await tester.tap(find.text('Language'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('繁體中文'));
       await tester.pumpAndSettle();
-      expect(vm.appLanguage, AppLanguage.zhHant);
+      expect(app.locale.appLanguage, AppLanguage.zhHant);
       expect(find.text('語言'), findsOneWidget);
       await disposeAndSettleTimers(tester);
     });
@@ -671,8 +686,8 @@ void main() {
     testWidgets('legacy settings language section switches to Simplified',
         (tester) async {
       useTallScreen(tester);
-      final vm = await newVm();
-      await tester.pumpWidget(liveLocaleApp(vm, const LegacySettingsScreen()));
+      final app = await newVm();
+      await tester.pumpWidget(liveLocaleApp(app, const LegacySettingsScreen()));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('語言'));
@@ -684,7 +699,7 @@ void main() {
       await tester.tap(find.text('简体中文'));
       await tester.pumpAndSettle();
 
-      expect(vm.appLanguage, AppLanguage.zhHans);
+      expect(app.locale.appLanguage, AppLanguage.zhHans);
       expect(find.text('语言'), findsOneWidget);
     });
   });

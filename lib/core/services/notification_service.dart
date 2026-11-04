@@ -19,7 +19,7 @@ class NotificationService {
   bool _isInitialized = false;
   static bool _timeZonesInitialized = false;
 
-  /// 通知文字使用的語言 (由 CounterViewModel 依目前語言設定)
+  /// 通知文字使用的語言 (由 LocaleController 依目前語言設定)
   Locale locale = kZhHant;
 
   NotificationService(this._storage);
@@ -47,8 +47,7 @@ class NotificationService {
     try {
       ensureTimeZonesInitialized();
 
-      const androidInit =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
       const iosInit = DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
@@ -85,8 +84,8 @@ class NotificationService {
   /// 請求推播通知權限 (Android 13+ 與 iOS)
   Future<bool?> requestPermissions() async {
     try {
-      final androidImplementation = _plugin
-          .resolvePlatformSpecificImplementation<
+      final androidImplementation =
+          _plugin.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
       if (androidImplementation != null) {
         await androidImplementation.requestNotificationsPermission();
@@ -170,6 +169,15 @@ class NotificationService {
     } catch (e) {
       debugPrint('NotificationService.scheduleDailyReminder error: $e');
     }
+  }
+
+  /// 以目前語言重新排程已開啟的每日提醒 (切換語言後通知文字才會跟著換)
+  Future<void> refreshDailyReminder() async {
+    if (!_storage.getReminderEnabled()) return;
+    await scheduleDailyReminder(
+      hour: _storage.getReminderHour(),
+      minute: _storage.getReminderMinute(),
+    );
   }
 
   /// 發送即時測試通知或里程碑慶賀

@@ -15,9 +15,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonCancel => 'Cancel';
 
   @override
-  String get commonConfirm => 'Confirm';
-
-  @override
   String get commonSet => 'Set';
 
   @override
@@ -578,11 +575,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String miniPlayerSubtitle(String artist, String seconds) {
-    return '$artist · ${seconds}s per beat · tap to open';
-  }
-
-  @override
   String get playerLoopOne => 'Repeat one';
 
   @override
@@ -601,11 +593,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playerForward10 => 'Forward 10 seconds';
 
   @override
-  String playerSearchHint(int count) {
-    return 'Search $count chants...';
-  }
-
-  @override
   String songListAll(int count) {
     return 'All ($count)';
   }
@@ -614,9 +601,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String tagWithCount(String tag, int count) {
     return '$tag ($count)';
   }
-
-  @override
-  String get playerNoMatch => 'No matching chants';
 
   @override
   String get songMenuNoMatch => 'No matching chants';
@@ -784,9 +768,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get legacyTryModern => 'Try Zen mode';
-
-  @override
-  String get legacyUnlockedToast => 'Orientation unlocked';
 
   @override
   String get legacySwitchToModern => 'Switch to Zen mode';

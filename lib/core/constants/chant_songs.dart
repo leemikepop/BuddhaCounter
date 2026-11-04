@@ -61,6 +61,9 @@ class ChantSong {
     return defaultBeatIntervalMs;
   }
 
+  /// 節拍秒數 (顯示用，小數兩位)，例如 `3.85`
+  String get beatSeconds => (effectiveBeatIntervalMs / 1000).toStringAsFixed(2);
+
   /// 優先套用音檔內嵌 Metadata 的 title、artist（參與演出者）、album（專輯）；
   /// 若音檔未記錄該標籤或為空字串，則回退至欄位值與預設值
   ChantSong withAudioMetadata(AudioMetadata? meta) {

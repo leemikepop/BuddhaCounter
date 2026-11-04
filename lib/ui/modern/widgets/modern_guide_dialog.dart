@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
-import '../../../features/counter/counter_view_model.dart';
+import '../../../features/settings/settings_controller.dart';
 import '../../../l10n/l10n.dart';
 
 /// 現代模式新版介面功能重點導覽 (精簡一頁式)
@@ -13,13 +13,12 @@ class ModernGuideDialog extends StatelessWidget {
     this.onComplete,
   });
 
-  /// 呼叫顯示引導教學對話框
+  /// 顯示導覽 (同時記下「已看過」，之後啟動不再自動跳出)
   static Future<void> show(
     BuildContext context, {
     VoidCallback? onComplete,
   }) {
-    final vm = context.read<CounterViewModel>();
-    vm.markModernGuideSeen();
+    context.read<SettingsController>().markModernGuideSeen();
 
     return showDialog<void>(
       context: context,

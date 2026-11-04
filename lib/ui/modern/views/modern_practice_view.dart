@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
 import '../../../core/services/storage_service.dart';
-import '../../../features/counter/counter_view_model.dart';
+import '../../../features/settings/settings_controller.dart';
+import '../../../features/settings/tap_feedback.dart';
 import '../../../l10n/l10n.dart';
 import '../../common/app_toast.dart';
 import '../../common/swipeable_hui_xiang.dart';
 
-/// 現代禪意【迴向】專屬視圖
-/// 包含：阿彌陀佛聖像、可左右滑動切換之迴向文（與 Legacy 一致）、合十祈願與引磬敲響
+/// 現代模式「迴向」分頁：阿彌陀佛聖像、可左右滑動切換的迴向文、敲引磬
 class ModernPracticeView extends StatelessWidget {
   const ModernPracticeView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<CounterViewModel>();
+    final settings = context.read<SettingsController>();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
@@ -54,7 +54,8 @@ class ModernPracticeView extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: isDark ? const Color(0xFF333744) : const Color(0xFFE8DFCF),
+                color:
+                    isDark ? const Color(0xFF333744) : const Color(0xFFE8DFCF),
               ),
               boxShadow: [
                 BoxShadow(
@@ -71,8 +72,8 @@ class ModernPracticeView extends StatelessWidget {
                 // 可左右滑動切換之迴向文（大回向西方文 / 回向偈）
                 SwipeableHuiXiangCarousel(
                   items: ChantConstants.huiXiangItems,
-                  initialIndex: vm.huiXiangIndex,
-                  onIndexChanged: vm.setHuiXiangIndex,
+                  initialIndex: settings.huiXiangIndex,
+                  onIndexChanged: settings.setHuiXiangIndex,
                   accentColor: primary,
                   titleStyle: TextStyle(
                     fontSize: 22,
@@ -112,13 +113,14 @@ class ModernPracticeView extends StatelessWidget {
                 // 合十祈願 · 敲響引磬
                 FilledButton.tonalIcon(
                   style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18),
                     ),
                   ),
                   onPressed: () {
-                    vm.audioService.playClickSfx(SoundEffectType.bell);
+                    context.read<TapFeedback>().preview(SoundEffectType.bell);
                     AppToast.show(context, context.l10n.practiceBellToast);
                   },
                   icon: const Icon(Icons.favorite_outline_rounded, size: 18),
@@ -134,5 +136,3 @@ class ModernPracticeView extends StatelessWidget {
     );
   }
 }
-
-

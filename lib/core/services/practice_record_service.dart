@@ -29,8 +29,7 @@ class DailyPracticeRecord {
         'total': totalCount,
       };
 
-  factory DailyPracticeRecord.fromJson(
-      String key, Map<String, dynamic> json) {
+  factory DailyPracticeRecord.fromJson(String key, Map<String, dynamic> json) {
     final manual = (json['manual'] as num?)?.toInt() ?? 0;
     final auto = (json['auto'] as num?)?.toInt() ?? 0;
     final total = (json['total'] as num?)?.toInt() ?? (manual + auto);
@@ -48,7 +47,7 @@ class PracticeRecordService {
   final StorageService _storage;
   final Map<String, DailyPracticeRecord> _records = {};
 
-  /// 小工具文字使用的語言 (由 CounterViewModel 依目前語言設定)
+  /// 小工具文字使用的語言 (由 LocaleController 依目前語言設定)
   Locale locale = kZhHant;
 
   PracticeRecordService(this._storage) {
@@ -276,8 +275,7 @@ class PracticeRecordService {
   /// 取得指定月份所有有記錄的日期與聲數對照
   Map<DateTime, int> getMonthRecords(int year, int month) {
     final result = <DateTime, int>{};
-    final prefix =
-        '$year-${month.toString().padLeft(2, '0')}-';
+    final prefix = '$year-${month.toString().padLeft(2, '0')}-';
     for (final entry in _records.entries) {
       if (entry.key.startsWith(prefix)) {
         final parts = entry.key.split('-');
@@ -355,4 +353,3 @@ class PracticeRecordService {
     return streak;
   }
 }
-

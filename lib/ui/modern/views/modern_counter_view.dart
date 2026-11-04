@@ -1,396 +1,269 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
-import '../../../features/counter/counter_view_model.dart';
+import '../../../features/practice/practice_controller.dart';
+import '../../../features/practice/session_stopwatch.dart';
+import '../../../features/settings/settings_controller.dart';
+import '../../../features/settings/tap_feedback.dart';
 import '../../../l10n/l10n.dart';
 import '../../common/app_toast.dart';
+import '../theme/modern_palette.dart';
+import '../widgets/counter_controls.dart';
 import '../widgets/goal_picker.dart';
 import '../widgets/zen_circle_counter.dart';
 
-/// 現代禪意【念佛計數】專屬視圖
-/// 包含：頂部簡約禪修碼表、大圓計數盤、功課目標設定、倒退/歸零、無溢位音效選擇、震動與全螢幕盲按
+/// 現代模式「手動計數」分頁：碼表、大圓計數盤、目標 / 減一 / 歸零、音效與震動設定
 class ModernCounterView extends StatelessWidget {
   const ModernCounterView({super.key});
 
-  void _confirmReset(BuildContext context, CounterViewModel vm) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.counterResetConfirmTitle),
-        content: Text(context.l10n.counterResetConfirmBody(vm.count)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton.tonal(
-            onPressed: () {
-              Navigator.pop(ctx);
-              vm.resetCount();
-              AppToast.show(context, context.l10n.counterResetDoneToast);
-            },
-            child: Text(context.l10n.counterResetConfirmAction),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showTargetPicker(BuildContext context, CounterViewModel vm) {
-    showCountGoalPicker(
-      context,
-      title: context.l10n.manualGoalSheetTitle,
-      current: vm.targetCount,
-      onSelected: vm.setTargetCount,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<CounterViewModel>();
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final primary = theme.colorScheme.primary;
+    final fullscreenTap =
+        context.select<SettingsController, bool>((s) => s.fullscreenTap);
+    final practice = context.read<PracticeController>();
 
-    // 全螢幕點擊手勢容器
-    Widget content = SingleChildScrollView(
+    final content = SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
-        children: [
-          // 頂部簡約禪修計時碼表（無多餘文字說明，乾淨清爽）
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E2027) : Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color:
-                    isDark ? const Color(0xFF2E323E) : const Color(0xFFEFE8DC),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.2)
-                      : primary.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.timer_outlined,
-                  size: 20,
-                  color: primary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  vm.formattedTimer,
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
-                    color: theme.colorScheme.onSurface,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
-                const SizedBox(width: 14),
-                // 開始 / 暫停按鈕
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(
-                    vm.isTimerRunning
-                        ? Icons.pause_circle_filled_rounded
-                        : Icons.play_circle_fill_rounded,
-                    color: primary,
-                    size: 26,
-                  ),
-                  tooltip: vm.isTimerRunning
-                      ? context.l10n.commonPause
-                      : context.l10n.commonStart,
-                  onPressed: () {
-                    if (vm.isTimerRunning) {
-                      vm.stopTimer();
-                    } else {
-                      vm.startTimer();
-                    }
-                  },
-                ),
-                const SizedBox(width: 10),
-                // 歸零按鈕
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(
-                    Icons.replay_rounded,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                    size: 20,
-                  ),
-                  tooltip: context.l10n.timerResetTooltip,
-                  onPressed: () => vm.resetTimer(),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
-
-          // 核心禪意大圓計數盤
-          ZenCircleCounter(
-            count: vm.count,
-            targetCount: vm.targetCount,
-            size: 260,
-            onTap: () {
-              vm.increment();
-            },
-          ),
-          const SizedBox(height: 18),
-
-          // 功課目標與快速動作（減一、歸零）小按鈕列
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 功課目標小按鈕
-              InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => _showTargetPicker(context, vm),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF21232B) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark
-                          ? const Color(0xFF323642)
-                          : const Color(0xFFEBE3D5),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.flag_outlined, size: 14, color: primary),
-                      const SizedBox(width: 4),
-                      Text(
-                        vm.targetCount > 0
-                            ? context.l10n.goalChipLabel(vm.targetCount)
-                            : context.l10n.goalChipUnlimited,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      Icon(Icons.arrow_drop_down, size: 16, color: primary),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // 減一 小按鈕
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  side: BorderSide(
-                    color: isDark
-                        ? const Color(0xFF3B3F4E)
-                        : const Color(0xFFDED6C7),
-                  ),
-                ),
-                onPressed: vm.count > 0 ? () => vm.decrement() : null,
-                icon: const Icon(Icons.remove_circle_outline_rounded, size: 14),
-                label: Text(context.l10n.counterMinusOne,
-                    style: const TextStyle(fontSize: 12)),
-              ),
-              const SizedBox(width: 8),
-
-              // 歸零 小按鈕
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  foregroundColor: Colors.redAccent,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  side: BorderSide(
-                    color: Colors.redAccent.withValues(alpha: 0.35),
-                  ),
-                ),
-                onPressed: () => _confirmReset(context, vm),
-                icon: const Icon(Icons.refresh_rounded, size: 14),
-                label: Text(context.l10n.counterResetShort,
-                    style: const TextStyle(fontSize: 12)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // 快捷控制功能卡片
-          Material(
-            color: isDark ? const Color(0xFF1E2027) : Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(
-                color:
-                    isDark ? const Color(0xFF2E323E) : const Color(0xFFEFE8DC),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Column(
-                children: [
-                  // 音效模式選擇（防 Overflow 修正版）
-                  Row(
-                    children: [
-                      Icon(Icons.volume_up_outlined, size: 18, color: primary),
-                      const SizedBox(width: 6),
-                      Text(
-                        context.l10n.soundEffectTitle,
-                        style: const TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: SegmentedButton<SoundEffectType>(
-                          showSelectedIcon: false,
-                          segments: [
-                            ButtonSegment(
-                              value: SoundEffectType.woodfish1,
-                              label: Text(context.l10n.soundChipWoodfish1,
-                                  style: const TextStyle(fontSize: 12)),
-                            ),
-                            ButtonSegment(
-                              value: SoundEffectType.woodfish2,
-                              label: Text(context.l10n.soundChipWoodfish2,
-                                  style: const TextStyle(fontSize: 12)),
-                            ),
-                            ButtonSegment(
-                              value: SoundEffectType.bell,
-                              label: Text(context.l10n.soundChipBell,
-                                  style: const TextStyle(fontSize: 12)),
-                            ),
-                            ButtonSegment(
-                              value: SoundEffectType.none,
-                              label: Text(context.l10n.soundChipMute,
-                                  style: const TextStyle(fontSize: 12)),
-                            ),
-                          ],
-                          selected: {vm.soundEffect},
-                          onSelectionChanged: (val) {
-                            vm.setSoundEffect(val.first);
-                            vm.audioService.playClickSfx(val.first);
-                          },
-                          style: const ButtonStyle(
-                            visualDensity: VisualDensity.compact,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            padding: WidgetStatePropertyAll(
-                              EdgeInsets.symmetric(horizontal: 2),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 震動開關與全螢幕點擊開關 (使用原生 Switch 與 InkWell，防止 ListTile DecoratedBox 警告)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () =>
-                              vm.setVibrationEnabled(!vm.vibrationEnabled),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 4, horizontal: 4),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    context.l10n.vibrationFeedback,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ),
-                                Switch(
-                                  value: vm.vibrationEnabled,
-                                  onChanged: (val) =>
-                                      vm.setVibrationEnabled(val),
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () =>
-                              vm.setFullscreenTap(!vm.fullscreenTap),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 4, horizontal: 4),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    context.l10n.fullscreenTap,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ),
-                                Switch(
-                                  value: vm.fullscreenTap,
-                                  onChanged: (val) =>
-                                      vm.setFullscreenTap(val),
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
+        children: const [
+          _Stopwatch(),
+          SizedBox(height: 18),
+          _CounterDisc(),
+          SizedBox(height: 18),
+          _CounterActions(),
+          SizedBox(height: 14),
+          _FeedbackSettingsCard(),
+          SizedBox(height: 16),
         ],
       ),
     );
 
-    if (vm.fullscreenTap) {
-      return GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: () => vm.increment(),
-        child: content,
-      );
-    }
+    if (!fullscreenTap) return content;
+    // 全螢幕盲按：點畫面任何位置都算一聲
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: practice.increment,
+      child: content,
+    );
+  }
+}
 
-    return content;
+class _Stopwatch extends StatelessWidget {
+  const _Stopwatch();
+
+  @override
+  Widget build(BuildContext context) {
+    final stopwatch = context.watch<SessionStopwatch>();
+    return TimerPill(
+      time: stopwatch.formatted,
+      isRunning: stopwatch.isRunning,
+      onToggle: stopwatch.toggle,
+      onReset: stopwatch.reset,
+    );
+  }
+}
+
+class _CounterDisc extends StatelessWidget {
+  const _CounterDisc();
+
+  @override
+  Widget build(BuildContext context) {
+    final (count, target) = context.select<PracticeController, (int, int)>(
+        (p) => (p.count, p.targetCount));
+    return ZenCircleCounter(
+      count: count,
+      targetCount: target,
+      size: 260,
+      onTap: context.read<PracticeController>().increment,
+    );
+  }
+}
+
+class _CounterActions extends StatelessWidget {
+  const _CounterActions();
+
+  @override
+  Widget build(BuildContext context) {
+    final (count, target) = context.select<PracticeController, (int, int)>(
+        (p) => (p.count, p.targetCount));
+    final practice = context.read<PracticeController>();
+    final l10n = context.l10n;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Flexible(
+          child: GoalChip(
+            icon: Icons.flag_outlined,
+            label: target > 0
+                ? l10n.goalChipLabel(target)
+                : l10n.goalChipUnlimited,
+            onTap: () => showCountGoalPicker(
+              context,
+              title: l10n.manualGoalSheetTitle,
+              current: target,
+              onSelected: practice.setTargetCount,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        SmallOutlinedAction(
+          icon: Icons.remove_circle_outline_rounded,
+          label: l10n.counterMinusOne,
+          onPressed: count > 0 ? practice.decrement : null,
+        ),
+        const SizedBox(width: 8),
+        SmallOutlinedAction(
+          icon: Icons.refresh_rounded,
+          label: l10n.counterResetShort,
+          destructive: true,
+          onPressed: () => confirmReset(
+            context,
+            title: l10n.counterResetConfirmTitle,
+            body: l10n.counterResetConfirmBody(count),
+            confirmLabel: l10n.counterResetConfirmAction,
+            onConfirm: () {
+              practice.resetCount();
+              AppToast.show(context, l10n.counterResetDoneToast);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 音效選擇、震動回饋與全螢幕盲按開關
+class _FeedbackSettingsCard extends StatelessWidget {
+  const _FeedbackSettingsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<SettingsController>();
+    final palette = ModernPalette.of(context);
+    final l10n = context.l10n;
+
+    ButtonSegment<SoundEffectType> segment(
+            SoundEffectType type, String label) =>
+        ButtonSegment(
+          value: type,
+          label: Text(label, style: const TextStyle(fontSize: 12)),
+        );
+
+    return Material(
+      color: palette.card,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: palette.cardBorder),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(Icons.volume_up_outlined,
+                    size: 18, color: palette.primary),
+                const SizedBox(width: 6),
+                Text(
+                  l10n.soundEffectTitle,
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: SegmentedButton<SoundEffectType>(
+                    showSelectedIcon: false,
+                    segments: [
+                      segment(
+                          SoundEffectType.woodfish1, l10n.soundChipWoodfish1),
+                      segment(
+                          SoundEffectType.woodfish2, l10n.soundChipWoodfish2),
+                      segment(SoundEffectType.bell, l10n.soundChipBell),
+                      segment(SoundEffectType.none, l10n.soundChipMute),
+                    ],
+                    selected: {settings.soundEffect},
+                    onSelectionChanged: (selection) {
+                      settings.setSoundEffect(selection.first);
+                      context.read<TapFeedback>().preview(selection.first);
+                    },
+                    style: const ButtonStyle(
+                      visualDensity: VisualDensity.compact,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      padding: WidgetStatePropertyAll(
+                        EdgeInsets.symmetric(horizontal: 2),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: _LabeledSwitch(
+                    label: l10n.vibrationFeedback,
+                    value: settings.vibrationEnabled,
+                    onChanged: settings.setVibrationEnabled,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _LabeledSwitch(
+                    label: l10n.fullscreenTap,
+                    value: settings.fullscreenTap,
+                    onChanged: settings.setFullscreenTap,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 整列可點的開關 (不用 ListTile，避免卡片內的 DecoratedBox 警告)
+class _LabeledSwitch extends StatelessWidget {
+  const _LabeledSwitch({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () => onChanged(!value),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

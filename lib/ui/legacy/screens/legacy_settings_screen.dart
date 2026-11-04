@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/storage_service.dart';
-import '../../../features/counter/counter_view_model.dart';
+import '../../../features/settings/locale_controller.dart';
+import '../../../features/settings/settings_controller.dart';
+import '../../../features/settings/tap_feedback.dart';
 import '../../../l10n/l10n.dart';
 import '../../../l10n/sound_effect_labels.dart';
 import '../../common/language_picker.dart';
 import '../../common/app_toast.dart';
+import '../widgets/legacy_widgets.dart';
 
-/// 經典設定頁面 (忠實復刻原 MainActivity3 & activity_main_activity3.xml + 現代/經典模式切換)
+/// 經典模式設定頁：螢幕常亮、敲擊音效、介面模式、語言 (沿用最早 Android 版 MainActivity3)
 class LegacySettingsScreen extends StatelessWidget {
   const LegacySettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<CounterViewModel>();
+    final settings = context.watch<SettingsController>();
+    final appLanguage =
+        context.select<LocaleController, AppLanguage>((l) => l.appLanguage);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(context.l10n.legacySettingsTitle),
-        backgroundColor: const Color(0xFF0000FF),
-        foregroundColor: Colors.white,
-      ),
+      appBar: legacyAppBar(context.l10n.legacySettingsTitle),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -44,12 +45,14 @@ class LegacySettingsScreen extends StatelessWidget {
                   style: const TextStyle(fontSize: 13, color: Colors.black54),
                 ),
               ),
-              value: vm.isCurrentScreenAwake,
+              value: settings.keepScreenOn,
               onChanged: (val) {
-                vm.setScreenAwake(val);
+                settings.setKeepScreenOn(val);
                 AppToast.show(
                   context,
-                  val ? context.l10n.screenAwakeOn : context.l10n.screenAwakeOffToast,
+                  val
+                      ? context.l10n.screenAwakeOn
+                      : context.l10n.screenAwakeOffToast,
                 );
               },
             ),
@@ -68,29 +71,33 @@ class LegacySettingsScreen extends StatelessWidget {
             const SizedBox(height: 8),
 
             RadioGroup<SoundEffectType>(
-              groupValue: vm.soundEffect,
+              groupValue: settings.soundEffect,
               onChanged: (val) {
                 if (val != null) {
-                  vm.setSoundEffect(val);
-                  vm.audioService.playClickSfx(val);
+                  settings.setSoundEffect(val);
+                  context.read<TapFeedback>().preview(val);
                 }
               },
               child: Column(
                 children: [
                   RadioListTile<SoundEffectType>(
-                    title: Text(soundEffectLabel(context.l10n, SoundEffectType.woodfish1)),
+                    title: Text(soundEffectLabel(
+                        context.l10n, SoundEffectType.woodfish1)),
                     value: SoundEffectType.woodfish1,
                   ),
                   RadioListTile<SoundEffectType>(
-                    title: Text(soundEffectLabel(context.l10n, SoundEffectType.woodfish2)),
+                    title: Text(soundEffectLabel(
+                        context.l10n, SoundEffectType.woodfish2)),
                     value: SoundEffectType.woodfish2,
                   ),
                   RadioListTile<SoundEffectType>(
-                    title: Text(soundEffectLabel(context.l10n, SoundEffectType.bell)),
+                    title: Text(
+                        soundEffectLabel(context.l10n, SoundEffectType.bell)),
                     value: SoundEffectType.bell,
                   ),
                   RadioListTile<SoundEffectType>(
-                    title: Text(soundEffectLabel(context.l10n, SoundEffectType.none)),
+                    title: Text(
+                        soundEffectLabel(context.l10n, SoundEffectType.none)),
                     value: SoundEffectType.none,
                   ),
                 ],
@@ -111,10 +118,10 @@ class LegacySettingsScreen extends StatelessWidget {
             const SizedBox(height: 8),
 
             RadioGroup<AppUiMode>(
-              groupValue: vm.uiMode,
+              groupValue: settings.uiMode,
               onChanged: (val) {
                 if (val != null) {
-                  vm.setUiMode(val);
+                  settings.setUiMode(val);
                   if (val == AppUiMode.modern) {
                     AppToast.show(context, context.l10n.switchedToModernToast);
                   }
@@ -147,21 +154,16 @@ class LegacySettingsScreen extends StatelessWidget {
                   color: Color(0xFF0000FF),
                 ),
               ),
-              subtitle: Text(appLanguageLabel(context.l10n, vm.appLanguage)),
+              subtitle: Text(appLanguageLabel(context.l10n, appLanguage)),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => showLanguagePicker(context),
             ),
 
             const SizedBox(height: 24),
 
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE0E0E0),
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
+            LegacyPlainButton(
+              text: context.l10n.legacySaveAndBack,
               onPressed: () => Navigator.pop(context),
-              child: Text(context.l10n.legacySaveAndBack, style: TextStyle(fontSize: 16)),
             ),
           ],
         ),

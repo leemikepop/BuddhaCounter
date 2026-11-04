@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
-import '../../../features/counter/counter_view_model.dart';
-import '../../../l10n/chant_tag_labels.dart';
+import '../../../features/playback/playback_controller.dart';
+import '../../../features/settings/settings_controller.dart';
 import '../../../l10n/l10n.dart';
+import '../../common/song_tag_filter_bar.dart';
+import '../widgets/legacy_widgets.dart';
 
-/// 經典佛曲清單畫面 (忠實復刻原 MainActivity4 & activity_main_activity4.xml，並支援標籤分類篩選)
+/// 經典模式佛曲清單 (沿用最早 Android 版 MainActivity4，加上標籤篩選)。點曲目播放 / 暫停。
 class LegacyMusicListScreen extends StatefulWidget {
   const LegacyMusicListScreen({super.key});
 
@@ -14,72 +16,41 @@ class LegacyMusicListScreen extends StatefulWidget {
 }
 
 class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
-  ChantTag? _selectedTag; // null 代表「全部」
+  ChantTag? _selectedTag; // null = 全部
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final vm = context.read<CounterViewModel>();
-      vm.applyScreenWakelockForCurrentPage(vm.keepScreenSongs);
+      if (mounted) context.read<SettingsController>().applyWakelock();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<CounterViewModel>();
-    final allSongs = ChantConstants.getAllSongs();
-    final availableTags = ChantConstants.availableTags;
-    final songs = _selectedTag == null
-        ? allSongs
-        : allSongs.where((s) => s.tags.contains(_selectedTag)).toList();
+    final currentSongId =
+        context.select<PlaybackController, int>((p) => p.currentSongId);
+    final playback = context.read<PlaybackController>();
+    final songs = filterSongs(
+      ChantConstants.allSongs,
+      l10n: context.l10n,
+      tag: _selectedTag,
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(context.l10n.legacySongListTitle),
-        backgroundColor: const Color(0xFF0000FF),
-        foregroundColor: Colors.white,
-      ),
+      appBar: legacyAppBar(context.l10n.legacySongListTitle),
       body: SafeArea(
         child: Column(
           children: [
-            // 頂部標籤分類篩選列
-            Container(
+            ColoredBox(
               color: const Color(0xFFF5F5F5),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+              child: SongTagFilterBar(
+                selected: _selectedTag,
+                onChanged: (tag) => setState(() => _selectedTag = tag),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Row(
-                  children: [
-                    ChoiceChip(
-                      label: Text(context.l10n.songListAll(allSongs.length)),
-                      selected: _selectedTag == null,
-                      onSelected: (_) => setState(() => _selectedTag = null),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    for (final tag in availableTags) ...[
-                      const SizedBox(width: 6),
-                      ChoiceChip(
-                        label: Text(
-                          context.l10n.tagWithCount(
-                            chantTagLabel(context.l10n, tag),
-                            ChantConstants.countSongsByTag(tag),
-                          ),
-                        ),
-                        selected: _selectedTag == tag,
-                        onSelected: (val) {
-                          setState(() {
-                            _selectedTag =
-                                (_selectedTag == tag && !val) ? null : tag;
-                          });
-                        },
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    ],
-                  ],
-                ),
+                spacing: 6,
               ),
             ),
             const Divider(height: 1),
@@ -90,7 +61,7 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
                 itemCount: songs.length,
                 itemBuilder: (context, index) {
                   final song = songs[index];
-                  final isCurrent = (vm.currentSongId == song.id);
+                  final isCurrent = currentSongId == song.id;
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 3),
@@ -99,7 +70,7 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isCurrent
-                              ? const Color(0xFFA1C9FF)
+                              ? LegacyColors.lightBlue
                               : const Color(0xFFF5F5F5),
                           foregroundColor: Colors.black87,
                           padding: const EdgeInsets.symmetric(
@@ -111,15 +82,13 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
                             borderRadius: BorderRadius.circular(4),
                             side: BorderSide(
                               color: isCurrent
-                                  ? const Color(0xFF0000FF)
+                                  ? LegacyColors.blue
                                   : const Color(0xFFBDBDBD),
                               width: isCurrent ? 2 : 1,
                             ),
                           ),
                         ),
-                        onPressed: () {
-                          vm.toggleChant(song.id);
-                        },
+                        onPressed: () => playback.toggleChant(song.id),
                         child: Row(
                           children: [
                             Text(
@@ -127,7 +96,7 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: isCurrent
-                                    ? const Color(0xFF0000FF)
+                                    ? LegacyColors.blue
                                     : Colors.black54,
                               ),
                             ),
@@ -162,18 +131,12 @@ class _LegacyMusicListScreenState extends State<LegacyMusicListScreen> {
               color: const Color(0xFFEEEEEE),
               child: SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE0E0E0),
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                  ),
+                child: LegacyPlainButton(
+                  text: context.l10n.commonBack,
+                  fontSize: 18,
+                  bold: true,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    context.l10n.commonBack,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
                 ),
               ),
             ),

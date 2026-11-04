@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../features/counter/counter_view_model.dart';
+import '../../features/settings/locale_controller.dart';
 import '../../l10n/l10n.dart';
 
 /// 語言選項名稱：「跟隨系統」依目前語言翻譯，其餘一律以該語言本身顯示
@@ -19,7 +19,7 @@ String appLanguageLabel(AppLocalizations l10n, AppLanguage v) {
 
 /// 語言選擇底部面板 (現代模式 Drawer 與經典模式設定頁共用)
 Future<void> showLanguagePicker(BuildContext context) {
-  final vm = context.read<CounterViewModel>();
+  final localeController = context.read<LocaleController>();
   return showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
@@ -35,7 +35,8 @@ Future<void> showLanguagePicker(BuildContext context) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
                 child: Text(
                   l10n.languageMenuTitle,
                   style: const TextStyle(
@@ -43,10 +44,10 @@ Future<void> showLanguagePicker(BuildContext context) {
                 ),
               ),
               RadioGroup<AppLanguage>(
-                groupValue: vm.appLanguage,
+                groupValue: localeController.appLanguage,
                 onChanged: (v) {
                   if (v == null) return;
-                  vm.setAppLanguage(v);
+                  localeController.setAppLanguage(v);
                   Navigator.pop(ctx);
                 },
                 child: Column(

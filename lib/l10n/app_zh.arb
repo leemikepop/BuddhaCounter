@@ -8,10 +8,6 @@
   "@commonCancel": {
     "description": "通用：取消按鈕"
   },
-  "commonConfirm": "確認",
-  "@commonConfirm": {
-    "description": "通用：確認按鈕"
-  },
   "commonSet": "設定",
   "@commonSet": {
     "description": "通用：套用自訂數值的按鈕"
@@ -873,18 +869,6 @@
       }
     }
   },
-  "miniPlayerSubtitle": "{artist} · 每拍 {seconds}s · 點擊展開播放器",
-  "@miniPlayerSubtitle": {
-    "description": "迷你播放器副標",
-    "placeholders": {
-      "artist": {
-        "type": "String"
-      },
-      "seconds": {
-        "type": "String"
-      }
-    }
-  },
   "playerLoopOne": "單曲循環",
   "@playerLoopOne": {
     "description": "Tooltip：目前為單曲循環"
@@ -909,15 +893,6 @@
   "@playerForward10": {
     "description": "Tooltip：快轉 10 秒"
   },
-  "playerSearchHint": "搜尋 {count} 首佛曲名稱...",
-  "@playerSearchHint": {
-    "description": "佛曲頁搜尋框 placeholder",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "songListAll": "全部 ({count})",
   "@songListAll": {
     "description": "分類篩選：全部 (曲目數)",
@@ -938,10 +913,6 @@
         "type": "int"
       }
     }
-  },
-  "playerNoMatch": "無相符的佛曲",
-  "@playerNoMatch": {
-    "description": "佛曲頁搜尋無結果"
   },
   "songMenuNoMatch": "無相符佛曲",
   "@songMenuNoMatch": {
@@ -1167,10 +1138,6 @@
   "legacyTryModern": "立即體驗新版",
   "@legacyTryModern": {
     "description": "升級介紹：切換到現代模式"
-  },
-  "legacyUnlockedToast": "已解除鎖定",
-  "@legacyUnlockedToast": {
-    "description": "經典模式 Toast：已解除方向鎖定"
   },
   "legacySwitchToModern": "切換至現代模式",
   "@legacySwitchToModern": {

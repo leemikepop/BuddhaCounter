@@ -20,7 +20,6 @@ enum SoundEffectType {
         return null;
     }
   }
-
 }
 
 enum AppUiMode {
@@ -33,10 +32,9 @@ class StorageService {
   static const String keySoundEffect = 'pref_sound_effect';
   static const String keySoundEffectKey = 'pref_sound_effect_key';
   static const String keyUiMode = 'pref_ui_mode';
-  static const String keyKeepScreenOnHome = 'DormancyCB1';
-  static const String keyKeepScreenOnChant = 'DormancyCB2';
-  static const String keyKeepScreenOnSongs = 'DormancyCB3';
-  static const String keyKeepScreenOnAuto = 'DormancyCB4';
+
+  /// 螢幕常亮 (沿用最早 Android 版首頁的偏好鍵；舊版另有三個分頁專用鍵已不再使用)
+  static const String keyKeepScreenOn = 'DormancyCB1';
   static const String keyLastSongId = 'pref_last_song_id';
   static const String keyAutoCounter = 'autoCounter';
   static const String keyAutoElapsedSeconds = 'autoTsec';
@@ -103,21 +101,9 @@ class StorageService {
   Future<void> setUiMode(AppUiMode mode) =>
       _prefs.setString(keyUiMode, mode.name);
 
-  bool getKeepScreenOnHome() => _prefs.getBool(keyKeepScreenOnHome) ?? false;
-  Future<void> setKeepScreenOnHome(bool val) =>
-      _prefs.setBool(keyKeepScreenOnHome, val);
-
-  bool getKeepScreenOnChant() => _prefs.getBool(keyKeepScreenOnChant) ?? false;
-  Future<void> setKeepScreenOnChant(bool val) =>
-      _prefs.setBool(keyKeepScreenOnChant, val);
-
-  bool getKeepScreenOnSongs() => _prefs.getBool(keyKeepScreenOnSongs) ?? false;
-  Future<void> setKeepScreenOnSongs(bool val) =>
-      _prefs.setBool(keyKeepScreenOnSongs, val);
-
-  bool getKeepScreenOnAuto() => _prefs.getBool(keyKeepScreenOnAuto) ?? false;
-  Future<void> setKeepScreenOnAuto(bool val) =>
-      _prefs.setBool(keyKeepScreenOnAuto, val);
+  bool getKeepScreenOn() => _prefs.getBool(keyKeepScreenOn) ?? false;
+  Future<void> setKeepScreenOn(bool val) =>
+      _prefs.setBool(keyKeepScreenOn, val);
 
   int getLastSongId() => _prefs.getInt(keyLastSongId) ?? 0;
   Future<void> setLastSongId(int id) => _prefs.setInt(keyLastSongId, id);

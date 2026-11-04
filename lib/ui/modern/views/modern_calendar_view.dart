@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/practice_record_service.dart';
-import '../../../features/counter/counter_view_model.dart';
+import '../../../features/practice/practice_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../../../l10n/l10n_dates.dart';
 import '../../common/app_toast.dart';
@@ -227,7 +227,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
   }
 
   Future<void> _showEditCountDialog(
-      CounterViewModel vm, int currentCount) async {
+      PracticeController vm, int currentCount) async {
     final controller = TextEditingController(text: currentCount.toString());
     final result = await showDialog<int>(
       context: context,
@@ -288,7 +288,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
     }
   }
 
-  Future<void> _pickReminderTime(CounterViewModel vm) async {
+  Future<void> _pickReminderTime(PracticeController vm) async {
     final initialTime = TimeOfDay(
       hour: vm.reminderHour,
       minute: vm.reminderMinute,
@@ -317,7 +317,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<CounterViewModel>();
+    final vm = context.watch<PracticeController>();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
@@ -327,7 +327,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
     final weeklyCount = vm.weeklyPracticeCount;
     final monthlyCount = vm.monthlyPracticeCount;
 
-    final selectedRecord = vm.practiceRecords.getRecord(_selectedDate);
+    final selectedRecord = vm.records.getRecord(_selectedDate);
     final isSelectedDateToday =
         PracticeRecordService.formatDateKey(_selectedDate) ==
             PracticeRecordService.formatDateKey(DateTime.now());
@@ -734,7 +734,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
   }
 
   /// 月曆日期格子
-  Widget _buildCalendarGrid(CounterViewModel vm, Color primary, bool isDark) {
+  Widget _buildCalendarGrid(PracticeController vm, Color primary, bool isDark) {
     final year = _displayedMonth.year;
     final month = _displayedMonth.month;
     final firstDayWeekday =
@@ -763,7 +763,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
         final day = index - firstDayWeekday + 1;
         final cellDate = DateTime(year, month, day);
         final cellKey = PracticeRecordService.formatDateKey(cellDate);
-        final count = vm.practiceRecords.getCount(cellDate);
+        final count = vm.records.getCount(cellDate);
 
         final isToday = cellKey == todayKey;
         final isSelected = cellKey == selectedKey;
@@ -851,7 +851,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
 
   /// 選中日期功課卡片與手動修改控制台
   Widget _buildSelectedDayDetailCard({
-    required CounterViewModel vm,
+    required PracticeController vm,
     required DailyPracticeRecord record,
     required bool isToday,
     required Color primary,
@@ -1016,7 +1016,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
 
   /// 每日提醒通知與桌面小工具卡片
   Widget _buildNotificationAndWidgetCard({
-    required CounterViewModel vm,
+    required PracticeController vm,
     required Color primary,
     required bool isDark,
   }) {
@@ -1107,7 +1107,7 @@ class _ModernCalendarViewState extends State<ModernCalendarView> {
                   value: vm.isReminderEnabled,
                   onChanged: (val) async {
                     if (val) {
-                      await vm.notifications.requestPermissions();
+                      await vm.requestNotificationPermissions();
                     }
                     await vm.updateReminderSettings(
                       enabled: val,

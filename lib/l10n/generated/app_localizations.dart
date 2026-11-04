@@ -112,12 +112,6 @@ abstract class AppLocalizations {
   /// **'取消'**
   String get commonCancel;
 
-  /// 通用：確認按鈕
-  ///
-  /// In zh, this message translates to:
-  /// **'確認'**
-  String get commonConfirm;
-
   /// 通用：套用自訂數值的按鈕
   ///
   /// In zh, this message translates to:
@@ -1066,12 +1060,6 @@ abstract class AppLocalizations {
   /// **'{artist} · 每拍 {seconds}s'**
   String playerArtistBeat(String artist, String seconds);
 
-  /// 迷你播放器副標
-  ///
-  /// In zh, this message translates to:
-  /// **'{artist} · 每拍 {seconds}s · 點擊展開播放器'**
-  String miniPlayerSubtitle(String artist, String seconds);
-
   /// Tooltip：目前為單曲循環
   ///
   /// In zh, this message translates to:
@@ -1108,12 +1096,6 @@ abstract class AppLocalizations {
   /// **'快轉 10 秒'**
   String get playerForward10;
 
-  /// 佛曲頁搜尋框 placeholder
-  ///
-  /// In zh, this message translates to:
-  /// **'搜尋 {count} 首佛曲名稱...'**
-  String playerSearchHint(int count);
-
   /// 分類篩選：全部 (曲目數)
   ///
   /// In zh, this message translates to:
@@ -1125,12 +1107,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{tag} ({count})'**
   String tagWithCount(String tag, int count);
-
-  /// 佛曲頁搜尋無結果
-  ///
-  /// In zh, this message translates to:
-  /// **'無相符的佛曲'**
-  String get playerNoMatch;
 
   /// 播放器佛曲選單搜尋無結果
   ///
@@ -1431,12 +1407,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'立即體驗新版'**
   String get legacyTryModern;
-
-  /// 經典模式 Toast：已解除方向鎖定
-  ///
-  /// In zh, this message translates to:
-  /// **'已解除鎖定'**
-  String get legacyUnlockedToast;
 
   /// 經典模式：切換到現代模式 (tooltip / 選單)
   ///

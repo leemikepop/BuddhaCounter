@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
-import '../../../features/counter/counter_view_model.dart';
+import '../../../features/playback/playback_controller.dart';
+import '../../../features/settings/settings_controller.dart';
 import '../../common/swipeable_hui_xiang.dart';
+import '../widgets/legacy_widgets.dart';
 
-/// 經典念佛頁面 (忠實復刻原 MainActivity2 & activity_main_activity2.xml)
+/// 經典模式迴向頁：進入時自動播放目前佛曲，離開時停止 (沿用最早 Android 版 MainActivity2)
 class LegacyChantScreen extends StatefulWidget {
   const LegacyChantScreen({super.key});
 
@@ -14,30 +16,24 @@ class LegacyChantScreen extends StatefulWidget {
 }
 
 class _LegacyChantScreenState extends State<LegacyChantScreen> {
-  late CounterViewModel _vm;
+  late final PlaybackController _playback;
+  late final SettingsController _settings;
 
   @override
   void initState() {
     super.initState();
+    _playback = context.read<PlaybackController>();
+    _settings = context.read<SettingsController>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _vm = context.read<CounterViewModel>();
-      _vm.applyScreenWakelockForCurrentPage(_vm.keepScreenChant);
-      // 進入念佛頁面自動循環播放當前選定的佛曲 (原 MainActivity2 行為)
-      _vm.playChantForChantPage();
+      _settings.applyWakelock();
+      _playback.restartCurrent();
     });
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _vm = context.read<CounterViewModel>();
-  }
-
-  @override
   void dispose() {
-    // 離開念佛頁面時停止播放佛曲 (原 MainActivity2 onDestroy / goBackPage 行為)
-    _vm.stopChant();
+    _playback.stop();
     super.dispose();
   }
 
@@ -46,17 +42,11 @@ class _LegacyChantScreenState extends State<LegacyChantScreen> {
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) {
-          _vm.stopChant();
-        }
+        if (didPop) _playback.stop();
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: Text(context.l10n.legacyChantTitle),
-          backgroundColor: const Color(0xFF0000FF),
-          foregroundColor: Colors.white,
-        ),
+        appBar: legacyAppBar(context.l10n.legacyChantTitle),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
@@ -84,9 +74,9 @@ class _LegacyChantScreenState extends State<LegacyChantScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: SwipeableHuiXiangCarousel(
                     items: ChantConstants.huiXiangItems,
-                    initialIndex: _vm.huiXiangIndex,
-                    onIndexChanged: _vm.setHuiXiangIndex,
-                    accentColor: const Color(0xFF0000FF),
+                    initialIndex: _settings.huiXiangIndex,
+                    onIndexChanged: _settings.setHuiXiangIndex,
+                    accentColor: LegacyColors.blue,
                     titleStyle: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -111,24 +101,21 @@ class _LegacyChantScreenState extends State<LegacyChantScreen> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF0000FF),
+                    color: LegacyColors.blue,
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
                 // 返回按鈕
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE0E0E0),
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  ),
+                LegacyPlainButton(
+                  text: context.l10n.legacyBackHome,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   onPressed: () {
-                    _vm.stopChant();
+                    _playback.stop();
                     Navigator.pop(context);
                   },
-                  child: Text(context.l10n.legacyBackHome, style: TextStyle(fontSize: 16)),
                 ),
 
                 const SizedBox(height: 20),
