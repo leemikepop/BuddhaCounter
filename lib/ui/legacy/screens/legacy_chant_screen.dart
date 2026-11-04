@@ -34,7 +34,9 @@ class _LegacyChantScreenState extends State<LegacyChantScreen> {
 
   @override
   void dispose() {
-    _playback.stop();
+    // dispose 期間畫面樹是鎖定的，停止播放 (會通知重繪) 要等這一幀結束
+    final playback = _playback;
+    Future.microtask(playback.stop);
     super.dispose();
   }
 
