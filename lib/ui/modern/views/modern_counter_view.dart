@@ -22,11 +22,11 @@ class ModernCounterView extends StatelessWidget {
         context.select<SettingsController, bool>((s) => s.fullscreenTap);
     final practice = context.read<PracticeController>();
 
-    final content = SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    const content = SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
-        children: const [
+        children: [
           _Stopwatch(),
           SizedBox(height: 18),
           _CounterDisc(),

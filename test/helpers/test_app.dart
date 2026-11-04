@@ -1,16 +1,16 @@
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:buddha_counter/app/app_controllers.dart';
+import 'package:buddha_counter/core/constants/chant_songs.dart';
+import 'package:buddha_counter/features/settings/locale_controller.dart';
+import 'package:buddha_counter/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:buddha_counter/core/constants/chant_songs.dart';
-import 'package:buddha_counter/app/app_controllers.dart';
-import 'package:buddha_counter/features/settings/locale_controller.dart';
-import 'package:buddha_counter/l10n/l10n.dart';
 
 /// 測試用 MaterialApp：已掛好多語言 delegates，預設固定為繁體中文
 Widget testApp({required Widget home, Locale locale = kZhHant}) {

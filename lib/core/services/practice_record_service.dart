@@ -154,9 +154,7 @@ class PracticeRecordService {
       return;
     }
     _widgetDebounceTimer?.cancel();
-    _widgetDebounceTimer = Timer(const Duration(milliseconds: 800), () {
-      syncWidget();
-    });
+    _widgetDebounceTimer = Timer(const Duration(milliseconds: 800), syncWidget);
   }
 
   /// 立即強制推播桌面 Widget (取消待處理的防抖計時)

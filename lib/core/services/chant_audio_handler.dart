@@ -258,7 +258,8 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     );
   }
 
-  /// 本機檔案預先提取快取管理（純 ASCII 檔名，徹底規避 URI 編碼與 AudioCache 跨平台路徑解析問題）
+  /// 把佛曲從 assets 解到暫存資料夾再播放 (檔名只用 ASCII，避開中文路徑的 URI 編碼問題)；
+  /// 同一首同時只解一次
   Future<File> _prepareSongFile(ChantSong song) async {
     final existing = _inFlightFilePreps[song.id];
     if (existing != null) return existing;
@@ -298,7 +299,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     return targetFile;
   }
 
-  /// 播放指定佛曲（具備請求序號防重入、本機檔案快取直讀與狀態回滾保護）
+  /// 從頭播放指定佛曲。連續快速切歌時只有最後一次請求生效 (請求序號)，載入失敗時還原播放狀態
   Future<void> playSong(int songId) async {
     final reqId = ++_playRequestId;
     _isSwitchingTrack = true;

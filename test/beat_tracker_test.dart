@@ -1,6 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:buddha_counter/core/constants/chant_songs.dart';
 import 'package:buddha_counter/features/auto_count/beat_tracker.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// 自動計數的節拍判斷 (純 Dart，不需要播放器)
 void main() {

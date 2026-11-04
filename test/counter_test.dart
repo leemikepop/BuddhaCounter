@@ -1,27 +1,29 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:audioplayers/audioplayers.dart';
+import 'package:buddha_counter/app/app_controllers.dart';
 import 'package:buddha_counter/core/constants/chant_songs.dart';
 import 'package:buddha_counter/core/services/audio_service.dart';
 import 'package:buddha_counter/core/services/chant_audio_handler.dart';
+import 'package:buddha_counter/core/services/practice_record_service.dart';
 import 'package:buddha_counter/core/services/storage_service.dart';
-import 'package:buddha_counter/app/app_controllers.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:buddha_counter/ui/common/app_toast.dart';
 import 'package:buddha_counter/ui/common/marquee_text.dart';
-import 'package:buddha_counter/ui/modern/widgets/modern_floating_player.dart';
-import 'package:buddha_counter/ui/modern/views/modern_counter_view.dart';
-import 'package:buddha_counter/ui/modern/views/modern_timer_view.dart';
-import 'package:buddha_counter/ui/modern/screens/modern_counter_screen.dart';
-import 'package:buddha_counter/ui/modern/views/modern_practice_view.dart';
+import 'package:buddha_counter/ui/legacy/screens/legacy_about_screen.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_counter_screen.dart';
 import 'package:buddha_counter/ui/legacy/screens/legacy_settings_screen.dart';
-import 'package:buddha_counter/ui/legacy/screens/legacy_about_screen.dart';
-import 'package:buddha_counter/ui/common/app_toast.dart';
+import 'package:buddha_counter/ui/modern/screens/modern_counter_screen.dart';
+import 'package:buddha_counter/ui/modern/views/modern_counter_view.dart';
+import 'package:buddha_counter/ui/modern/views/modern_practice_view.dart';
+import 'package:buddha_counter/ui/modern/views/modern_timer_view.dart';
+import 'package:buddha_counter/ui/modern/widgets/modern_floating_player.dart';
 import 'package:buddha_counter/ui/modern/widgets/modern_guide_dialog.dart';
 import 'package:buddha_counter/ui/modern/widgets/song_list_tile.dart';
-import 'package:buddha_counter/core/services/practice_record_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'helpers/test_app.dart';
 
 void main() {
@@ -138,7 +140,7 @@ void main() {
     });
 
     test('AudioService can be created without assertion errors', () {
-      expect(() => AudioService(), returnsNormally);
+      expect(AudioService.new, returnsNormally);
     });
   });
 
@@ -234,7 +236,7 @@ void main() {
     testWidgets('MarqueeText renders text cleanly', (tester) async {
       await tester.pumpWidget(
         testApp(
-          home: Scaffold(
+          home: const Scaffold(
             body: MarqueeText(text: '南無本師釋迦牟尼佛 (三稱、開經偈)'),
           ),
         ),
@@ -252,7 +254,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: Scaffold(
+            home: const Scaffold(
               body: ModernCounterView(),
             ),
           ),
@@ -283,7 +285,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: Scaffold(
+            home: const Scaffold(
               body: ModernTimerView(),
             ),
           ),
@@ -306,11 +308,8 @@ void main() {
       app.autoCount.clearStopCondition();
     });
 
-    test('AudioService maintains loop mode and exposes onPlayerComplete stream',
-        () {
-      final audio = AudioService();
-      expect(audio.releaseMode, ReleaseMode.loop);
-      expect(audio.onPlayerComplete, isNotNull);
+    test('AudioService starts in single-song loop mode', () {
+      expect(AudioService().releaseMode, ReleaseMode.loop);
     });
 
     testWidgets('AppToast renders message correctly and dismisses',
@@ -444,7 +443,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: Scaffold(
+            home: const Scaffold(
               body: Column(
                 children: [
                   Expanded(child: ModernTimerView()),
@@ -517,7 +516,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: Scaffold(
+            home: const Scaffold(
               body: ModernTimerView(),
             ),
           ),
@@ -583,7 +582,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: ModernCounterScreen(),
+            home: const ModernCounterScreen(),
           ),
         ),
       );
@@ -607,7 +606,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: LegacyCounterScreen(),
+            home: const LegacyCounterScreen(),
           ),
         ),
       );
@@ -631,7 +630,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: ModernCounterScreen(),
+            home: const ModernCounterScreen(),
           ),
         ),
       );
@@ -656,7 +655,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: Scaffold(
+            home: const Scaffold(
               body: ModernPracticeView(),
             ),
           ),
@@ -724,7 +723,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: LegacyCounterScreen(),
+            home: const LegacyCounterScreen(),
           ),
         ),
       );
@@ -752,7 +751,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: LegacySettingsScreen(),
+            home: const LegacySettingsScreen(),
           ),
         ),
       );
@@ -774,7 +773,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(
         testApp(
-          home: LegacyAboutScreen(),
+          home: const LegacyAboutScreen(),
         ),
       );
       await tester.pumpAndSettle();
@@ -811,7 +810,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: Scaffold(
+            home: const Scaffold(
               body: ModernCounterView(),
             ),
           ),
@@ -914,7 +913,7 @@ void main() {
       await audio.playClickSfx(SoundEffectType.none);
 
       // 釋放資源
-      expect(() => audio.dispose(), returnsNormally);
+      expect(audio.dispose, returnsNormally);
     });
 
     testWidgets(
@@ -937,7 +936,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: ModernCounterScreen(),
+            home: const ModernCounterScreen(),
           ),
         ),
       );
@@ -1041,7 +1040,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: ModernCounterScreen(),
+            home: const ModernCounterScreen(),
           ),
         ),
       );
@@ -1300,7 +1299,7 @@ void main() {
       await tester.pumpWidget(
         app.provide(
           child: testApp(
-            home: ModernCounterScreen(),
+            home: const ModernCounterScreen(),
           ),
         ),
       );
@@ -1566,7 +1565,7 @@ void main() {
 
       await tester.pumpWidget(
         app.provide(
-          child: testApp(home: Scaffold(body: ModernTimerView())),
+          child: testApp(home: const Scaffold(body: ModernTimerView())),
         ),
       );
       await tester.pump();

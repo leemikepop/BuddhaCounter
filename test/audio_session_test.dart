@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:buddha_counter/core/services/audio_service.dart';
+import 'package:buddha_counter/core/services/chant_audio_handler.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:buddha_counter/core/services/audio_service.dart';
-import 'package:buddha_counter/core/services/chant_audio_handler.dart';
 
 /// 記錄送往原生端的 audioplayers 呼叫，驗證 iOS 全域音訊 session 只被設定成「可成為 Now Playing」的模式
 void main() {

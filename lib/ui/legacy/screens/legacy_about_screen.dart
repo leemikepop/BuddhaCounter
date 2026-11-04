@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../l10n/l10n.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// 經典阿忠小站與傳承說明頁面 (忠實延續原 MainActivity5 / 李一中居士的心血結晶)
+import '../../../l10n/l10n.dart';
+
+/// 關於頁：App 版本、阿忠小站連結與原作者說明 (沿用最早 Android 版 MainActivity5)
 class LegacyAboutScreen extends StatelessWidget {
   const LegacyAboutScreen({super.key});
 
@@ -48,7 +49,8 @@ class LegacyAboutScreen extends StatelessWidget {
 
               Text(
                 context.l10n.aboutAppName,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               FutureBuilder<PackageInfo>(
                 future: PackageInfo.fromPlatform(),
@@ -65,7 +67,7 @@ class LegacyAboutScreen extends StatelessWidget {
 
               Text(
                 context.l10n.aboutHeading,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF0000FF),
@@ -76,8 +78,8 @@ class LegacyAboutScreen extends StatelessWidget {
               Text(
                 context.l10n.aboutBody,
                 textAlign: TextAlign.start,
-                style:
-                    TextStyle(fontSize: 16, height: 1.6, color: Colors.black87),
+                style: const TextStyle(
+                    fontSize: 16, height: 1.6, color: Colors.black87),
               ),
 
               const SizedBox(height: 24),
@@ -136,7 +138,7 @@ class LegacyAboutScreen extends StatelessWidget {
                 ),
                 onPressed: () => Navigator.pop(context),
                 child: Text(context.l10n.commonBack,
-                    style: TextStyle(fontSize: 16)),
+                    style: const TextStyle(fontSize: 16)),
               ),
             ],
           ),

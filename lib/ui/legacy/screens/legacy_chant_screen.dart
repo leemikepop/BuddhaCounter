@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../l10n/l10n.dart';
 import 'package:provider/provider.dart';
+
 import '../../../core/constants/chant_songs.dart';
 import '../../../features/playback/playback_controller.dart';
 import '../../../features/settings/settings_controller.dart';
+import '../../../l10n/l10n.dart';
 import '../../common/swipeable_hui_xiang.dart';
 import '../widgets/legacy_widgets.dart';
 
@@ -98,7 +99,7 @@ class _LegacyChantScreenState extends State<LegacyChantScreen> {
                 // 南無阿彌陀佛
                 Text(
                   context.l10n.practiceBuddhaName,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: LegacyColors.blue,

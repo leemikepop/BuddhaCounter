@@ -38,7 +38,7 @@ Future<void> main() async {
   ChantAudioHandler? audioHandler;
   try {
     audioHandler = await bg_audio.AudioService.init(
-      builder: () => ChantAudioHandler(),
+      builder: ChantAudioHandler.new,
       config: bg_audio.AudioServiceConfig(
         androidNotificationChannelId:
             'com.yichung.lee.buddha_counter.channel.audio',
