@@ -78,7 +78,7 @@
 - `tools/check_arb_parity.sh` 內部用 `dart` 執行（不需要 Python）。
 - 新增語言時：Android 要有對應的 `res/values-*`（中文已有 `zh`、`zh-rTW/HK/MO/CN/SG`、`b+zh+Hant/Hans`），
   iOS 要加進 `Info.plist` 的 `CFBundleLocalizations` 並建立 `*.lproj`。
-- 英文佛教用語是初稿，先查並更新 `lib/l10n/GLOSSARY.md`。
+- 英文佛教用語已對照公開英譯修訂過一次（尚未經人審閱）；新增或修改前先查並更新 `lib/l10n/GLOSSARY.md`。
 
 ## 桌面小工具
 

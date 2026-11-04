@@ -1,6 +1,7 @@
 # 術語表 (Glossary)
 
-同一個詞在全 App 應使用相同譯法。英文為初稿，**待熟悉佛教用語者審閱**。
+同一個詞在全 App 應使用相同譯法。英文已對照公開英譯（萬佛城宣化上人一系英譯、佛光大辭典、
+Chin Kung / Yinguang 的通行英文名、英文維基百科）修訂過一次，但**尚未經熟悉佛教用語的人審閱**。
 新增翻譯時先查此表；新詞加入此表後再寫進 ARB 或 `lib/core/content/`。
 
 ## 介面用語
@@ -43,7 +44,7 @@
 | 大回向西方文 | 大回向西方文 | Great Dedication to the Western Pure Land |
 | 回向偈 | 回向偈 | Verse of Dedication |
 | 西方淨土 / 安養 | 西方净土 / 安养 | Western Pure Land / Land of Peace |
-| 無生法忍 | 无生法忍 | patience of non-arising |
+| 無生法忍 | 无生法忍 | patience with the non-production of dharmas（偈中簡稱「無生」：the non-production of dharmas） |
 | 五濁 | 五浊 | five turbidities |
 | 娑婆 | 娑婆 | Saha world（經文中意譯為 this world） |
 
@@ -55,7 +56,7 @@
 | 六字彌陀 | 六字弥陀 | 6-char Amitabha |
 | 菩薩・持咒 | 菩萨・持咒 | Bodhisattvas & mantras |
 | 朝山聖號 | 朝山圣号 | Pilgrimage |
-| 靈巖梵唄 | 灵岩梵呗 | Lingyan chant |
+| 靈巖梵唄 | 灵岩梵呗 | Ling Yen chant |
 | 法師大德 | 法师大德 | Masters |
 | 快中板 | 快中板 | Brisk |
 | 慢板 | 慢板 | Slow |
@@ -66,8 +67,8 @@
 |---|---|---|
 | 三寶弟子（預設演出者） | 三宝弟子 | Disciple of the Triple Gem |
 | 華藏淨宗 | 华藏净宗 | Hwa Dzan Pure Land |
-| 靈巖山寺 | 灵岩山寺 | Lingyan Mountain Temple |
-| 靈巖梵唄 | 灵岩梵呗 | Lingyan Chant |
+| 靈巖山寺 | 灵岩山寺 | Ling Yen Mountain Temple |
+| 靈巖梵唄 | 灵岩梵呗 | Ling Yen Chant |
 | 佛光山 | 佛光山 | Fo Guang Shan |
 | 祥林精舍 | 祥林精舍 | Xianglin Vihara |
 | 沙鹿彌陀念佛堂 | 沙鹿弥陀念佛堂 | Shalu Amitabha Hall |
@@ -76,7 +77,7 @@
 | 悟行法師 | 悟行法师 | Ven. Wu Xing |
 | 開松法師 | 开松法师 | Ven. Kai Song |
 | 淨宗法師 | 净宗法师 | Ven. Jing Zong |
-| 印光大師 | 印光大师 | Master Yin Guang |
+| 印光大師 | 印光大师 | Great Master Yinguang |
 | 陳有宏居士 | 陈有宏居士 | Upasaka Chen You-hong |
 | 夏蓮居老居士 | 夏莲居老居士 | Elder Upasaka Xia Lianju |
 | 沙彌師父 | 沙弥师父 | Novice Monk |

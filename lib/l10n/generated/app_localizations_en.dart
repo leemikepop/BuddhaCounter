@@ -547,7 +547,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chantTagPilgrimage => 'Pilgrimage';
 
   @override
-  String get chantTagLingyan => 'Lingyan chant';
+  String get chantTagLingyan => 'Ling Yen chant';
 
   @override
   String get chantTagMasterChant => 'Masters';

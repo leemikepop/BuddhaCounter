@@ -197,7 +197,7 @@ flutter build appbundle --release  # 上傳 Google Play (build/app/outputs/bundl
 
 - iOS：來電等音訊中斷後，Dart 端不會收到「被中斷」的通知（播放鍵可能仍顯示播放中）。
 - Android：通知頻道名稱在第一次建立後不會隨 App 語言切換而改名（Android 系統限制，重新安裝才會更新）。
-- 英文的佛教用語尚待審閱（見 `lib/l10n/GLOSSARY.md`）。
+- 英文佛教用語已對照公開英譯修訂過，但還沒經過熟悉佛教用語的人審閱（見 `lib/l10n/GLOSSARY.md`）。
 - 320dp 窄螢幕測試需要 Flutter SDK 內附的 Roboto 字型；找不到時該測試會自動略過。
 
 ---
