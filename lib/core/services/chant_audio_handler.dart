@@ -9,12 +9,12 @@ import '../../l10n/app_language.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../constants/chant_songs.dart';
 import 'chant_music_engine.dart';
-import 'ios_loop_chant_engine.dart';
+import 'native_loop_chant_engine.dart';
 
 /// 佛曲媒體播放會話處理器 (整合 Android MediaSession 與 iOS NowPlayingCenter / RemoteCommandCenter)
 /// 支援系統通知欄、鎖定畫面、控制中心、動態島、耳機線控 (AirPods) 播放/暫停/上一首/下一首與進度控制
 ///
-/// 實際發聲交給 [ChantMusicEngine]：iOS 用原生 AVPlayerLooper (無縫循環)，Android 用 audioplayers。
+/// 實際發聲交給 [ChantMusicEngine]：兩個平台都是原生無縫循環播放器 ([NativeLoopChantEngine])。
 class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   final ChantMusicEngine _engine;
 
@@ -80,15 +80,8 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   /// - `mixWithOthers` 會讓 iOS 不把 App 視為 Now Playing → 控制中心 / 鎖定畫面不顯示播放控制
   /// - `defaultToSpeaker` 只能搭配 playAndRecord，搭配 playback 會讓整組設定失敗
   ///
-  /// Android：每個播放器各自設定，佛曲取得音訊焦點 (gain) 並保持喚醒。
+  /// Android 的佛曲不經過 audioplayers：音訊焦點與保持喚醒在原生 ChantLoopPlayer.kt 設定。
   static final AudioContext musicAudioContext = AudioContext(
-    android: const AudioContextAndroid(
-      isSpeakerphoneOn: false,
-      stayAwake: true,
-      contentType: AndroidContentType.music,
-      usageType: AndroidUsageType.media,
-      audioFocus: AndroidAudioFocus.gain,
-    ),
     iOS: AudioContextIOS(
       category: AVAudioSessionCategory.playback,
       options: const {},
@@ -145,10 +138,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   ChantAudioHandler({ChantMusicEngine? engine})
-      : _engine = engine ??
-            (_isIOS
-                ? IosLoopChantEngine()
-                : AudioplayersChantEngine(audioContext: musicAudioContext)) {
+      : _engine = engine ?? NativeLoopChantEngine() {
     _initFuture = _initAudioPlayer();
   }
 

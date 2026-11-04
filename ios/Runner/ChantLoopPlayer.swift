@@ -8,7 +8,7 @@ import Flutter
 /// 接縫完全由系統處理，不經過 Dart。
 ///
 /// 音訊 session (playback、不混音) 仍由 Dart 端 ChantAudioHandler.configureIosAudioSession 統一設定。
-/// 對應的 Dart 端：lib/core/services/ios_loop_chant_engine.dart
+/// 對應的 Dart 端：lib/core/services/native_loop_chant_engine.dart
 final class ChantLoopPlayer: NSObject, FlutterPlugin, FlutterStreamHandler {
   static let methodChannelName = "buddha_counter/chant_loop_player"
   static let eventChannelName = "buddha_counter/chant_loop_player/events"

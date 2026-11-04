@@ -6,12 +6,14 @@ import 'package:flutter/services.dart';
 
 import 'chant_music_engine.dart';
 
-/// iOS 佛曲引擎：橋接到 Runner 內的原生 ChantLoopPlayer (ios/Runner/ChantLoopPlayer.swift)。
+/// 佛曲引擎 (iOS 與 Android 共用)：橋接到 App 內的原生 ChantLoopPlayer。
+/// - iOS：`ios/Runner/ChantLoopPlayer.swift` (AVQueuePlayer + AVPlayerLooper)
+/// - Android：`android/.../ChantLoopPlayer.kt` (兩個 MediaPlayer 以 setNextMediaPlayer 接力)
 ///
-/// 為什麼不用 audioplayers：它要等播完、通知 Dart、再由 Dart 叫播放器重新開始，
-/// 這一來一回加上播放器冷啟動，每次重播都會停頓。原生端用 AVPlayerLooper 預先排好下一遍，
-/// 接縫完全不經過 Dart。
-class IosLoopChantEngine implements ChantMusicEngine {
+/// 為什麼不用 audioplayers：iOS 上它要等播完、通知 Dart、再由 Dart 叫播放器重新開始；
+/// Android 上 MediaPlayer 自己的循環每一遍結尾會先停掉輸出再跳回開頭。兩者每次重播都會停頓。
+/// 原生端預先排好下一遍，接縫完全不經過 Dart。
+class NativeLoopChantEngine implements ChantMusicEngine {
   static const MethodChannel methodChannel =
       MethodChannel('buddha_counter/chant_loop_player');
   static const EventChannel eventChannel =
@@ -49,7 +51,7 @@ class IosLoopChantEngine implements ChantMusicEngine {
     _eventSubscription ??= eventChannel
         .receiveBroadcastStream()
         .listen(_onNativeEvent, onError: (Object e) {
-      debugPrint('IosLoopChantEngine: native event error: $e');
+      debugPrint('NativeLoopChantEngine: native event error: $e');
     });
   }
 

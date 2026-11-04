@@ -78,24 +78,17 @@ void main() {
     }
   });
 
-  test(
-      'Android: the music player and click-sound players each get their own context',
-      () async {
+  test('Android: click sounds never take audio focus', () async {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     await createAudioStack();
 
     final perPlayer = contextCalls(playerCalls).toList();
-    final musicCalls = perPlayer
-        .where((c) => (c.arguments as Map)['playerId'] == 'chant_music_player');
     final sfxCalls = perPlayer.where((c) =>
         ((c.arguments as Map)['playerId'] as String).startsWith('sfx_pool_'));
 
-    expect(musicCalls.length, 1,
-        reason: 'the music player must get gain focus');
+    // 佛曲走原生 ChantLoopPlayer.kt (焦點在原生端取得)，audioplayers 只剩點擊音效
+    expect(perPlayer.length, sfxCalls.length);
     expect(sfxCalls.length, 6, reason: 'click sounds must not take focus');
-    for (final c in musicCalls) {
-      expect((c.arguments as Map)['audioFocus'], AndroidAudioFocus.gain.value);
-    }
     for (final c in sfxCalls) {
       expect((c.arguments as Map)['audioFocus'], AndroidAudioFocus.none.value);
     }

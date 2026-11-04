@@ -61,14 +61,14 @@ LocaleController (推送語言給曲目內容 / 通知 / 小工具 / 背景播�
 - 自動計數的節拍判斷在 `BeatTracker`（純 Dart，有單元測試）：有時間標記的曲目跨過標記算一聲，
   沒有標記的曲目依平均節拍；切歌、循環回到開頭、拖曳進度條都有保護，不會多算。
 
-### 播放引擎（iOS 與 Android 不同）
+### 播放引擎
 
 | 平台 | 佛曲 | 點擊音效 |
 |---|---|---|
 | iOS | 原生 `ChantLoopPlayer`（`ios/Runner/ChantLoopPlayer.swift`，AVQueuePlayer + AVPlayerLooper，無縫循環） | audioplayers |
-| Android | audioplayers 單一播放器（MediaPlayer 原生循環） | audioplayers（6 個播放器輪流） |
+| Android | 原生 `ChantLoopPlayer`（`android/.../ChantLoopPlayer.kt`，兩個 MediaPlayer 以 setNextMediaPlayer 接力，無縫循環） | audioplayers（6 個播放器輪流） |
 
-兩者都包在 `ChantMusicEngine` 介面後面，由 `ChantAudioHandler`（audio_service）統一對接系統媒體控制。
+兩個原生播放器用同一套通道，Dart 端都是 `NativeLoopChantEngine`（實作 `ChantMusicEngine` 介面），由 `ChantAudioHandler`（audio_service）統一對接系統媒體控制。
 
 ---
 

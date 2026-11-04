@@ -50,7 +50,7 @@
   - `test/audio_session_test.dart` 會擋住這些錯誤。
 - 佛曲在 iOS 用原生 `ios/Runner/ChantLoopPlayer.swift`（AVQueuePlayer + AVPlayerLooper），
   透過 MethodChannel `buddha_counter/chant_loop_player` 與 EventChannel `.../events` 和
-  `lib/core/services/ios_loop_chant_engine.dart` 溝通。
+  `lib/core/services/native_loop_chant_engine.dart` 溝通（Android 用同一套通道，見「Android 音訊」）。
   - 原因：以前用 audioplayers 時，循環是「播完通知 Dart → Dart 再叫播放器重播」，iOS 上每次重播會停頓。
     單曲循環**必須由原生端處理**，不要改回在 Dart 收到 complete 後 seek(0) / resume。
   - AVPlayerLooper 不接受檔案時會自動改用「播完跳回開頭」；log 會印 `loop mode: ...` 說明用了哪一種。
@@ -62,8 +62,12 @@
 
 ## Android 音訊
 
-- 佛曲只用一個 audioplayers 播放器 `chant_music_player`，`positionUpdater = null`（進度由 handler 每 250 ms 查詢），
-  單曲循環用 `ReleaseMode.loop` 交給 MediaPlayer 原生處理。不要再加「備用播放器接力」。
+- 佛曲用原生 `android/app/src/main/kotlin/.../ChantLoopPlayer.kt`，和 iOS 共用同一個 MethodChannel / EventChannel
+  與 Dart 端 `NativeLoopChantEngine`。在 `MainActivity.provideFlutterEngine` 裡註冊（audio_service 在那裡啟動 Dart）。
+  - 單曲循環用兩個 MediaPlayer 以 `setNextMediaPlayer` 接力。**不要改回 `MediaPlayer.setLooping` / audioplayers 的
+    `ReleaseMode.loop`**：它每一遍結尾會先停掉音訊輸出再跳回開頭，實測 Pixel 7 每次停頓約 0.5～0.65 秒。
+  - 音訊焦點（gain，來電時暫停、結束後續播）與 `PARTIAL_WAKE_LOCK` 都在原生端處理。
+  - 改了 Kotlin 要在實機上聽循環接縫：logcat 裡每一遍結尾出現 `AudioTrack: stop(...)` 就代表又有停頓。
 - 點擊音效是 6 個播放器輪流使用，`AndroidAudioFocus.none`，不會打斷佛曲或其他 App 的音樂。
 
 ## 多語言 (i18n)

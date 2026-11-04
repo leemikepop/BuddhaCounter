@@ -2,14 +2,13 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:buddha_counter/core/services/chant_audio_handler.dart';
-import 'package:buddha_counter/core/services/ios_loop_chant_engine.dart';
+import 'package:buddha_counter/core/services/native_loop_chant_engine.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// 佛曲播放引擎的平台分流：
-/// - iOS 走原生 AVPlayerLooper 通道 (無縫循環，不靠 Dart 在播完後重新開始)
-/// - Android 沿用 audioplayers 單一播放器 (MediaPlayer 原生循環)
+/// 佛曲播放引擎：iOS 與 Android 都走原生 ChantLoopPlayer 通道
+/// (無縫循環，不靠 Dart 在播完後重新開始，也不用 MediaPlayer 自己會停頓的 setLooping)
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -41,7 +40,7 @@ void main() {
         return 1;
       },
     );
-    messenger.setMockMethodCallHandler(IosLoopChantEngine.methodChannel,
+    messenger.setMockMethodCallHandler(NativeLoopChantEngine.methodChannel,
         (call) async {
       loopCalls.add(call);
       switch (call.method) {
@@ -55,7 +54,7 @@ void main() {
       return null;
     });
     messenger.setMockStreamHandler(
-      IosLoopChantEngine.eventChannel,
+      NativeLoopChantEngine.eventChannel,
       MockStreamHandler.inline(
         onListen: (_, sink) => loopEvents = sink,
         onCancel: (_) => loopEvents = null,
@@ -161,19 +160,19 @@ void main() {
   });
 
   group('Android', () {
-    test('plays through a single audioplayers player with native looping',
+    test('loop mode also goes to the native looper, not audioplayers',
         () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       final handler = ChantAudioHandler();
       await pumpEventQueue(times: 50);
       await handler.playSong(0);
 
-      expect(loopCalls, isEmpty);
-      expect(chantPlayerIds(), {'chant_music_player'});
-      final releaseModes = audioplayersCalls
-          .where((c) => c.method == 'setReleaseMode')
-          .map((c) => (c.arguments as Map)['releaseMode']);
-      expect(releaseModes, contains(ReleaseMode.loop.toString()));
+      final args = Map<String, dynamic>.from(
+          loopCallsNamed('load').single.arguments as Map);
+      expect(args['looping'], isTrue);
+      expect(loopCallsNamed('play'), isNotEmpty);
+      // MediaPlayer 自己的循環每一遍結尾會停頓約半秒，佛曲不得再經過 audioplayers
+      expect(chantPlayerIds(), isEmpty);
       await handler.disposePlayer();
     });
   });
