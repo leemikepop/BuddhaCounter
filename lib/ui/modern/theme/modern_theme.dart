@@ -40,7 +40,7 @@ class ModernTheme {
       outline: lightCardBorder,
     );
 
-    return ThemeData(
+    return _inheritTitleFont(ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: colorScheme,
@@ -103,7 +103,7 @@ class ModernTheme {
         thickness: 1,
         space: 1,
       ),
-    );
+    ));
   }
 
   static ThemeData get darkTheme {
@@ -122,7 +122,7 @@ class ModernTheme {
       outline: darkCardBorder,
     );
 
-    return ThemeData(
+    return _inheritTitleFont(ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: colorScheme,
@@ -184,6 +184,22 @@ class ModernTheme {
         color: darkDivider,
         thickness: 1,
         space: 1,
+      ),
+    ));
+  }
+
+  /// AppBar 標題沿用內文字型：titleTextStyle 沒指定字型時，引擎會改用平台預設字型，
+  /// 和畫面上其他文字不一致 (截圖測試裡也會畫成方框)
+  static ThemeData _inheritTitleFont(ThemeData theme) {
+    final title = theme.appBarTheme.titleTextStyle;
+    final body = theme.textTheme.titleLarge;
+    if (title == null || body == null) return theme;
+    return theme.copyWith(
+      appBarTheme: theme.appBarTheme.copyWith(
+        titleTextStyle: title.copyWith(
+          fontFamily: body.fontFamily,
+          fontFamilyFallback: body.fontFamilyFallback,
+        ),
       ),
     );
   }

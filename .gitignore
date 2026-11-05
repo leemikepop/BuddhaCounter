@@ -48,3 +48,7 @@
 android/keystore/
 ios/secret/
 assets/raw/
+
+# 截圖測試用字型與輸出 (tool/screenshots/fetch_fonts.sh 下載)
+tool/screenshots/fonts/
+build/screenshots/
