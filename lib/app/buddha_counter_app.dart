@@ -1,11 +1,14 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../core/services/storage_service.dart';
 import '../features/practice/practice_controller.dart';
 import '../features/settings/locale_controller.dart';
 import '../features/settings/settings_controller.dart';
 import '../l10n/l10n.dart';
+import '../ui/common/tablet_scale.dart';
 import '../ui/legacy/screens/legacy_counter_screen.dart';
 import '../ui/modern/screens/modern_counter_screen.dart';
 import '../ui/modern/theme/modern_theme.dart';
@@ -87,7 +90,8 @@ class _BuddhaCounterAppState extends State<BuddhaCounterApp>
       theme: isLegacy ? _legacyTheme : ModernTheme.lightTheme,
       darkTheme: isLegacy ? _legacyTheme : ModernTheme.darkTheme,
       // 網頁版：電腦上維持手機寬度置中、手機瀏覽器建議下載 App (原生 App 原樣通過)
-      builder: (context, child) => WebFrame(child: child!),
+      // 平板：整個 App 等比放大 (手機與網頁不變)
+      builder: (context, child) => WebFrame(child: TabletScale(child: child!)),
       home:
           isLegacy ? const LegacyCounterScreen() : const ModernCounterScreen(),
     );

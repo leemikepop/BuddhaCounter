@@ -24,6 +24,9 @@ class ModernCounterScreen extends StatefulWidget {
   static const int dedicationTab = 2;
   static const int calendarTab = 3;
 
+  /// 平板上內容的最大寬度：超過就置中，兩側留白 (手機寬度不受影響)
+  static const double maxContentWidth = 600;
+
   @override
   State<ModernCounterScreen> createState() => _ModernCounterScreenState();
 }
@@ -132,23 +135,29 @@ class _ModernCounterScreenState extends State<ModernCounterScreen> {
       ),
       drawer: ModernDrawer(currentTab: _tab, onSelectTab: _goToTab),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const BouncingScrollPhysics(),
-                onPageChanged: _onPageChanged,
-                children: const [
-                  RepaintBoundary(child: ModernCounterView()),
-                  RepaintBoundary(child: ModernTimerView()),
-                  RepaintBoundary(child: ModernPracticeView()),
-                  RepaintBoundary(child: ModernCalendarView()),
-                ],
-              ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+                maxWidth: ModernCounterScreen.maxContentWidth),
+            child: Column(
+              children: [
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const BouncingScrollPhysics(),
+                    onPageChanged: _onPageChanged,
+                    children: const [
+                      RepaintBoundary(child: ModernCounterView()),
+                      RepaintBoundary(child: ModernTimerView()),
+                      RepaintBoundary(child: ModernPracticeView()),
+                      RepaintBoundary(child: ModernCalendarView()),
+                    ],
+                  ),
+                ),
+                const ModernFloatingPlayer(),
+              ],
             ),
-            const ModernFloatingPlayer(),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: NavigationBar(
