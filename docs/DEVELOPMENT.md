@@ -122,6 +122,21 @@ dart format lib test            # 可選：統一格式
 
 共用工具在 `test/helpers/test_app.dart`（平台通道 mock、`AppControllers` 包裝、真實字型載入）。
 
+### 商店截圖
+
+```bash
+bash tool/screenshots/fetch_fonts.sh   # 第一次：下載 Noto Sans TC / SC（約 40 MB，不進 repo）
+flutter test tool/screenshots          # 約 20 秒，輸出到 build/screenshots/<裝置>/<語言>/
+```
+
+- 用真實的 `BuddhaCounterApp` 加上示範資料（今天 56 / 108 聲、自動 238 聲、約一個半月的功課紀錄）畫出來，
+  不需要模擬器或 Mac。
+- 裝置：iPhone 6.9 吋（1320×2868）、iPad 13 吋（2064×2752）、Android 手機（1080×1920）；
+  語言：繁中、簡中、英文；畫面清單在 `tool/screenshots/shots.dart` 的 `shots`。
+- 文字一律用 Noto Sans 排版，和 iPhone 實機的蘋方 / SF 略有不同。
+- 截不到的：桌面小工具、通知、鎖定畫面播放控制（都是原生畫面），仍要手動截。
+- 月初時功課月曆會自動切到上個月，避免大半個月是空的。
+
 ### 佛曲工作站（剪輯、轉檔、打時間標記）
 
 雙擊 `tools/啟動佛曲工作站.bat`（需要 Node.js 與 ffmpeg），瀏覽器會打開 `tools/marker_recorder.html`：
