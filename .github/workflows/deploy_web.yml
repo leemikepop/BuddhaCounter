@@ -7,10 +7,9 @@ on:
     tags: [ 'v*' ]
   workflow_dispatch:
 
+# 建置工作 (會執行第三方 action 與套件) 只有讀取權限；寫入 Pages 的權限只給 deploy 工作
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # 同時只跑一次部署；新的部署開始時不取消正在進行的那一次
 concurrency:
@@ -26,7 +25,8 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        # 第三方 action 固定在 commit SHA，避免 tag 被改指向惡意程式碼
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: '3.47.x'
           channel: 'stable'
@@ -54,6 +54,9 @@ jobs:
     name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
