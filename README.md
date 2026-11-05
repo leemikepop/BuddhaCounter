@@ -1,4 +1,4 @@
-![念佛計數器](assets/store_assets/banner_5244x2950.png)
+![念佛計數器](assets/store_assets/readme_banner.png)
 
 # 念佛計數器 (BuddhaCounter)
 
