@@ -1,6 +1,6 @@
 # AGENTS.md
 
-給在這個 repo 工作的開發者與 AI 助理。功能與一般說明見 [README.md](README.md)；
+給在這個 repo 工作的開發者與 AI 助理。App 介紹見 [README.md](README.md)，架構、建置、CI 見 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)；
 這裡只寫**改程式前一定要知道的規則**，大多是實際踩過的坑。
 
 ## 工作方式
