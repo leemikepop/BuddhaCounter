@@ -1,3 +1,5 @@
+![念佛計數器](assets/store_assets/banner_5244x2950.png)
+
 # 念佛計數器 (BuddhaCounter)
 
 專為念佛、拜佛打造的隨身計數工具：點一下記一聲，或播放佛曲讓 App 跟著佛號自動計數，
