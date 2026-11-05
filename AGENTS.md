@@ -70,6 +70,18 @@
   - 改了 Kotlin 要在實機上聽循環接縫：logcat 裡每一遍結尾出現 `AudioTrack: stop(...)` 就代表又有停頓。
 - 點擊音效是 6 個播放器輪流使用，`AndroidAudioFocus.none`，不會打斷佛曲或其他 App 的音樂。
 
+## 網頁版 (Web)
+
+- 判斷平台一律用 `lib/core/platform/app_platform.dart` 的 `AppPlatform`，**不要直接用 `defaultTargetPlatform == iOS`**：
+  在 iPhone 的瀏覽器上它也是 iOS，會讓網頁誤走原生 iOS 的音訊設定。原生判斷用 `isNativeIOS` / `isNativeAndroid`。
+- 佛曲在 Web 用 `WebAudioChantEngine`（`web_chant_engine_web.dart`，只能用條件 import，經由 `web_chant_engine.dart` 取得）。
+  `ChantAudioHandler` 在 Web 上把資源鍵直接交給引擎，不寫暫存檔（Web 沒有 `dart:io` 檔案系統）。
+- **啟動時不能讀音檔**：每讀一個音檔，網頁就要下載整首。演唱者改用 `lib/core/content/embedded_song_artists.dart`；
+  換音檔或改了音檔標籤要一起更新（`test/embedded_song_artists_test.dart` 會檢查）。
+- Web 上隱藏：每日提醒、桌面小工具、方向鎖定（`AppPlatform.supports*`）。新增依賴原生外掛的功能時，也要決定 Web 上怎麼處理。
+- 版面外框在 `lib/ui/web/web_frame.dart`（`MaterialApp.builder`）：寬螢幕時 App 固定 480 寬置中，手機瀏覽器顯示下載 App 提示。
+- 部署：`.github/workflows/deploy_web.yml`（`v*` tag 或手動）到 GitHub Pages，base href 是 `/BuddhaCounter/`。
+
 ## 多語言 (i18n)
 
 - 模板是 `lib/l10n/app_zh.arb`（繁中）；三個 ARB（`app_zh`、`app_zh_Hans`、`app_en`）的 key 與 placeholder 必須一致。
@@ -100,7 +112,7 @@
 
 ## CI
 
-- 平常 push **不會**觸發建置。`ci_android.yml` 與 `deploy_ios_testflight.yml` 在推送 `v*` tag、發布 Release 或手動時執行；
+- 平常 push **不會**觸發建置。`ci_android.yml`、`deploy_ios_testflight.yml` 與 `deploy_web.yml` 在推送 `v*` tag（前兩者另含發布 Release）或手動時執行；
   `ci_ios.yml`（未簽名 IPA，給側載）只能手動；Codemagic 只能在網頁手動開始。
 - repo 是私有的，macOS runner 的分鐘數是 Linux 的 10 倍：iOS workflow 不要設成自動觸發。
 - 手動觸發：`gh workflow run ci_ios.yml --ref <branch>`。
@@ -114,6 +126,8 @@
   - `loadRealLatinFont()`：載入 SDK 內附 Roboto 來量真實英文字寬；找不到時回傳 false，測試應略過。
 - 測試裡的 log `MissingPluginException(... home_widget)` 與 `scheduleDailyReminder error` 是正常的（沒有原生端）。
 - iOS / Android 播放引擎分流用 `debugDefaultTargetPlatformOverride` 測，見 `test/chant_music_engine_test.dart`。
+  這個覆寫必須在測試本體結束前設回 `null`（框架在 tearDown 之前就會檢查）。
+- 網頁版行為用 `AppPlatform.debugIsWebOverride = true` 模擬，見 `test/web_test.dart`。
 
 ## 其他
 

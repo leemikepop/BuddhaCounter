@@ -256,5 +256,9 @@
   "milestoneChannelDesc": "Notifications when you reach goals and milestones",
   "audioChannelName": "Buddha Counter chant playback",
   "audioChannelDesc": "Keeps chants playing with the screen off or in the background",
-  "mediaSubtitle": "{artist} · {album}"
+  "mediaSubtitle": "{artist} · {album}",
+  "webMobileBanner": "Get the app for background playback, home screen widgets and daily reminders.",
+  "webBannerClose": "Dismiss",
+  "webGetApp": "Get the mobile app",
+  "webStorageNote": "The web version keeps your records in this browser only. Switching browsers or clearing site data will erase them."
 }

@@ -6,9 +6,11 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../../l10n/app_language.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../platform/app_platform.dart';
 import 'storage_service.dart';
 
-/// 本地通知與定時提醒服務 (Local Notifications & Daily Reminders)
+/// 本地通知與定時提醒服務 (Local Notifications & Daily Reminders)。
+/// Web 不支援本機排程通知：設定照常儲存，但不會呼叫通知外掛 (畫面上也不顯示提醒設定)。
 class NotificationService {
   static const int reminderNotificationId = 100;
   static const String reminderChannelId = 'buddha_daily_reminder';
@@ -43,7 +45,7 @@ class NotificationService {
 
   /// 初始化本地通知插件與時區設定
   Future<void> init() async {
-    if (_isInitialized) return;
+    if (_isInitialized || !AppPlatform.supportsReminders) return;
     try {
       ensureTimeZonesInitialized();
 
@@ -83,6 +85,7 @@ class NotificationService {
 
   /// 請求推播通知權限 (Android 13+ 與 iOS)
   Future<bool?> requestPermissions() async {
+    if (!AppPlatform.supportsReminders) return false;
     try {
       final androidImplementation =
           _plugin.resolvePlatformSpecificImplementation<
@@ -128,6 +131,7 @@ class NotificationService {
     await _storage.setReminderEnabled(enabled);
     await _storage.setReminderHour(hour);
     await _storage.setReminderMinute(minute);
+    if (!AppPlatform.supportsReminders) return;
 
     try {
       await _plugin.cancel(id: reminderNotificationId);
@@ -185,6 +189,7 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
+    if (!AppPlatform.supportsReminders) return;
     try {
       final l10n = lookupAppLocalizations(locale);
       final androidDetails = AndroidNotificationDetails(
@@ -221,6 +226,7 @@ class NotificationService {
   /// 取消每日提醒
   Future<void> cancelDailyReminder() async {
     await _storage.setReminderEnabled(false);
+    if (!AppPlatform.supportsReminders) return;
     try {
       await _plugin.cancel(id: reminderNotificationId);
     } catch (e) {

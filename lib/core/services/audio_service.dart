@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
+import '../platform/app_platform.dart';
 import 'chant_audio_handler.dart';
 import 'storage_service.dart';
 
@@ -14,7 +15,7 @@ class AudioService {
       player.setReleaseMode(ReleaseMode.stop);
       // iOS 只有一份全域 audio session (見 ChantAudioHandler.configureIosAudioSession)，
       // 單一播放器設定 context 會覆蓋它，所以只在 Android 設定
-      if (defaultTargetPlatform != TargetPlatform.iOS) {
+      if (AppPlatform.isNativeAndroid) {
         player.setAudioContext(_sfxAudioContext).catchError((Object e) {
           debugPrint('AudioService: sfx audio context failed: $e');
         });

@@ -888,6 +888,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String mediaSubtitle(String artist, String album) {
     return '$artist · $album';
   }
+
+  @override
+  String get webMobileBanner => '建議下載 App 使用：背景播放、桌面小工具與每日提醒更完整。';
+
+  @override
+  String get webBannerClose => '關閉提示';
+
+  @override
+  String get webGetApp => '下載手機 App';
+
+  @override
+  String get webStorageNote => '網頁版的紀錄只存在這個瀏覽器裡，換瀏覽器或清除網站資料就會消失。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1774,6 +1786,18 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String mediaSubtitle(String artist, String album) {
     return '$artist · $album';
   }
+
+  @override
+  String get webMobileBanner => '建议下载 App 使用：后台播放、桌面小组件与每日提醒更完整。';
+
+  @override
+  String get webBannerClose => '关闭提示';
+
+  @override
+  String get webGetApp => '下载手机 App';
+
+  @override
+  String get webStorageNote => '网页版的记录只保存在这个浏览器里，换浏览器或清除网站数据就会消失。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

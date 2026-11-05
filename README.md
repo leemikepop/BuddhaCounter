@@ -9,6 +9,9 @@
 
 - **iPhone / iPad**：[App Store](https://apps.apple.com/tw/app/%E5%BF%B5%E4%BD%9B%E8%A8%88%E6%95%B8%E5%99%A8/id965764032)
 - **Android**：[Google Play](https://play.google.com/store/apps/details?id=com.yichung.lee.count4&pcampaignid=web_share)
+- **電腦瀏覽器**：[網頁版](https://leemikepop.github.io/BuddhaCounter/)（免安裝；在 Chrome、Edge 網址列按「安裝」可以像 App 一樣從桌面開啟）
+
+> 網頁版沒有背景播放保證、桌面小工具與每日提醒，紀錄只存在該瀏覽器裡。手機上建議下載 App。
 
 本 App 由李義忠（阿忠）居士發心設計開發，最初於 Android 發布，提供念佛、拜佛的同修一個方便、
 純粹的精進記數工具。為使這份心血長久傳承，現由後輩接棒維護，並推出 iPhone 版與全新介面。

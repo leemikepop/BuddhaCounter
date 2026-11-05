@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/platform/app_platform.dart';
 import '../../features/settings/settings_controller.dart';
 import '../../l10n/l10n.dart';
 import 'app_toast.dart';
@@ -10,6 +11,8 @@ class OrientationLockButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 瀏覽器不能鎖定方向，網頁版不顯示
+    if (!AppPlatform.supportsOrientationLock) return const SizedBox.shrink();
     final locked =
         context.select<SettingsController, bool>((s) => s.isOrientationLocked);
     final l10n = context.l10n;

@@ -1,12 +1,14 @@
 {
-    "name": "buddha_counter",
-    "short_name": "buddha_counter",
+    "name": "念佛計數器",
+    "short_name": "念佛計數器",
+    "description": "念佛、拜佛的隨身計數工具：點擊計數、隨佛曲自動計數、迴向與每日功課月曆。",
+    "lang": "zh-Hant",
     "start_url": ".",
+    "scope": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#FAF7F2",
+    "theme_color": "#8C5E32",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

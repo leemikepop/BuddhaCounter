@@ -1641,6 +1641,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{artist} · {album}'**
   String mediaSubtitle(String artist, String album);
+
+  /// 網頁版用手機瀏覽器開啟時，頂端建議改用 App 的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'建議下載 App 使用：背景播放、桌面小工具與每日提醒更完整。'**
+  String get webMobileBanner;
+
+  /// 網頁版頂端提示的關閉按鈕 (螢幕閱讀器標籤)
+  ///
+  /// In zh, this message translates to:
+  /// **'關閉提示'**
+  String get webBannerClose;
+
+  /// 網頁版「關於」頁的下載 App 標題
+  ///
+  /// In zh, this message translates to:
+  /// **'下載手機 App'**
+  String get webGetApp;
+
+  /// 網頁版「關於」頁提醒資料存在瀏覽器
+  ///
+  /// In zh, this message translates to:
+  /// **'網頁版的紀錄只存在這個瀏覽器裡，換瀏覽器或清除網站資料就會消失。'**
+  String get webStorageNote;
 }
 
 class _AppLocalizationsDelegate

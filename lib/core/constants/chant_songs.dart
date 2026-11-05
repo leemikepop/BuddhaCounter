@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import '../content/chant_content.dart';
+import '../content/embedded_song_artists.dart';
 import '../utils/audio_metadata_reader.dart';
 
 export '../content/chant_content.dart' show HuiXiangItem;
@@ -964,6 +965,16 @@ class ChantConstants {
       }),
     );
     _metadataSongs = List<ChantSong>.unmodifiable(enriched);
+    _rebuildLocalizedSongs();
+    _metadataLoaded = true;
+  }
+
+  /// Web 版用：不讀音檔 (避免開網頁就下載全部佛曲)，改用 [kEmbeddedSongArtists]。
+  /// 曲名與專輯在程式碼常數裡已經和音檔標籤一致，只有演唱者需要補上。
+  static void applyEmbeddedMetadata() {
+    _metadataSongs = List<ChantSong>.unmodifiable(defaultSongs.map((song) =>
+        song.withAudioMetadata(
+            AudioMetadata(artist: kEmbeddedSongArtists[song.id]))));
     _rebuildLocalizedSongs();
     _metadataLoaded = true;
   }

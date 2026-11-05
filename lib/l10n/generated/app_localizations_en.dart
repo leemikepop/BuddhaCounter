@@ -918,4 +918,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String mediaSubtitle(String artist, String album) {
     return '$artist · $album';
   }
+
+  @override
+  String get webMobileBanner =>
+      'Get the app for background playback, home screen widgets and daily reminders.';
+
+  @override
+  String get webBannerClose => 'Dismiss';
+
+  @override
+  String get webGetApp => 'Get the mobile app';
+
+  @override
+  String get webStorageNote =>
+      'The web version keeps your records in this browser only. Switching browsers or clearing site data will erase them.';
 }

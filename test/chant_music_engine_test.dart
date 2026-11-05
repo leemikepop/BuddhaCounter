@@ -1,7 +1,10 @@
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:buddha_counter/core/constants/chant_songs.dart';
+import 'package:buddha_counter/core/platform/app_platform.dart';
 import 'package:buddha_counter/core/services/chant_audio_handler.dart';
+import 'package:buddha_counter/core/services/chant_music_engine.dart';
 import 'package:buddha_counter/core/services/native_loop_chant_engine.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -176,4 +179,63 @@ void main() {
       await handler.disposePlayer();
     });
   });
+
+  group('Web', () {
+    tearDown(() => AppPlatform.debugIsWebOverride = null);
+
+    test('hands the engine the asset key instead of extracting a file',
+        () async {
+      // iPhone 的瀏覽器：defaultTargetPlatform 是 iOS，但不能走原生 iOS 的設定
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      AppPlatform.debugIsWebOverride = true;
+      final engine = _RecordingEngine();
+      final handler = ChantAudioHandler(engine: engine);
+      await pumpEventQueue(times: 50);
+      await handler.playSong(0);
+
+      expect(engine.loaded.single,
+          'assets/${ChantConstants.getSongById(0).assetPath}');
+      expect(loopCalls, isEmpty, reason: 'no native player on the web');
+      await handler.disposePlayer();
+    });
+  });
+}
+
+/// 只記錄被要求播放哪個路徑的引擎
+class _RecordingEngine implements ChantMusicEngine {
+  final loaded = <String>[];
+  PlayerState _state = PlayerState.stopped;
+
+  @override
+  Stream<PlayerState> get onStateChanged => const Stream.empty();
+  @override
+  Stream<Duration> get onDurationChanged => const Stream.empty();
+  @override
+  Stream<void> get onComplete => const Stream.empty();
+  @override
+  PlayerState get state => _state;
+  @override
+  Future<void> init() async {}
+  @override
+  Future<void> playFile(String path, {required bool looping}) async {
+    loaded.add(path);
+    _state = PlayerState.playing;
+  }
+
+  @override
+  Future<void> resume() async => _state = PlayerState.playing;
+  @override
+  Future<void> pause() async => _state = PlayerState.paused;
+  @override
+  Future<void> stop() async => _state = PlayerState.stopped;
+  @override
+  Future<void> seek(Duration position) async {}
+  @override
+  Future<Duration?> getPosition() async => Duration.zero;
+  @override
+  Future<Duration?> getDuration() async => null;
+  @override
+  Future<void> setLooping(bool looping) async {}
+  @override
+  Future<void> dispose() async {}
 }

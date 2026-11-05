@@ -53,8 +53,33 @@ LocaleController (推送語言給曲目內容 / 通知 / 小工具 / 背景播�
 |---|---|---|
 | iOS | 原生 `ChantLoopPlayer`（`ios/Runner/ChantLoopPlayer.swift`，AVQueuePlayer + AVPlayerLooper，無縫循環） | audioplayers |
 | Android | 原生 `ChantLoopPlayer`（`android/.../ChantLoopPlayer.kt`，兩個 MediaPlayer 以 setNextMediaPlayer 接力，無縫循環） | audioplayers（6 個播放器輪流） |
+| Web | `WebAudioChantEngine`（`lib/core/services/web_chant_engine_web.dart`，Web Audio API 的 AudioBuffer 循環，無縫） | audioplayers |
 
-兩個原生播放器用同一套通道，Dart 端都是 `NativeLoopChantEngine`（實作 `ChantMusicEngine` 介面），由 `ChantAudioHandler`（audio_service）統一對接系統媒體控制。
+兩個原生播放器用同一套通道，Dart 端都是 `NativeLoopChantEngine`；Web 用 `WebAudioChantEngine`。
+三者都實作 `ChantMusicEngine` 介面，由 `ChantAudioHandler`（audio_service）統一對接系統媒體控制。
+
+---
+
+## 網頁版（GitHub Pages / PWA）
+
+網址：<https://leemikepop.github.io/BuddhaCounter/>。主要給電腦瀏覽器使用；手機瀏覽器開啟時頂端會建議下載 App。
+
+```bash
+flutter run -d chrome                                   # 本機開發 (hot reload)
+flutter build web --release --base-href /BuddhaCounter/  # 和 CI 部署相同的產物 (build/web)
+```
+
+- **部署**：`.github/workflows/deploy_web.yml`，推送 `v*` tag 或手動執行。第一次要在 Settings → Pages 把 Source 設成
+  「GitHub Actions」；免費帳號的 Pages 只能用在公開 repo。
+- **平台判斷一律用 `AppPlatform`**（`lib/core/platform/app_platform.dart`）。Web 上 `defaultTargetPlatform` 是瀏覽器所在的
+  作業系統，iPhone 的 Safari 也會是 iOS；要判斷原生 App 用 `AppPlatform.isNativeIOS` / `isNativeAndroid`。
+- **Web 上隱藏的功能**：每日提醒、桌面小工具、螢幕方向鎖定（`AppPlatform.supports*`）。對應的服務在 Web 上直接略過。
+- **版面**：`lib/ui/web/web_frame.dart` 放在 `MaterialApp.builder`。視窗寬於 480 時，App 維持 480 寬置中，
+  並把內部 `MediaQuery` 的寬度也改成 480；手機瀏覽器則在頂端顯示可關閉的「建議下載 App」。
+- **音檔用到才下載**：Flutter Web 的資源檔是用到時才向伺服器抓。啟動時**不能**讀音檔：原生 App 會讀每個音檔的
+  標籤取得演唱者，Web 改用 `lib/core/content/embedded_song_artists.dart`（換音檔後要更新，`test/embedded_song_artists_test.dart` 會檢查）。
+- **PWA**：`web/manifest.json`、`web/index.html`（名稱、配色、載入畫面）。圖示由 `dart run flutter_launcher_icons` 一併產生到 `web/icons/`。
+- 測試裡用 `AppPlatform.debugIsWebOverride = true` 模擬網頁版（見 `test/web_test.dart`）。
 
 ---
 
@@ -127,6 +152,7 @@ dart format lib test            # 可選：統一格式
 |---|---|---|
 | `ci_android.yml` | 推送 `v*` tag、發布 Release、手動 | analyze、test、正式簽名 APK + AAB，並建立 GitHub Release |
 | `deploy_ios_testflight.yml` | 推送 `v*` tag、發布 Release、手動 | 簽名 IPA 並上傳 TestFlight |
+| `deploy_web.yml` | 推送 `v*` tag、手動 | analyze、test、建置網頁版並部署到 GitHub Pages |
 | `ci_ios.yml` | 只能手動 | analyze、test、未簽名 IPA（給 Sideloadly 側載） |
 | `codemagic.yaml` | 只能在 Codemagic 網頁手動開始 | 備用的 TestFlight 流程（目前沒在用） |
 
@@ -184,6 +210,7 @@ flutter build appbundle --release  # 上傳 Google Play (build/app/outputs/bundl
 - iOS：來電等音訊中斷後，Dart 端不會收到「被中斷」的通知（播放鍵可能仍顯示播放中）。
 - Android：通知頻道名稱在第一次建立後不會隨 App 語言切換而改名（Android 系統限制，重新安裝才會更新）。
 - 英文佛教用語已對照公開英譯修訂過，但還沒經過熟悉佛教用語的人審閱（見 `lib/l10n/GLOSSARY.md`）。
+- 網頁版：手機瀏覽器切到背景或鎖定螢幕時，瀏覽器可能暫停聲音；資料存在瀏覽器的 localStorage，清除網站資料就會消失。
 - 320dp 窄螢幕測試需要 Flutter SDK 內附的 Roboto 字型；找不到時該測試會自動略過。
 
 ---

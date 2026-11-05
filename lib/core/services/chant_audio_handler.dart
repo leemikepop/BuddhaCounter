@@ -8,8 +8,10 @@ import 'package:path_provider/path_provider.dart';
 import '../../l10n/app_language.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../constants/chant_songs.dart';
+import '../platform/app_platform.dart';
 import 'chant_music_engine.dart';
 import 'native_loop_chant_engine.dart';
+import 'web_chant_engine.dart';
 
 /// 佛曲媒體播放會話處理器 (整合 Android MediaSession 與 iOS NowPlayingCenter / RemoteCommandCenter)
 /// 支援系統通知欄、鎖定畫面、控制中心、動態島、耳機線控 (AirPods) 播放/暫停/上一首/下一首與進度控制
@@ -88,11 +90,9 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     ),
   );
 
-  static bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
-
-  /// 設定 iOS 全域音訊 session (僅一次，唯一的設定點)
+  /// 設定 iOS 全域音訊 session (僅一次，唯一的設定點；iPhone 上的網頁版不適用)
   static Future<void> configureIosAudioSession() async {
-    if (!_isIOS) return;
+    if (!AppPlatform.isNativeIOS) return;
     try {
       await AudioPlayer.global.setAudioContext(musicAudioContext);
     } catch (e) {
@@ -138,7 +138,10 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   ChantAudioHandler({ChantMusicEngine? engine})
-      : _engine = engine ?? NativeLoopChantEngine() {
+      : _engine = engine ??
+            (AppPlatform.isWeb
+                ? createWebChantEngine()
+                : NativeLoopChantEngine()) {
     _initFuture = _initAudioPlayer();
   }
 
@@ -263,6 +266,11 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
+  static String _assetKey(ChantSong song) =>
+      song.assetPath.startsWith('assets/')
+          ? song.assetPath
+          : 'assets/${song.assetPath}';
+
   Future<File> _extractSongFile(ChantSong song) async {
     final tempDir = await getTemporaryDirectory();
     final cacheDir = Directory('${tempDir.path}/buddha_chant_cache_v3');
@@ -274,10 +282,7 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
       return targetFile;
     }
 
-    final key = song.assetPath.startsWith('assets/')
-        ? song.assetPath
-        : 'assets/${song.assetPath}';
-    final byteData = await rootBundle.load(key);
+    final byteData = await rootBundle.load(_assetKey(song));
     final bytes = byteData.buffer.asUint8List(
       byteData.offsetInBytes,
       byteData.lengthInBytes,
@@ -315,11 +320,13 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
 
     try {
       await _initFuture;
-      final file = await _prepareSongFile(song);
+      // Web 沒有檔案系統：直接把資源鍵交給引擎，由瀏覽器在這時才下載這一首
+      final path = AppPlatform.isWeb
+          ? _assetKey(song)
+          : (await _prepareSongFile(song)).path;
       if (reqId != _playRequestId || !_isPlaying) return;
 
-      await _engine.playFile(file.path,
-          looping: _releaseMode == ReleaseMode.loop);
+      await _engine.playFile(path, looping: _releaseMode == ReleaseMode.loop);
       if (reqId != _playRequestId) return;
 
       _isSwitchingTrack = false;

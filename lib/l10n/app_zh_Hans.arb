@@ -256,5 +256,9 @@
   "milestoneChannelDesc": "发送目标达成与精进里程碑通知",
   "audioChannelName": "念佛计数器佛曲播放",
   "audioChannelDesc": "保持屏幕休眠或退至后台时佛曲持续播放",
-  "mediaSubtitle": "{artist} · {album}"
+  "mediaSubtitle": "{artist} · {album}",
+  "webMobileBanner": "建议下载 App 使用：后台播放、桌面小组件与每日提醒更完整。",
+  "webBannerClose": "关闭提示",
+  "webGetApp": "下载手机 App",
+  "webStorageNote": "网页版的记录只保存在这个浏览器里，换浏览器或清除网站数据就会消失。"
 }

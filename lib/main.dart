@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'app/app_controllers.dart';
 import 'app/buddha_counter_app.dart';
 import 'core/constants/chant_songs.dart';
+import 'core/platform/app_platform.dart';
 import 'core/services/audio_service.dart';
 import 'core/services/chant_audio_handler.dart';
 import 'core/services/notification_service.dart';
@@ -24,8 +25,12 @@ Future<void> main() async {
     ),
   );
 
-  // 先讀各音檔內嵌的曲名 / 演出者 / 專輯
-  await ChantConstants.loadMetadataFromAssets();
+  // 先讀各音檔內嵌的曲名 / 演出者 / 專輯 (Web 不讀音檔，避免開網頁就下載全部佛曲)
+  if (AppPlatform.isWeb) {
+    ChantConstants.applyEmbeddedMetadata();
+  } else {
+    await ChantConstants.loadMetadataFromAssets();
+  }
 
   // 背景播放的通知頻道名稱要在 runApp 前決定，所以先依語言偏好解析啟動語言
   final storage = await StorageService.init();

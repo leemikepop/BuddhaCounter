@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/chant_songs.dart';
+import '../../../core/platform/app_platform.dart';
 import '../../../features/settings/settings_controller.dart';
 import '../../../l10n/l10n.dart';
 
@@ -45,11 +46,13 @@ class ModernGuideDialog extends StatelessWidget {
         title: l10n.guideFeatureCalendarTitle,
         desc: l10n.guideFeatureCalendarDesc,
       ),
-      _FeaturePoint(
-        icon: Icons.widgets_rounded,
-        title: l10n.guideFeatureWidgetTitle,
-        desc: l10n.guideFeatureWidgetDesc,
-      ),
+      // 網頁版沒有桌面小工具與定時提醒
+      if (!AppPlatform.isWeb)
+        _FeaturePoint(
+          icon: Icons.widgets_rounded,
+          title: l10n.guideFeatureWidgetTitle,
+          desc: l10n.guideFeatureWidgetDesc,
+        ),
       _FeaturePoint(
         icon: Icons.style_outlined,
         title: l10n.guideFeatureModeTitle,

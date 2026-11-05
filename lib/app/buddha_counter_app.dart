@@ -9,6 +9,7 @@ import '../l10n/l10n.dart';
 import '../ui/legacy/screens/legacy_counter_screen.dart';
 import '../ui/modern/screens/modern_counter_screen.dart';
 import '../ui/modern/theme/modern_theme.dart';
+import '../ui/web/web_frame.dart';
 
 /// App 根元件：依設定切換經典 / 現代介面、主題與語言，並處理前景 / 背景切換
 class BuddhaCounterApp extends StatefulWidget {
@@ -85,6 +86,8 @@ class _BuddhaCounterAppState extends State<BuddhaCounterApp>
       themeMode: isLegacy ? ThemeMode.light : themeMode,
       theme: isLegacy ? _legacyTheme : ModernTheme.lightTheme,
       darkTheme: isLegacy ? _legacyTheme : ModernTheme.darkTheme,
+      // 網頁版：電腦上維持手機寬度置中、手機瀏覽器建議下載 App (原生 App 原樣通過)
+      builder: (context, child) => WebFrame(child: child!),
       home:
           isLegacy ? const LegacyCounterScreen() : const ModernCounterScreen(),
     );

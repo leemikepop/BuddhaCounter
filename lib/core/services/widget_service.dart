@@ -3,6 +3,7 @@ import 'package:home_widget/home_widget.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../l10n/l10n_dates.dart';
+import '../platform/app_platform.dart';
 
 /// 推送給原生桌面小工具的已翻譯文字
 class WidgetTexts {
@@ -94,7 +95,7 @@ class WidgetService {
 
   /// 初始化 Widget 設定（向所有候選 App Group 進行註冊）
   static Future<void> init() async {
-    if (_isInitialized) return;
+    if (_isInitialized || !AppPlatform.supportsHomeWidget) return;
     try {
       final groups = await resolveTargetAppGroups();
       for (final gid in groups) {
@@ -122,6 +123,7 @@ class WidgetService {
     required int streakDays,
     required AppLocalizations l10n,
   }) async {
+    if (!AppPlatform.supportsHomeWidget) return;
     try {
       final now = DateTime.now();
       final texts = buildWidgetTexts(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/platform/app_platform.dart';
 import '../../../../features/practice/practice_controller.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../common/app_toast.dart';
@@ -66,102 +67,108 @@ class GoalReminderCard extends StatelessWidget {
               ),
             ),
           ),
-          const Divider(height: 24),
-          Row(
-            children: [
-              Icon(Icons.notifications_active_outlined,
-                  size: 20, color: primary),
-              const SizedBox(width: 8),
-              Text(l10n.reminderTitle, style: titleStyle),
-              const Spacer(),
-              Switch(
-                value: practice.isReminderEnabled,
-                onChanged: (on) => _setReminderEnabled(context, on),
+          if (AppPlatform.supportsReminders) ...[
+            const Divider(height: 24),
+            Row(
+              children: [
+                Icon(Icons.notifications_active_outlined,
+                    size: 20, color: primary),
+                const SizedBox(width: 8),
+                Text(l10n.reminderTitle, style: titleStyle),
+                const Spacer(),
+                Switch(
+                  value: practice.isReminderEnabled,
+                  onChanged: (on) => _setReminderEnabled(context, on),
+                ),
+              ],
+            ),
+            if (practice.isReminderEnabled) ...[
+              const SizedBox(height: 6),
+              InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: () => _pickReminderTime(context),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.access_time_rounded, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.reminderDailyAt(time),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      Text(l10n.reminderChangeTime, style: greyStyle),
+                      chevron,
+                    ],
+                  ),
+                ),
               ),
             ],
-          ),
-          if (practice.isReminderEnabled) ...[
-            const SizedBox(height: 6),
-            InkWell(
-              borderRadius: BorderRadius.circular(10),
-              onTap: () => _pickReminderTime(context),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.access_time_rounded, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.reminderDailyAt(time),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const Spacer(),
-                    Text(l10n.reminderChangeTime, style: greyStyle),
-                    chevron,
-                  ],
-                ),
-              ),
-            ),
           ],
-          const Divider(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.widgets_outlined, size: 20, color: primary),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.widgetCardTitle,
-                      style: const TextStyle(
-                          fontSize: 14.5, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n.widgetCardBody,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.white70 : Colors.black54,
-                        height: 1.35,
+          if (AppPlatform.supportsHomeWidget) ...[
+            const Divider(height: 24),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.widgets_outlined, size: 20, color: primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.widgetCardTitle,
+                        style: const TextStyle(
+                            fontSize: 14.5, fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 8),
-                        side: BorderSide(color: primary.withValues(alpha: 0.5)),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: () async {
-                        await practice.refreshWidgetData();
-                        if (context.mounted) {
-                          AppToast.show(context, l10n.widgetSyncedToast);
-                        }
-                      },
-                      icon: Icon(Icons.sync_rounded, size: 16, color: primary),
-                      label: Text(
-                        l10n.widgetSyncNow,
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n.widgetCardBody,
                         style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
-                          color: primary,
+                          fontSize: 12,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                          height: 1.35,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 10),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          side:
+                              BorderSide(color: primary.withValues(alpha: 0.5)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () async {
+                          await practice.refreshWidgetData();
+                          if (context.mounted) {
+                            AppToast.show(context, l10n.widgetSyncedToast);
+                          }
+                        },
+                        icon:
+                            Icon(Icons.sync_rounded, size: 16, color: primary),
+                        label: Text(
+                          l10n.widgetSyncNow,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                            color: primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ],
       ),
     );

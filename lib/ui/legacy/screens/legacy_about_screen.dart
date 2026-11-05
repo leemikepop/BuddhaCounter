@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/constants/store_links.dart';
+import '../../../core/platform/app_platform.dart';
 import '../../../l10n/l10n.dart';
 
 /// 關於頁：App 版本、阿忠小站連結與原作者說明 (沿用最早 Android 版 MainActivity5)
@@ -126,6 +128,43 @@ class LegacyAboutScreen extends StatelessWidget {
                   ),
                 ],
               ),
+
+              // 網頁版：資料只存在瀏覽器的提醒 + 手機 App 下載
+              if (AppPlatform.isWeb) ...[
+                const Divider(height: 32),
+                Text(
+                  context.l10n.webStorageNote,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 14, height: 1.5, color: Colors.black54),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  context.l10n.webGetApp,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  children: [
+                    TextButton.icon(
+                      icon: const Icon(Icons.phone_iphone, size: 18),
+                      label: const Text('App Store'),
+                      style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF0000FF)),
+                      onPressed: () => _launchSite(StoreLinks.appStore),
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.phone_android, size: 18),
+                      label: const Text('Google Play'),
+                      style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF0000FF)),
+                      onPressed: () => _launchSite(StoreLinks.googlePlay),
+                    ),
+                  ],
+                ),
+              ],
 
               const SizedBox(height: 24),
 
