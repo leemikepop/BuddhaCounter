@@ -122,20 +122,25 @@ dart format lib test            # 可選：統一格式
 
 共用工具在 `test/helpers/test_app.dart`（平台通道 mock、`AppControllers` 包裝、真實字型載入）。
 
-### 商店截圖
+### 商店截圖與宣傳圖
 
 ```bash
-bash tool/screenshots/fetch_fonts.sh   # 第一次：下載 Noto Sans TC / SC（約 40 MB，不進 repo）
-flutter test tool/screenshots          # 約 20 秒，輸出到 build/screenshots/<裝置>/<語言>/
+bash tool/screenshots/fetch_fonts.sh             # 第一次：下載 Noto Sans / Serif TC、SC（約 60 MB，不進 repo）
+flutter test tool/screenshots                    # 約 1 分鐘，輸出到 build/screenshots/
+bash tool/screenshots/export_store_assets.sh     # 把繁中宣傳圖複製到 assets/store_assets/（其他語言：zh_Hans / en）
 ```
 
 - 用真實的 `BuddhaCounterApp` 加上示範資料（今天 56 / 108 聲、自動 238 聲、約一個半月的功課紀錄）畫出來，
   不需要模擬器或 Mac。
-- 裝置：iPhone 6.9 吋（1320×2868）、iPad 13 吋（2064×2752）、Android 手機（1080×1920）；
-  語言：繁中、簡中、英文；畫面清單在 `tool/screenshots/shots.dart` 的 `shots`。
-- 文字一律用 Noto Sans 排版，和 iPhone 實機的蘋方 / SF 略有不同。
+- 原始截圖 `build/screenshots/<裝置>/<語言>/`：iPhone 6.9 吋（1320×2868）、iPad 13 吋（2064×2752）、
+  Android 手機（1080×1920）× 繁中、簡中、英文；畫面清單在 `tool/screenshots/shots.dart` 的 `shots`。
+- 宣傳圖 `build/screenshots/posters/`（`tool/screenshots/posters.dart`）：紙紋背景 + 明體標題 + 手機外框，
+  外框裡是**真的在跑的 App**（有狀態列、動態島），不是貼上去的截圖。標題文字在 `_captions`。
+  另外產生 README 首圖與 GitHub 社群預覽圖（只有繁中）。
+- 文字一律用 Noto 排版，和 iPhone 實機的蘋方 / SF 略有不同。
 - 截不到的：桌面小工具、通知、鎖定畫面播放控制（都是原生畫面），仍要手動截。
 - 月初時功課月曆會自動切到上個月，避免大半個月是空的。
+- 測試裡不能用 `Image.file`（讀檔卡在假時鐘裡會永遠等不到），一律先同步讀成 bytes 再用 `Image.memory`。
 
 ### 佛曲工作站（剪輯、轉檔、打時間標記）
 

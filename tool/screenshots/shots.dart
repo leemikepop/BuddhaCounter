@@ -22,12 +22,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../test/helpers/test_app.dart';
+import 'posters.dart';
 
-const _outDir = 'build/screenshots';
-const _fontDir = 'tool/screenshots/fonts';
+const outDir = 'build/screenshots';
+const fontDir = 'tool/screenshots/fonts';
 
 /// 截圖裝置：邏輯尺寸 × 像素比 = 商店要求的像素
 class Device {
@@ -99,7 +101,9 @@ String _sdkMaterialFonts() {
 }
 
 Future<void> _loadFonts(ShotLocale l) async {
-  if (!File('$_fontDir/${l.font}-Regular.otf').existsSync()) {
+  final serif = l.font.replaceFirst('Sans', 'Serif');
+  if (!File('$fontDir/${l.font}-Regular.otf').existsSync() ||
+      !File('$fontDir/$serif-Bold.otf').existsSync()) {
     fail('找不到字型，請先執行 bash tool/screenshots/fetch_fonts.sh');
   }
   await _loadFont(
@@ -108,8 +112,10 @@ Future<void> _loadFonts(ShotLocale l) async {
   // 主題使用的字型名稱 Roboto：中文、英文與數字都用 Noto 排版。只影響截圖，不影響 App。
   // (沒指定字型的文字會用 flutter_tester 內建、無法替換的測試字型，所以主題裡每個樣式都要有字型)
   await _loadFont('Roboto', [
-    for (final w in ['Regular', 'Medium', 'Bold']) '$_fontDir/${l.font}-$w.otf',
+    for (final w in ['Regular', 'Medium', 'Bold']) '$fontDir/${l.font}-$w.otf',
   ]);
+  // 宣傳圖標題用的明體 (posters.dart 的 posterSerif)
+  await _loadFont(posterSerif, ['$fontDir/$serif-Bold.otf']);
 }
 
 /// 示範資料：今天手動 56 聲 (目標 108)、自動 238 聲；過去約一個半月幾乎天天有紀錄
@@ -167,15 +173,32 @@ Future<void> _resetMarquees(WidgetTester tester) async {
   await tester.pump();
 }
 
-Future<void> _capture(
-    WidgetTester tester, Key key, String path, Device d) async {
+/// 把 [key] 這個 RepaintBoundary 以 [pixelRatio] 存檔：`.jpg` 存成 JPEG (宣傳圖，紙紋用 PNG 太大)，
+/// 其他存成 PNG
+Future<void> capture(
+    WidgetTester tester, Key key, String path, double pixelRatio) async {
   final boundary = tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
   await tester.runAsync(() async {
-    final image = await boundary.toImage(pixelRatio: d.pixelRatio);
-    final png = await image.toByteData(format: ui.ImageByteFormat.png);
+    final image = await boundary.toImage(pixelRatio: pixelRatio);
+    final List<int> bytes;
+    if (path.endsWith('.jpg')) {
+      final rgba = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      bytes = img.encodeJpg(
+        img.Image.fromBytes(
+          width: image.width,
+          height: image.height,
+          bytes: rgba!.buffer,
+          numChannels: 4,
+        ),
+        quality: 90,
+      );
+    } else {
+      final png = await image.toByteData(format: ui.ImageByteFormat.png);
+      bytes = png!.buffer.asUint8List();
+    }
     File(path)
       ..createSync(recursive: true)
-      ..writeAsBytesSync(png!.buffer.asUint8List());
+      ..writeAsBytesSync(bytes);
     // ignore: avoid_print
     print('wrote $path (${image.width}×${image.height})');
   });
@@ -200,8 +223,6 @@ void runScreenshots(ShotLocale l) {
     await _loadFonts(l);
   });
 
-  final l10n = lookupAppLocalizations(l.locale);
-
   for (final d in devices) {
     for (final s in shots) {
       testWidgets('${d.name} ${l.name} ${s.name}', (tester) async {
@@ -209,40 +230,50 @@ void runScreenshots(ShotLocale l) {
         tester.view.devicePixelRatio = d.pixelRatio;
         addTearDown(tester.view.reset);
 
-        // tool/ 不算測試目錄，分析器不知道這是測試
-        // ignore: invalid_use_of_visible_for_testing_member
-        SharedPreferences.setMockInitialValues(_demoPrefs(l, s));
-        final storage = await StorageService.init();
-        final app =
-            AppControllers.create(storage: storage, audio: AudioService());
-
+        final app = await demoApp(l, s);
         const key = ValueKey('shot');
         await tester.pumpWidget(RepaintBoundary(
           key: key,
           child: app.provide(child: const BuddhaCounterApp()),
         ));
-        await tester.pumpAndSettle();
+        await openShot(tester, l, s);
 
-        if (s.tab != null) {
-          await tester.tap(find.byType(NavigationDestination).at(s.tab!));
-          await tester.pumpAndSettle();
-        }
-        if (s.openSongs) {
-          await tester.tap(find.byTooltip(l10n.songMenuExpand));
-          await tester.pumpAndSettle();
-        }
-        // 月初的月曆大半是空的 (未來的日子)，改看上個月
-        if (s.tab == 3 && DateTime.now().day < 15) {
-          await tester.tap(find.byTooltip(l10n.calendarPrevMonth));
-          await tester.pumpAndSettle();
-        }
-        await _settleImages(tester);
-        await _resetMarquees(tester);
-
-        await _capture(
-            tester, key, '$_outDir/${d.name}/${l.name}/${s.name}.png', d);
+        await capture(tester, key, '$outDir/${d.name}/${l.name}/${s.name}.png',
+            d.pixelRatio);
         await disposeAndSettleTimers(tester);
       });
     }
   }
+
+  registerPosterTests(l);
+}
+
+/// 依 [Shot] 建立一套帶示範資料的 controller
+Future<AppControllers> demoApp(ShotLocale l, Shot s) async {
+  // tool/ 不算測試目錄，分析器不知道這是測試
+  // ignore: invalid_use_of_visible_for_testing_member
+  SharedPreferences.setMockInitialValues(_demoPrefs(l, s));
+  final storage = await StorageService.init();
+  return AppControllers.create(storage: storage, audio: AudioService());
+}
+
+/// App 已經 pump 好之後：切到 [Shot] 指定的畫面，並等圖片、跑馬燈就定位
+Future<void> openShot(WidgetTester tester, ShotLocale l, Shot s) async {
+  final l10n = lookupAppLocalizations(l.locale);
+  await tester.pumpAndSettle();
+  if (s.tab != null) {
+    await tester.tap(find.byType(NavigationDestination).at(s.tab!));
+    await tester.pumpAndSettle();
+  }
+  if (s.openSongs) {
+    await tester.tap(find.byTooltip(l10n.songMenuExpand));
+    await tester.pumpAndSettle();
+  }
+  // 月初的月曆大半是空的 (未來的日子)，改看上個月
+  if (s.tab == 3 && DateTime.now().day < 15) {
+    await tester.tap(find.byTooltip(l10n.calendarPrevMonth));
+    await tester.pumpAndSettle();
+  }
+  await _settleImages(tester);
+  await _resetMarquees(tester);
 }

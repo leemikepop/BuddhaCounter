@@ -29,6 +29,8 @@
   修改任何一天的紀錄要走 `PracticeController`（不要直接改 `PracticeRecordService`），今天的數字才會同步。
 - 經典模式（`lib/ui/legacy/`）要保留，版面沿用最早的 Android 版，不要改成現代風格。
   共用按鈕 / 橫幅 / 顏色在 `lib/ui/legacy/widgets/legacy_widgets.dart`。
+- 平板（最短邊 ≥ 600）上整個 App 由 `lib/ui/common/tablet_scale.dart` 的 `TabletScale` 等比放大（最多 1.5 倍），
+  現代模式內容另外限制在 600 寬置中。版面照手機寬度設計即可，不要另外用螢幕寬度判斷平板。
 - 現代模式的淺 / 深色配色集中在 `lib/ui/modern/theme/modern_palette.dart`，新元件請用它，
   不要再寫 `isDark ? Color(..) : Color(..)`。
 
@@ -128,8 +130,9 @@
 - iOS / Android 播放引擎分流用 `debugDefaultTargetPlatformOverride` 測，見 `test/chant_music_engine_test.dart`。
   這個覆寫必須在測試本體結束前設回 `null`（框架在 tearDown 之前就會檢查）。
 - 網頁版行為用 `AppPlatform.debugIsWebOverride = true` 模擬，見 `test/web_test.dart`。
-- 商店截圖：`flutter test tool/screenshots`（先跑一次 `tool/screenshots/fetch_fonts.sh`），見 docs/DEVELOPMENT.md。
-  改了畫面就重新產生。主題裡的 `TextStyle`（例如 `AppBarTheme.titleTextStyle`）**要帶字型名稱**：
+- 商店截圖與宣傳圖：`flutter test tool/screenshots`（先跑一次 `tool/screenshots/fetch_fonts.sh`），
+  再用 `tool/screenshots/export_store_assets.sh` 更新 `assets/store_assets/`，見 docs/DEVELOPMENT.md。
+  改了畫面就重新產生；`assets/store_assets/` 裡產生的圖不要手動改。主題裡的 `TextStyle`（例如 `AppBarTheme.titleTextStyle`）**要帶字型名稱**：
   沒指定字型的文字在截圖裡會畫成方框（`test/modern_theme_test.dart` 有檢查 AppBar 標題）。
 
 ## 其他
