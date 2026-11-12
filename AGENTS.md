@@ -116,7 +116,10 @@
 
 - 平常 push **不會**觸發建置。`ci_android.yml`、`deploy_ios_testflight.yml` 與 `deploy_web.yml` 在推送 `v*` tag（前兩者另含發布 Release）或手動時執行；
   `ci_ios.yml`（未簽名 IPA，給側載）與 `screenshots.yml`（商店截圖、宣傳圖，打包成 artifact）只能手動；Codemagic 只能在網頁手動開始。
-- repo 是私有的，macOS runner 的分鐘數是 Linux 的 10 倍：iOS workflow 不要設成自動觸發。
+- repo 是公開的，GitHub 標準 runner 不計分鐘數；但 iOS 建置一次要跑很久，而且 TestFlight / Release 會用到簽名金鑰，
+  所以 workflow 仍然不要設成每次 push 自動觸發。
+- 公開 repo 的 workflow 不要用 `pull_request_target`、也不要讓 fork 來的 PR 拿到 secrets；
+  第三方 action 一律固定在 commit SHA（見現有 workflow 的寫法）。
 - 手動觸發：`gh workflow run ci_ios.yml --ref <branch>`。
 
 ## 測試

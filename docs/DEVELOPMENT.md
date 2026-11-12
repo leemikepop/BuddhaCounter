@@ -174,7 +174,8 @@ artifact 保留 14 天；workflow 不會自己 commit 回 repo。
 
 ## CI（GitHub Actions）
 
-平常 `git push` **不會**自動建置（本機就能跑測試；repo 是私有的，macOS 機器的分鐘數是 Linux 的 10 倍）。
+平常 `git push` **不會**自動建置：本機就能跑測試，iOS 建置一次要跑很久，簽名與上架只在發布版本時才需要。
+repo 是公開的，GitHub 標準 runner 不計分鐘數。
 
 | Workflow | 觸發方式 | 做什麼 |
 |---|---|---|
