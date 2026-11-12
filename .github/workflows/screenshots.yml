@@ -28,6 +28,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # 截圖要用 SDK 內附的 Material Icons 字型 (bin/cache/artifacts/material_fonts/)，
+      # CI 上的 Flutter 預設不會下載
+      - name: Download Flutter artifacts
+        run: flutter precache --universal --no-ios --no-linux --no-web
+
       # Noto Sans / Serif CJK (SIL OFL)，約 60 MB，不進 repo
       - name: Download fonts
         run: bash tool/screenshots/fetch_fonts.sh
