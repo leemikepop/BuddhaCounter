@@ -33,6 +33,7 @@ class AppControllers {
     NotificationService? notifications,
     PracticeRecordService? records,
     List<Locale>? deviceLocales,
+    DateTime Function()? clock,
   }) {
     notifications ??= NotificationService(storage);
     records ??= PracticeRecordService(storage);
@@ -52,6 +53,7 @@ class AppControllers {
       records: records,
       notifications: notifications,
       feedback: feedback,
+      clock: clock,
     );
     final playback = PlaybackController(audio: audio, storage: storage);
     final autoCount = AutoCountController(

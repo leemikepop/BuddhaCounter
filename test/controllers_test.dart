@@ -107,14 +107,75 @@ void main() {
       expect(app.practice.autoCount, 0);
     });
 
-    test('editing today in the calendar also updates the manual counter',
-        () async {
+    test('editing today in the calendar leaves the counter alone', () async {
+      app.practice.increment();
       await app.practice.setPracticeCount(DateTime.now(), 50);
-      expect(app.practice.count, 50);
+      expect(app.practice.count, 1);
+      expect(app.practice.todayPracticeCount, 50);
       await app.practice.adjustPracticeCount(DateTime.now(), 8);
-      expect(app.practice.count, 58);
+      expect(app.practice.count, 1);
+      expect(app.practice.todayPracticeCount, 58);
       await app.practice.clearPracticeDate(DateTime.now());
-      expect(app.practice.count, 0);
+      expect(app.practice.count, 1);
+      expect(app.practice.todayPracticeCount, 0);
+    });
+
+    test(
+        'crossing midnight with the app open keeps the counters '
+        'and records new counts on the new day', () {
+      var now = DateTime(2026, 11, 12, 23, 59, 50);
+      final night = AppControllers.create(
+        storage: storage,
+        audio: AudioService(),
+        clock: () => now,
+      );
+      addTearDown(night.dispose);
+      final day1 = DateTime(2026, 11, 12);
+      final day2 = DateTime(2026, 11, 13);
+
+      night.practice.increment();
+      night.practice.increment();
+      night.practice.addAutoBeats(3);
+      expect(night.practice.records.getCount(day1), 5);
+
+      // 過了午夜：App 的 30 秒計時器會呼叫 checkDateRollover
+      now = DateTime(2026, 11, 13, 0, 0, 10);
+      var notified = 0;
+      night.practice.addListener(() => notified++);
+      night.practice.checkDateRollover();
+      expect(notified, 1, reason: '月曆與小工具要換成新的一天');
+      expect(night.practice.count, 2);
+      expect(night.practice.autoCount, 3);
+      expect(night.practice.todayPracticeCount, 0);
+
+      night.practice.increment();
+      night.practice.addAutoBeats(2);
+      expect(night.practice.count, 3);
+      expect(night.practice.autoCount, 5);
+      expect(night.practice.records.getRecord(day1).manualCount, 2);
+      expect(night.practice.records.getRecord(day1).autoCount, 3);
+      expect(night.practice.records.getRecord(day2).manualCount, 1);
+      expect(night.practice.records.getRecord(day2).autoCount, 2);
+      expect(night.practice.todayPracticeCount, 3);
+    });
+
+    test(
+        'counting right after midnight goes to the new day even without '
+        'a rollover check first', () {
+      var now = DateTime(2026, 11, 12, 23, 59, 59);
+      final night = AppControllers.create(
+        storage: storage,
+        audio: AudioService(),
+        clock: () => now,
+      );
+      addTearDown(night.dispose);
+
+      night.practice.increment();
+      now = DateTime(2026, 11, 13, 0, 0, 1);
+      night.practice.increment();
+      expect(night.practice.count, 2);
+      expect(night.practice.records.getCount(DateTime(2026, 11, 12)), 1);
+      expect(night.practice.records.getCount(DateTime(2026, 11, 13)), 1);
     });
 
     test('editing another day leaves today alone', () async {

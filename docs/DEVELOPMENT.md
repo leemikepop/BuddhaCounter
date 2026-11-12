@@ -17,7 +17,7 @@ lib/
 │   └── buddha_counter_app.dart  # MaterialApp、經典 / 現代切換、前景背景處理、跨午夜檢查
 ├── features/                 # 狀態與商業邏輯 (ChangeNotifier，不含畫面)
 │   ├── settings/             # SettingsController、LocaleController、TapFeedback
-│   ├── practice/             # PracticeController (今日計數、目標、月曆、提醒、小工具)、SessionStopwatch
+│   ├── practice/             # PracticeController (計數、目標、月曆、提醒、小工具)、SessionStopwatch
 │   ├── playback/             # PlaybackController (曲目、播放、進度、循環)
 │   └── auto_count/           # AutoCountController、BeatTracker (純 Dart 節拍判斷)
 ├── core/

@@ -1163,7 +1163,7 @@ void main() {
     });
 
     test(
-        'AppControllers increments and manual edits synchronize with practice records',
+        'AppControllers increments add to practice records; -1 and calendar edits stay separate',
         () async {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
@@ -1181,18 +1181,19 @@ void main() {
       expect(app.practice.count, 2);
       expect(app.practice.todayPracticeCount, 2);
 
+      // −1 只改計數器，不扣月曆紀錄
       app.practice.decrement();
       expect(app.practice.count, 1);
-      expect(app.practice.todayPracticeCount, 1);
+      expect(app.practice.todayPracticeCount, 2);
 
-      // 透過 ViewModel 自由調整功課
-      await app.practice.adjustPracticeCount(today, 107);
-      expect(app.practice.count, 108);
+      // 在月曆調整功課，不影響計數器
+      await app.practice.adjustPracticeCount(today, 106);
+      expect(app.practice.count, 1);
       expect(app.practice.todayPracticeCount, 108);
 
       // 直接修改數值
       await app.practice.setPracticeCount(today, 1000);
-      expect(app.practice.count, 1000);
+      expect(app.practice.count, 1);
       expect(app.practice.todayPracticeCount, 1000);
 
       // 每日提醒設定
@@ -1204,7 +1205,7 @@ void main() {
     });
 
     test(
-        'AppControllers resets counts to 0 across midnight rollover while preserving yesterday records',
+        'AppControllers keeps the counters across a new day and records new counts on today',
         () async {
       final now = DateTime.now();
       final yesterday = now.subtract(const Duration(days: 1));
@@ -1229,17 +1230,17 @@ void main() {
       final audio = AudioService();
       final app = AppControllers.create(storage: storage, audio: audio);
 
-      // 驗證跨日初始化後：今日計數自動歸零，昨日功課完整保留於月曆中
-      expect(app.practice.count, 0);
-      expect(app.practice.autoCount, 0);
+      // 跨日後：計數器保留原本的數字，今天的功課從 0 開始，昨日功課完整保留於月曆中
+      expect(app.practice.count, 500);
+      expect(app.practice.autoCount, 200);
       expect(app.practice.todayPracticeCount, 0);
       expect(app.practice.records.getCount(yesterday), 700);
       expect(app.practice.records.getRecord(yesterday).manualCount, 500);
       expect(app.practice.records.getRecord(yesterday).autoCount, 200);
 
-      // 今日開始念佛 1 聲
+      // 今日開始念佛 1 聲：計數器接著往上加，這一聲記在今天
       app.practice.increment();
-      expect(app.practice.count, 1);
+      expect(app.practice.count, 501);
       expect(app.practice.todayPracticeCount, 1);
       // 昨日紀錄絲毫不受影響
       expect(app.practice.records.getCount(yesterday), 700);
@@ -1277,8 +1278,9 @@ void main() {
       final audio = AudioService();
       final app = AppControllers.create(storage: storage, audio: audio);
 
-      // 驗證自我修復機制：成功偵測到舊版污染並將今日歸零，昨日記錄完好
-      expect(app.practice.count, 0);
+      // 驗證自我修復機制：成功偵測到舊版污染並將今日紀錄清空，昨日記錄完好
+      // (計數器的數字和月曆分開，不受影響)
+      expect(app.practice.count, 888);
       expect(app.practice.todayPracticeCount, 0);
       expect(app.practice.records.getCount(yesterday), 888);
     });
@@ -1463,7 +1465,8 @@ void main() {
       expect(app.autoCount.stopRemainingSeconds, 300);
     });
 
-    test('decrementAuto and decrement only touch their own record portion',
+    test(
+        'decrementAuto and decrement only change the counters, not the records',
         () async {
       SharedPreferences.setMockInitialValues({});
       final storage = await StorageService.init();
@@ -1486,14 +1489,22 @@ void main() {
       app2.practice.decrementAuto();
       expect(app2.practice.autoCount, 4);
       expect(storage.getAutoCounter(), 4);
-      expect(app2.practice.records.getRecord(today).autoCount, 4);
+      expect(app2.practice.records.getRecord(today).autoCount, 5);
       expect(app2.practice.records.getRecord(today).manualCount, 2);
 
       app2.practice.decrement();
       expect(app2.practice.count, 1);
-      expect(app2.practice.records.getRecord(today).manualCount, 1);
-      expect(app2.practice.records.getRecord(today).autoCount, 4);
-      expect(app2.practice.todayPracticeCount, 5);
+      expect(storage.getCounter(), 1);
+      expect(app2.practice.records.getRecord(today).manualCount, 2);
+      expect(app2.practice.records.getRecord(today).autoCount, 5);
+      expect(app2.practice.todayPracticeCount, 7);
+
+      // 歸零也只改計數器
+      app2.practice.resetCount();
+      app2.practice.resetAutoCount();
+      expect(app2.practice.count, 0);
+      expect(app2.practice.autoCount, 0);
+      expect(app2.practice.todayPracticeCount, 7);
 
       // 自動計數為 0 時減一不會變成負數
       app2.practice.resetAutoCount();
