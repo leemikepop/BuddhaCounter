@@ -93,21 +93,17 @@ Future<void> _loadFont(String family, List<String> paths) async {
   await loader.load();
 }
 
-String _sdkMaterialFonts() {
-  final exe = Platform.resolvedExecutable.replaceAll(r'\', '/');
-  final root = Platform.environment['FLUTTER_ROOT'] ??
-      exe.substring(0, exe.indexOf('/bin/cache/'));
-  return '$root/bin/cache/artifacts/material_fonts';
-}
-
 Future<void> _loadFonts(ShotLocale l) async {
   final serif = l.font.replaceFirst('Sans', 'Serif');
   if (!File('$fontDir/${l.font}-Regular.otf').existsSync() ||
       !File('$fontDir/$serif-Bold.otf').existsSync()) {
     fail('找不到字型，請先執行 bash tool/screenshots/fetch_fonts.sh');
   }
-  await _loadFont(
-      'MaterialIcons', ['${_sdkMaterialFonts()}/materialicons-regular.otf']);
+  // Material Icons：flutter test 會把它打包進測試資源 (uses-material-design: true)，
+  // 不要去讀 SDK 快取 (CI 上的 Flutter 沒有 bin/cache/artifacts/material_fonts/)
+  await (FontLoader('MaterialIcons')
+        ..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf')))
+      .load();
   // flutter_tester 不會逐字改用其他字型 (缺字只會畫方框)，所以把 Noto 直接註冊成
   // 主題使用的字型名稱 Roboto：中文、英文與數字都用 Noto 排版。只影響截圖，不影響 App。
   // (沒指定字型的文字會用 flutter_tester 內建、無法替換的測試字型，所以主題裡每個樣式都要有字型)
