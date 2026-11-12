@@ -25,8 +25,9 @@
   播放 / 暫停 / 換曲會交給自動計數處理。進出自動計數畫面一定要呼叫 `setScreenVisible`。
 - 節拍判斷邏輯只放在 `lib/features/auto_count/beat_tracker.dart`（純 Dart），改了要跑
   `test/beat_tracker_test.dart`。
-- 「今天的計數」(`PracticeController.count` / `autoCount`) 跨午夜會由 `checkDateRollover()` 歸零；
-  修改任何一天的紀錄要走 `PracticeController`（不要直接改 `PracticeRecordService`），今天的數字才會同步。
+- 計數器（`PracticeController.count` / `autoCount`）和功課月曆的每日紀錄是**分開的**：+1 / 自動計數念的聲數
+  同時加到當下那一天的紀錄，跨午夜不會歸零；−1、歸零只改計數器，在月曆修改紀錄也不會改到計數器。
+  修改紀錄要走 `PracticeController`（不要直接改 `PracticeRecordService`），畫面才會更新。
 - 經典模式（`lib/ui/legacy/`）要保留，版面沿用最早的 Android 版，不要改成現代風格。
   共用按鈕 / 橫幅 / 顏色在 `lib/ui/legacy/widgets/legacy_widgets.dart`。
 - 平板（最短邊 ≥ 600）上整個 App 由 `lib/ui/common/tablet_scale.dart` 的 `TabletScale` 等比放大（最多 1.5 倍），

@@ -11,7 +11,7 @@ import 'beat_tracker.dart';
 ///
 /// - 停止條件二擇一：念滿 [targetCount] 聲，或計時滿 [stopMinutes] 分鐘 (0 = 不限)。
 /// - 在自動計數畫面上，播放器的播放 / 暫停就等於開始 / 暫停計數 (見 [PlaybackDelegate])。
-/// - 聲數本身記在 [PracticeController.autoCount] (今日功課的一部分)。
+/// - 聲數本身記在 [PracticeController.autoCount]，同時加到功課月曆當天的紀錄。
 class AutoCountController extends ChangeNotifier implements PlaybackDelegate {
   AutoCountController({
     required PlaybackController playback,
