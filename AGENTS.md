@@ -115,7 +115,7 @@
 ## CI
 
 - 平常 push **不會**觸發建置。`ci_android.yml`、`deploy_ios_testflight.yml` 與 `deploy_web.yml` 在推送 `v*` tag（前兩者另含發布 Release）或手動時執行；
-  `ci_ios.yml`（未簽名 IPA，給側載）只能手動；Codemagic 只能在網頁手動開始。
+  `ci_ios.yml`（未簽名 IPA，給側載）與 `screenshots.yml`（商店截圖、宣傳圖，打包成 artifact）只能手動；Codemagic 只能在網頁手動開始。
 - repo 是私有的，macOS runner 的分鐘數是 Linux 的 10 倍：iOS workflow 不要設成自動觸發。
 - 手動觸發：`gh workflow run ci_ios.yml --ref <branch>`。
 

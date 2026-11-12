@@ -9,6 +9,8 @@ flutter test tool/screenshots                    # 產生到 build/screenshots/
 bash tool/screenshots/export_store_assets.sh     # 繁中宣傳圖複製到這裡 (其他語言：zh_Hans / en)
 ```
 
+也可以在 GitHub Actions 手動執行 **Screenshots - Generate store images**，下載 `store-assets` 解壓縮到這個資料夾。
+
 | 路徑 | 用途 | 尺寸 |
 |---|---|---|
 | `app_store/iphone_6.9/<語言>/` | App Store iPhone 6.9 吋截圖 | 1320×2868 |

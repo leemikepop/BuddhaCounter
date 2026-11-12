@@ -130,6 +130,14 @@ flutter test tool/screenshots                    # 約 1 分鐘，輸出到 buil
 bash tool/screenshots/export_store_assets.sh     # 把繁中宣傳圖複製到 assets/store_assets/（其他語言：zh_Hans / en）
 ```
 
+不想在本機跑的話，到 GitHub → Actions → **Screenshots - Generate store images** → Run workflow
+（或 `gh workflow run screenshots.yml --ref <branch>`），約 5 分鐘後在該次執行的頁面下載：
+
+- `store-assets`：和 repo 裡相同的整理方式（繁中），解壓縮覆蓋 `assets/store_assets/` 後 commit。
+- `screenshots-all-languages`：三種語言的原始截圖與宣傳圖（`build/screenshots/` 整個資料夾）。
+
+artifact 保留 14 天；workflow 不會自己 commit 回 repo。
+
 - 用真實的 `BuddhaCounterApp` 加上示範資料（今天 56 / 108 聲、自動 238 聲、約一個半月的功課紀錄）畫出來，
   不需要模擬器或 Mac。
 - 原始截圖 `build/screenshots/<裝置>/<語言>/`：iPhone 6.9 吋（1320×2868）、iPad 13 吋（2064×2752）、
@@ -174,6 +182,7 @@ bash tool/screenshots/export_store_assets.sh     # 把繁中宣傳圖複製到 a
 | `deploy_ios_testflight.yml` | 推送 `v*` tag、發布 Release、手動 | 簽名 IPA 並上傳 TestFlight |
 | `deploy_web.yml` | 推送 `v*` tag、手動 | analyze、test、建置網頁版並部署到 GitHub Pages |
 | `ci_ios.yml` | 只能手動 | analyze、test、未簽名 IPA（給 Sideloadly 側載） |
+| `screenshots.yml` | 只能手動 | 產生商店截圖與宣傳圖，打包成 artifact（見「商店截圖與宣傳圖」） |
 | `codemagic.yaml` | 只能在 Codemagic 網頁手動開始 | 備用的 TestFlight 流程（目前沒在用） |
 
 手動觸發：GitHub → Actions → 選 workflow → Run workflow，或

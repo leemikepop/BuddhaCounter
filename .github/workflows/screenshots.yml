@@ -1,0 +1,57 @@
+name: Screenshots - Generate store images
+
+# 只能手動執行：產生商店截圖、宣傳圖、README 首圖與 GitHub 社群預覽圖，打包成 artifact 下載。
+# 不會 commit 回 repo；要更新 assets/store_assets/ 時，下載 store-assets 解壓縮覆蓋後自己 commit。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    name: Generate screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Flutter
+        # 第三方 action 固定在 commit SHA，避免 tag 被改指向惡意程式碼
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: '3.47.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Noto Sans / Serif CJK (SIL OFL)，約 60 MB，不進 repo
+      - name: Download fonts
+        run: bash tool/screenshots/fetch_fonts.sh
+
+      - name: Generate screenshots and posters
+        run: flutter test tool/screenshots
+
+      # 和 repo 裡相同的整理方式 (繁中)，解壓縮到 assets/store_assets/ 就能直接 commit
+      - name: Export store assets
+        run: bash tool/screenshots/export_store_assets.sh zh_Hant
+
+      - name: Upload store assets (zh_Hant)
+        uses: actions/upload-artifact@v7
+        with:
+          name: store-assets
+          path: |
+            assets/store_assets/
+            !assets/store_assets/source/
+          retention-days: 14
+
+      # 全部語言的原始截圖 (build/screenshots/<裝置>/<語言>/) 與宣傳圖 (posters/)
+      - name: Upload all screenshots
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshots-all-languages
+          path: build/screenshots/
+          retention-days: 14
