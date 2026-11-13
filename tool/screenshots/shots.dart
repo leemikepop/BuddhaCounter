@@ -41,6 +41,7 @@ class Device {
 
 const devices = [
   Device('iphone_6.9', Size(440, 956), 3), // 1320×2868 (App Store 6.9 吋)
+  Device('iphone_6.3', Size(402, 874), 3), // 1206×2622 (App Store 6.1 / 6.3 吋)
   Device('ipad_13', Size(1032, 1376), 2), // 2064×2752 (App Store 13 吋)
   Device('android_phone', Size(432, 768), 2.5), // 1080×1920 (Google Play 9:16)
 ];

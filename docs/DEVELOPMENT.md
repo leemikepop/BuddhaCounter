@@ -140,7 +140,7 @@ artifact 保留 14 天；workflow 不會自己 commit 回 repo。
 
 - 用真實的 `BuddhaCounterApp` 加上示範資料（今天 56 / 108 聲、自動 238 聲、約一個半月的功課紀錄）畫出來，
   不需要模擬器或 Mac。
-- 原始截圖 `build/screenshots/<裝置>/<語言>/`：iPhone 6.9 吋（1320×2868）、iPad 13 吋（2064×2752）、
+- 原始截圖 `build/screenshots/<裝置>/<語言>/`：iPhone 6.9 吋（1320×2868）、iPhone 6.3 吋（1206×2622，App Store 的 6.1 / 6.3 吋欄位）、iPad 13 吋（2064×2752）、
   Android 手機（1080×1920）× 繁中、簡中、英文；畫面清單在 `tool/screenshots/shots.dart` 的 `shots`。
 - 宣傳圖 `build/screenshots/posters/`（`tool/screenshots/posters.dart`）：紙紋背景 + 明體標題 + 手機外框，
   外框裡是**真的在跑的 App**（有狀態列、動態島），不是貼上去的截圖。標題文字在 `_captions`。

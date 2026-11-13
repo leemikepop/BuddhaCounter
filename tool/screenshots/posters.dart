@@ -48,6 +48,9 @@ class PosterDevice {
 const posterDevices = [
   PosterDevice('iphone_6.9', Size(1320, 2868), Size(440, 956), FrameKind.iphone,
       frameWidth: 670, frameTop: 372),
+  // App Store 的 6.1 / 6.3 吋欄位只收 1206×2622 或 1179×2556，不收 6.9 吋的圖
+  PosterDevice('iphone_6.3', Size(1206, 2622), Size(402, 874), FrameKind.iphone,
+      frameWidth: 670, frameTop: 372),
   PosterDevice(
       'android_phone', Size(1080, 1920), Size(412, 892), FrameKind.android,
       frameWidth: 670, frameTop: 372),
