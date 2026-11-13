@@ -145,7 +145,7 @@ artifact 保留 14 天；workflow 不會自己 commit 回 repo。
 - 宣傳圖 `build/screenshots/posters/`（`tool/screenshots/posters.dart`）：紙紋背景 + 明體標題 + 手機外框，
   外框裡是**真的在跑的 App**（有狀態列、動態島），不是貼上去的截圖。標題文字在 `_captions`。
   另外產生 README 首圖與 GitHub 社群預覽圖（只有繁中）。
-- 文字一律用 Noto 排版，和 iPhone 實機的蘋方 / SF 略有不同。
+- 文字一律用 Noto 排版，和 iPhone 實機的蘋方 / SF 略有不同。畫面裡不要用 emoji（截圖會畫成方框），改用 `Icons.*`；`test/no_emoji_in_ui_test.dart` 會檢查 `lib/ui/`。
 - 截不到的：桌面小工具、通知、鎖定畫面播放控制（都是原生畫面），仍要手動截。
 - 月初時功課月曆會自動切到上個月，避免大半個月是空的。
 - 測試裡不能用 `Image.file`（讀檔卡在假時鐘裡會永遠等不到），一律先同步讀成 bytes 再用 `Image.memory`。
