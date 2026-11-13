@@ -17,6 +17,7 @@ copy() { # <來源裝置> <目的資料夾>
   cp "$src/$1/$loc/"*.jpg "$dst/$2/$loc/"
 }
 copy iphone_6.9 app_store/iphone_6.9
+copy iphone_6.3 app_store/iphone_6.3
 copy ipad_13 app_store/ipad_13
 copy android_phone google_play/phone
 if [ "$loc" = zh_Hant ]; then

@@ -41,7 +41,9 @@ class PracticeStatsHeader extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 decoration:
                     const BoxDecoration(color: _flame, shape: BoxShape.circle),
-                child: const Text('🔥', style: TextStyle(fontSize: 20)),
+                // 不用 emoji：截圖工具與部分平台沒有 emoji 字型，會畫成方框
+                child: const Icon(Icons.local_fire_department_rounded,
+                    size: 24, color: Colors.white),
               ),
               const SizedBox(width: 12),
               Expanded(
