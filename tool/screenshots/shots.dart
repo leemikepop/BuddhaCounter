@@ -243,6 +243,7 @@ void runScreenshots(ShotLocale l) {
   }
 
   registerPosterTests(l);
+  registerSearchImageTest(l);
 }
 
 /// 依 [Shot] 建立一套帶示範資料的 controller

@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:buddha_counter/app/app_controllers.dart';
 import 'package:buddha_counter/app/buddha_counter_app.dart';
 import 'package:buddha_counter/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -456,23 +457,8 @@ void registerPosterTests(ShotLocale l) {
     addTearDown(tester.view.reset);
 
     final app = await demoApp(l, shots.first);
-    const screen = Size(440, 956);
-    const phoneW = 250.0;
-    final phoneH = frameHeight(phoneW, FrameKind.iphone, screen);
-    Widget phone(double left, double top, Key key) => Positioned(
-          left: left,
-          top: top,
-          width: phoneW,
-          height: phoneH,
-          child: DeviceFrame(
-            key: key,
-            kind: FrameKind.iphone,
-            screen: screen,
-            dark: false,
-            child: liveApp(app.provide(child: const BuddhaCounterApp()),
-                FrameKind.iphone, screen),
-          ),
-        );
+    Widget phone(double left, double top, Key key) =>
+        _brandPhone(app, left, top, 250, key);
 
     const key = ValueKey('social');
     await tester.pumpWidget(RepaintBoundary(
@@ -542,18 +528,157 @@ void registerPosterTests(ShotLocale l) {
         ),
       ),
     ));
-    await tester.pumpAndSettle();
-    // 第二支手機切到功課月曆 (月初一樣改看上個月)
-    Finder inPhoneB(Finder f) =>
-        find.descendant(of: find.byKey(const ValueKey('phoneB')), matching: f);
-    await tester.tap(inPhoneB(find.byType(NavigationDestination)).at(3));
-    await tester.pumpAndSettle();
-    if (DateTime.now().day < 15) {
-      await tester.tap(inPhoneB(
-          find.byTooltip(lookupAppLocalizations(l.locale).calendarPrevMonth)));
-    }
+    await _openCalendarInPhoneB(tester, l);
     await openShot(tester, l, const Shot('social'));
     await capture(tester, key, '$outDir/posters/github_social_preview.png', 1);
     await disposeAndSettleTimers(tester);
   });
+}
+
+/// App Store「標題和搜尋結果」的搜尋結果圖：3:2，輸出 3840×2560。
+/// 以 1920×1280 排版、2 倍輸出；重要內容都放在 Apple 規定的安全區
+/// (3840×2560 上是 x 836、y 765 起 2168×1030，這裡座標減半)，外面只放背景。
+const _searchCanvas = Size(1920, 1280);
+const _searchSafe = Rect.fromLTWH(418, 382.5, 1084, 515);
+
+/// 搜尋結果圖的 App 名稱與一句話介紹 (繁中、簡中、英文)
+const _searchCaptions = <String, (String, String)>{
+  'zh_Hant': ('念佛計數器', '念佛、拜佛的隨身計數工具'),
+  'zh_Hans': ('念佛计数器', '念佛、拜佛的随身计数工具'),
+  'en': ('Buddha Counter', 'Count every recitation and bow'),
+};
+
+void registerSearchImageTest(ShotLocale l) {
+  testWidgets('App Store search image ${l.name}', (tester) async {
+    tester.view.physicalSize = _searchCanvas;
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final app = await demoApp(l, shots.first);
+    final (title, subtitle) = _searchCaptions[l.name]!;
+    final isLatin = l.name == 'en';
+    const safe = _searchSafe;
+    // 兩支手機的高度剛好放進安全區 (第二支往下錯開一點)
+    const drop = 30.0;
+    const phoneW = 230.0;
+    final phoneH = frameHeight(phoneW, FrameKind.iphone, const Size(440, 956));
+    final phoneTop = safe.top + (safe.height - phoneH - drop) / 2;
+    final phoneBLeft = safe.right - phoneW;
+    final phoneALeft = phoneBLeft - phoneW * 0.62;
+
+    const key = ValueKey('search');
+    await tester.pumpWidget(RepaintBoundary(
+      key: key,
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: SizedBox.fromSize(
+          size: _searchCanvas,
+          child: Stack(children: [
+            Positioned.fill(
+                child: Image.memory(_bytes(_paperArt), fit: BoxFit.cover)),
+            // 安全區後面鋪一層淡淡的紙色，讓文字在紋路上也看得清楚
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    radius: 0.62,
+                    colors: [
+                      const Color(0xFFFAF3EA).withValues(alpha: 0.9),
+                      const Color(0xFFFAF3EA).withValues(alpha: 0.55),
+                      const Color(0xFFFAF3EA).withValues(alpha: 0.0),
+                    ],
+                    stops: const [0, 0.6, 1],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: safe.left + 20,
+              top: safe.top,
+              bottom: _searchCanvas.height - safe.bottom,
+              right: _searchCanvas.width - phoneALeft + 40,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(30),
+                    child:
+                        Image.memory(_bytes(_appIcon), width: 132, height: 132),
+                  ),
+                  const SizedBox(height: 34),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(title,
+                        maxLines: 1,
+                        style: TextStyle(
+                            fontFamily: posterSerif,
+                            fontSize: isLatin ? 84 : 96,
+                            color: _ink,
+                            letterSpacing: isLatin ? 1 : 10)),
+                  ),
+                  const SizedBox(height: 16),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(subtitle,
+                        maxLines: 1,
+                        style: const TextStyle(
+                            fontFamily: posterSerif,
+                            fontSize: 42,
+                            color: _inkSoft,
+                            letterSpacing: 2)),
+                  ),
+                ],
+              ),
+            ),
+            _brandPhone(
+                app, phoneALeft, phoneTop, phoneW, const ValueKey('phoneA')),
+            _brandPhone(app, phoneBLeft, phoneTop + drop, phoneW,
+                const ValueKey('phoneB')),
+          ]),
+        ),
+      ),
+    ));
+    await _openCalendarInPhoneB(tester, l);
+    await openShot(tester, l, const Shot('search'));
+    // 1920×1280 × 2 = 3840×2560 (Apple 的最大尺寸)
+    await capture(
+        tester, key, '$outDir/posters/search_results/${l.name}.jpg', 2);
+    await disposeAndSettleTimers(tester);
+  });
+}
+
+/// 宣傳用的 iPhone：外框裡是 6.9 吋邏輯尺寸的真實 App
+Widget _brandPhone(
+    AppControllers app, double left, double top, double width, Key key) {
+  const screen = Size(440, 956);
+  return Positioned(
+    left: left,
+    top: top,
+    width: width,
+    height: frameHeight(width, FrameKind.iphone, screen),
+    child: DeviceFrame(
+      key: key,
+      kind: FrameKind.iphone,
+      screen: screen,
+      dark: false,
+      child: liveApp(app.provide(child: const BuddhaCounterApp()),
+          FrameKind.iphone, screen),
+    ),
+  );
+}
+
+/// 第二支手機 (key: phoneB) 切到功課月曆 (月初一樣改看上個月)
+Future<void> _openCalendarInPhoneB(WidgetTester tester, ShotLocale l) async {
+  await tester.pumpAndSettle();
+  Finder inPhoneB(Finder f) =>
+      find.descendant(of: find.byKey(const ValueKey('phoneB')), matching: f);
+  await tester.tap(inPhoneB(find.byType(NavigationDestination)).at(3));
+  await tester.pumpAndSettle();
+  if (DateTime.now().day < 15) {
+    await tester.tap(inPhoneB(
+        find.byTooltip(lookupAppLocalizations(l.locale).calendarPrevMonth)));
+  }
 }

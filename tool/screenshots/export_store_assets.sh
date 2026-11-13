@@ -20,6 +20,9 @@ copy iphone_6.9 app_store/iphone_6.9
 copy iphone_6.3 app_store/iphone_6.3
 copy ipad_13 app_store/ipad_13
 copy android_phone google_play/phone
+rm -rf "$dst/app_store/search_results/$loc"
+mkdir -p "$dst/app_store/search_results/$loc"
+cp "$src/search_results/$loc.jpg" "$dst/app_store/search_results/$loc/search_results_3840x2560.jpg"
 if [ "$loc" = zh_Hant ]; then
   cp "$src/github_social_preview.png" "$dst/github_social_preview_1280x640.png"
   cp "$src/readme_banner.png" "$dst/readme_banner.png"

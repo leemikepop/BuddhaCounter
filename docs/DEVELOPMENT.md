@@ -144,7 +144,8 @@ artifact 保留 14 天；workflow 不會自己 commit 回 repo。
   Android 手機（1080×1920）× 繁中、簡中、英文；畫面清單在 `tool/screenshots/shots.dart` 的 `shots`。
 - 宣傳圖 `build/screenshots/posters/`（`tool/screenshots/posters.dart`）：紙紋背景 + 明體標題 + 手機外框，
   外框裡是**真的在跑的 App**（有狀態列、動態島），不是貼上去的截圖。標題文字在 `_captions`。
-  另外產生 README 首圖與 GitHub 社群預覽圖（只有繁中）。
+  另外產生 App Store 搜尋結果圖 `posters/search_results/<語言>.jpg`（3840×2560，App 名稱 + 兩支手機，都放在 Apple 規定的中央安全區內），
+  以及 README 首圖與 GitHub 社群預覽圖（只有繁中）。
 - 文字一律用 Noto 排版，和 iPhone 實機的蘋方 / SF 略有不同。畫面裡不要用 emoji（截圖會畫成方框），改用 `Icons.*`；`test/no_emoji_in_ui_test.dart` 會檢查 `lib/ui/`。
 - 截不到的：桌面小工具、通知、鎖定畫面播放控制（都是原生畫面），仍要手動截。
 - 月初時功課月曆會自動切到上個月，避免大半個月是空的。
