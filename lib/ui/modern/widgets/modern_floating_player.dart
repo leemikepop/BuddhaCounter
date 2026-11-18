@@ -66,7 +66,7 @@ class ModernFloatingPlayer extends StatelessWidget {
                       child: Row(
                         children: [
                           _TrackNumberBadge(
-                            number: current.id + 1,
+                            number: ChantConstants.numberOfId(current.id),
                             highlighted: isPlaying,
                           ),
                           const SizedBox(width: 10),

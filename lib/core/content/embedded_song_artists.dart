@@ -22,4 +22,7 @@ const Map<int, String> kEmbeddedSongArtists = {
   26: '沙彌師父',
   27: '靈巖梵唄',
   28: '靈巖梵唄',
+  31: '悟行法師',
+  32: '悟行法師',
+  33: '念佛回家 | Homeward with Amitabha',
 };

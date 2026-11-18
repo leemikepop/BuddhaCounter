@@ -66,12 +66,18 @@ void main() {
     });
 
     test('next / previous wrap around the song list', () {
-      final total = ChantConstants.allSongs.length;
-      app.playback.selectSong(total - 1);
+      // id 不等於清單位置，頭尾相接要照清單順序
+      final all = ChantConstants.allSongs;
+      app.playback.selectSong(all.last.id);
       app.playback.playNextSong();
-      expect(app.playback.currentSongId, 0);
+      expect(app.playback.currentSongId, all.first.id);
       app.playback.playPreviousSong();
-      expect(app.playback.currentSongId, total - 1);
+      expect(app.playback.currentSongId, all.last.id);
+
+      // 插在中間的新曲：id 8 的下一首是 31 (地鐘念佛快版)，不是 id 9
+      app.playback.selectSong(8);
+      app.playback.playNextSong();
+      expect(app.playback.currentSongId, 31);
     });
 
     test('resetAll stops and clears both count and elapsed time', () async {

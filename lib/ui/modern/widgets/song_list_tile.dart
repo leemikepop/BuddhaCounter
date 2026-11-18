@@ -73,7 +73,7 @@ class SongListTile extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      '${song.id + 1}'.padLeft(2, '0'),
+                      '${ChantConstants.numberOfId(song.id)}'.padLeft(2, '0'),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,

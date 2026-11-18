@@ -38,6 +38,9 @@ class ChantContentEn extends ChantContent {
         28: 'Namo Avalokiteshvara Bodhisattva - Pilgrimage chant - Ling Yen Chant - Novice Monk',
         29: 'Namo Avalokiteshvara Bodhisattva - 7-character, 5-tone - solemn music',
         30: 'Six-Syllable Mantra (Om Mani Padme Hum) - female voice',
+        31: 'Amitabha Buddha - earth-bell recitation, fast - Ven. Wu Xing',
+        32: 'Amitabha Buddha - earth-bell recitation, very fast - Ven. Wu Xing',
+        33: 'Namo Amitabha Buddha - Light of the Buddha Shines Always - Homeward with Amitabha',
       };
 
   @override
@@ -54,6 +57,7 @@ class ChantContentEn extends ChantContent {
         '夏蓮居老居士': 'Elder Upasaka Xia Lianju',
         '沙彌師父': 'Novice Monk',
         '靈巖梵唄': 'Ling Yen Chant',
+        '念佛回家 | Homeward with Amitabha': 'Homeward with Amitabha',
       };
 
   @override

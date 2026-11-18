@@ -426,14 +426,13 @@ class ChantAudioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> skipToNext() async {
-    final nextId = (_currentSongId + 1) % ChantConstants.allSongs.length;
+    final nextId = ChantConstants.neighborId(_currentSongId, 1);
     await playSong(nextId);
   }
 
   @override
   Future<void> skipToPrevious() async {
-    final prevId = (_currentSongId - 1 + ChantConstants.allSongs.length) %
-        ChantConstants.allSongs.length;
+    final prevId = ChantConstants.neighborId(_currentSongId, -1);
     await playSong(prevId);
   }
 

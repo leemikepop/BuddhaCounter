@@ -70,22 +70,37 @@ void main() {
   });
 
   group('Chant Songs & Audio Metadata Tests', () {
-    test('Contains 31 reordered OGG songs (4-char -> 6-char -> others)', () {
+    test('Contains 34 OGG songs in display order (4-char -> 6-char -> others)',
+        () {
       final songs = ChantConstants.getAllSongs();
-      expect(songs.length, 31);
+      expect(songs.length, 34);
 
-      // 0..10 為四字「阿彌陀佛」開頭
-      for (var i = 0; i <= 10; i++) {
+      // 清單位置 0..12 為四字「阿彌陀佛」開頭（含插入的兩首地鐘念佛）
+      for (var i = 0; i <= 12; i++) {
         expect(songs[i].title.startsWith('阿彌陀佛'), isTrue);
       }
-      // 11..25 為六字「南無阿彌陀佛」開頭
-      for (var i = 11; i <= 25; i++) {
+      // 13..28 為六字「南無阿彌陀佛」開頭（含插入的佛光常照）
+      for (var i = 13; i <= 28; i++) {
         expect(songs[i].title.startsWith('南無阿彌陀佛'), isTrue);
       }
     });
 
+    test('song ids are unique and independent of list position', () {
+      final songs = ChantConstants.getAllSongs();
+      expect(songs.map((s) => s.id).toSet().length, songs.length);
+      // 新插入的曲目接續最大 id，舊曲目 id 不變
+      expect(songs[9].id, 31);
+      expect(songs[10].id, 32);
+      expect(songs[11].id, 9);
+      expect(ChantConstants.getSongById(33).title, contains('佛光常照'));
+      expect(ChantConstants.numberOfId(33), 23);
+      expect(ChantConstants.neighborId(8, 1), 31);
+      expect(ChantConstants.neighborId(32, 1), 9);
+      expect(ChantConstants.neighborId(songs.first.id, -1), songs.last.id);
+    });
+
     test(
-        'All 31 songs have calibrated beatIntervalMs, ascending markers, and tags',
+        'All songs have calibrated beatIntervalMs, ascending markers, and tags',
         () {
       for (final song in ChantConstants.defaultSongs) {
         expect(song.phraseMarkersMs, isNotEmpty);
@@ -111,7 +126,7 @@ void main() {
       expect(customSong.artist, '三寶弟子');
       expect(customSong.album, '念佛計數器');
       expect(ChantConstants.availableTags, contains(ChantTag.fourCharAmitabha));
-      expect(ChantConstants.countSongsByTag(ChantTag.fourCharAmitabha), 12);
+      expect(ChantConstants.countSongsByTag(ChantTag.fourCharAmitabha), 14);
     });
 
     test(
@@ -950,7 +965,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
       await tester.pump();
 
-      final cueFinder = find.text('上滑展開佛曲選單（共 31 首）');
+      final cueFinder = find.text('上滑展開佛曲選單（共 34 首）');
       expect(cueFinder, findsOneWidget);
 
       // 驗證播控主按鈕與上滑提示之間緊湊無大面積空白
@@ -967,7 +982,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 
-      expect(find.text('佛曲選單（共 31 首） · 點擊收合'), findsOneWidget);
+      expect(find.text('佛曲選單（共 34 首） · 點擊收合'), findsOneWidget);
       final tagLabel =
           '朝山聖號 (${ChantConstants.countSongsByTag(ChantTag.pilgrimage)})';
       expect(find.text(tagLabel), findsOneWidget);
@@ -984,7 +999,7 @@ void main() {
       await tester.tap(find.byTooltip('收合回播放器'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.text('上滑展開佛曲選單（共 31 首）'), findsOneWidget);
+      expect(find.text('上滑展開佛曲選單（共 34 首）'), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(seconds: 2));

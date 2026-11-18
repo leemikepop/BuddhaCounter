@@ -230,9 +230,9 @@ void main() {
   group('chant content', () {
     tearDown(() => ChantConstants.applyLocale(kZhHant));
 
-    test('zh_Hans and en catalogs cover all 31 songs and dedication verses',
+    test('zh_Hans and en catalogs cover all 34 songs and dedication verses',
         () {
-      final ids = {for (var i = 0; i <= 30; i++) i};
+      final ids = {for (var i = 0; i <= 33; i++) i};
       final zhHant = chantContentFor(kZhHant);
       for (final loc in [kZhHans, kEn]) {
         final c = chantContentFor(loc);
@@ -272,7 +272,7 @@ void main() {
     test('tag counts are identical in every language', () {
       for (final loc in [kZhHant, kZhHans, kEn]) {
         ChantConstants.applyLocale(loc);
-        expect(ChantConstants.countSongsByTag(ChantTag.fourCharAmitabha), 12);
+        expect(ChantConstants.countSongsByTag(ChantTag.fourCharAmitabha), 14);
         expect(ChantConstants.availableTags.first, ChantTag.fourCharAmitabha);
       }
     });
@@ -332,15 +332,15 @@ void main() {
           app, const Scaffold(body: PlayerSheet(initiallyExpanded: true))));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('四字彌陀 (12)'));
+      await tester.tap(find.text('四字彌陀 (14)'));
       await tester.pumpAndSettle();
       final zhCount = find.byType(SongListTile).evaluate().length;
-      expect(zhCount, 12);
+      expect(zhCount, 14);
 
       app.locale.setAppLanguage(AppLanguage.en);
       await tester.pumpAndSettle();
-      expect(chipWith(tester, '4-char Amitabha (12)').selected, isTrue);
-      expect(chipWith(tester, 'All (31)').selected, isFalse);
+      expect(chipWith(tester, '4-char Amitabha (14)').selected, isTrue);
+      expect(chipWith(tester, 'All (34)').selected, isFalse);
       expect(find.byType(SongListTile).evaluate().length, zhCount);
       await disposeAndSettleTimers(tester);
     });

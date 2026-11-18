@@ -37,6 +37,9 @@ class ChantContentZhHans extends ChantContent {
         28: '南无观世音菩萨-朝山圣号-灵岩梵呗-沙弥师父',
         29: '南无观世音菩萨-七字五音-庄严乐曲',
         30: '六字大明咒-女声唱诵',
+        31: '阿弥陀佛-地钟念佛快版-悟行法师',
+        32: '阿弥陀佛-地钟念佛急速-悟行法师',
+        33: '南无阿弥陀佛-佛光常照-念佛回家',
       };
 
   @override
@@ -53,6 +56,7 @@ class ChantContentZhHans extends ChantContent {
         '夏蓮居老居士': '夏莲居老居士',
         '沙彌師父': '沙弥师父',
         '靈巖梵唄': '灵岩梵呗',
+        '念佛回家 | Homeward with Amitabha': '念佛回家 | Homeward with Amitabha',
       };
 
   @override

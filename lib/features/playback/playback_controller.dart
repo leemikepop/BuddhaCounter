@@ -134,11 +134,10 @@ class PlaybackController extends ChangeNotifier {
   }
 
   void playNextSong() =>
-      selectAndPlaySong((_currentSongId + 1) % ChantConstants.allSongs.length);
+      selectAndPlaySong(ChantConstants.neighborId(_currentSongId, 1));
 
   void playPreviousSong() {
-    final total = ChantConstants.allSongs.length;
-    selectAndPlaySong((_currentSongId - 1 + total) % total);
+    selectAndPlaySong(ChantConstants.neighborId(_currentSongId, -1));
   }
 
   void beginScrubbing() => _isScrubbing = true;

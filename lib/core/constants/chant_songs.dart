@@ -107,14 +107,15 @@ class ChantSong {
 }
 
 class ChantConstants {
-  /// 完整 31 首重新編排之佛曲預設清單（阿彌陀佛 → 南無阿彌陀佛 → 其他聖號與咒語）
+  /// 完整佛曲預設清單，依 App 內顯示順序排列（阿彌陀佛 → 南無阿彌陀佛 → 其他聖號與咒語）。
+  /// 清單順序可以調整、可以在中間插入新曲；但每首的 [ChantSong.id] 一經發佈就不能改。
   /// App 啟動時會呼叫 [loadMetadataFromAssets] 自動優先讀取各音檔內嵌之 title / artist / album
   static const List<ChantSong> defaultSongs = [
     // ==================== 一、四字「阿彌陀佛」開頭（01 ~ 11） ====================
     ChantSong(
       id: 0,
       title: '阿彌陀佛-四字四音-華藏淨宗-悟道法師',
-      assetPath: 'audio/bb01-阿彌陀佛-四字四音-華藏淨宗-悟道法師.ogg',
+      assetPath: 'audio/阿彌陀佛-四字四音-華藏淨宗-悟道法師.ogg',
       beatIntervalMs: 3846,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -143,7 +144,7 @@ class ChantConstants {
     ChantSong(
       id: 1,
       title: '阿彌陀佛-四字四音配樂-華藏淨宗',
-      assetPath: 'audio/bb02-阿彌陀佛-四字四音配樂-華藏淨宗.ogg',
+      assetPath: 'audio/阿彌陀佛-四字四音配樂-華藏淨宗.ogg',
       beatIntervalMs: 3429,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -175,7 +176,7 @@ class ChantConstants {
     ChantSong(
       id: 2,
       title: '阿彌陀佛-四字四音-引磬慢板',
-      assetPath: 'audio/bb03-阿彌陀佛-四字四音-引磬慢板.ogg',
+      assetPath: 'audio/阿彌陀佛-四字四音-引磬慢板.ogg',
       beatIntervalMs: 5559,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -199,7 +200,7 @@ class ChantConstants {
     ChantSong(
       id: 3,
       title: '阿彌陀佛-四字四音-女眾慢版',
-      assetPath: 'audio/bb04-阿彌陀佛-四字四音-女眾慢版.ogg',
+      assetPath: 'audio/阿彌陀佛-四字四音-女眾慢版.ogg',
       beatIntervalMs: 5400,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -223,7 +224,7 @@ class ChantConstants {
     ChantSong(
       id: 4,
       title: '阿彌陀佛-四字四音-女眾快版-靈巖山寺',
-      assetPath: 'audio/bb05-阿彌陀佛-四字四音-女眾快版-靈巖山寺.ogg',
+      assetPath: 'audio/阿彌陀佛-四字四音-女眾快版-靈巖山寺.ogg',
       beatIntervalMs: 1925,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -244,7 +245,7 @@ class ChantConstants {
     ChantSong(
       id: 5,
       title: '阿彌陀佛-四字中速-淨空法師',
-      assetPath: 'audio/bb06-阿彌陀佛-四字中速-淨空法師.ogg',
+      assetPath: 'audio/阿彌陀佛-四字中速-淨空法師.ogg',
       beatIntervalMs: 1348,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -267,7 +268,7 @@ class ChantConstants {
     ChantSong(
       id: 6,
       title: '阿彌陀佛-四字快速-淨空法師',
-      assetPath: 'audio/bb07-阿彌陀佛-四字快速-淨空法師.ogg',
+      assetPath: 'audio/阿彌陀佛-四字快速-淨空法師.ogg',
       beatIntervalMs: 747,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -335,7 +336,7 @@ class ChantConstants {
     ChantSong(
       id: 7,
       title: '阿彌陀佛-純人聲慢版-淨空法師',
-      assetPath: 'audio/bb08-阿彌陀佛-純人聲慢版-淨空法師.ogg',
+      assetPath: 'audio/阿彌陀佛-純人聲慢版-淨空法師.ogg',
       beatIntervalMs: 5979,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -358,7 +359,7 @@ class ChantConstants {
     ChantSong(
       id: 8,
       title: '阿彌陀佛-地鐘念佛慢版-悟行法師',
-      assetPath: 'audio/bb09-阿彌陀佛-地鐘念佛慢版-悟行法師.ogg',
+      assetPath: 'audio/阿彌陀佛-地鐘念佛慢版-悟行法師.ogg',
       beatIntervalMs: 3434,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -389,9 +390,163 @@ class ChantConstants {
       ],
     ),
     ChantSong(
+      id: 31,
+      title: '阿彌陀佛-地鐘念佛快版-悟行法師',
+      assetPath: 'audio/阿彌陀佛-地鐘念佛快版-悟行法師.ogg',
+      beatIntervalMs: 1113,
+      tags: [
+        ChantTag.fourCharAmitabha,
+        ChantTag.briskMedium,
+      ],
+      phraseMarkersMs: [
+        1142,
+        2185,
+        3320,
+        4544,
+        5732,
+        6741,
+        7865,
+        9023,
+        10183,
+        11344,
+        12446,
+        13517,
+        14676,
+        15802,
+        16942,
+        18096,
+        19164,
+        20278,
+        21465,
+        22575,
+        23721,
+        24782,
+        25884,
+        27029,
+        28183,
+        29282,
+        30331,
+        31427,
+        32503,
+        33745,
+        34760,
+        35744,
+        36848,
+        37923,
+        39014,
+        40142,
+        41185,
+        42295,
+        43206,
+        44516,
+      ],
+    ),
+    ChantSong(
+      id: 32,
+      title: '阿彌陀佛-地鐘念佛急速-悟行法師',
+      assetPath: 'audio/阿彌陀佛-地鐘念佛急速-悟行法師.ogg',
+      beatIntervalMs: 887,
+      tags: [
+        ChantTag.fourCharAmitabha,
+        ChantTag.briskMedium,
+      ],
+      phraseMarkersMs: [
+        799,
+        1553,
+        2445,
+        3259,
+        4270,
+        5090,
+        6015,
+        6905,
+        7845,
+        8735,
+        9631,
+        10540,
+        11412,
+        12360,
+        13217,
+        14012,
+        14821,
+        15699,
+        16852,
+        17799,
+        18635,
+        19548,
+        20338,
+        21302,
+        22229,
+        23108,
+        23973,
+        24820,
+        25793,
+        26669,
+        27517,
+        28308,
+        29312,
+        30189,
+        31086,
+        31941,
+        32931,
+        33762,
+        34726,
+        35571,
+        36454,
+        37330,
+        38208,
+        39163,
+        40260,
+        40973,
+        41730,
+        42473,
+        43450,
+        44391,
+        45281,
+        46103,
+        47010,
+        48001,
+        48830,
+        49655,
+        50567,
+        51472,
+        52347,
+        53229,
+        54169,
+        54968,
+        55932,
+        56788,
+        57708,
+        58446,
+        59359,
+        60273,
+        61191,
+        62194,
+        62957,
+        63737,
+        64839,
+        65690,
+        66512,
+        67496,
+        68309,
+        69220,
+        70107,
+        71033,
+        71919,
+        72753,
+        73662,
+        74523,
+        75402,
+        76318,
+        77207,
+        78000,
+        78910,
+        79838,
+      ],
+    ),
+    ChantSong(
       id: 9,
       title: '阿彌陀佛-唱誦-佛光山',
-      assetPath: 'audio/bb10-阿彌陀佛-唱誦-佛光山.ogg',
+      assetPath: 'audio/阿彌陀佛-唱誦-佛光山.ogg',
       beatIntervalMs: 2692,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -415,7 +570,7 @@ class ChantConstants {
     ChantSong(
       id: 10,
       title: '阿彌陀佛-十念法',
-      assetPath: 'audio/bb11-阿彌陀佛-十念法.ogg',
+      assetPath: 'audio/阿彌陀佛-十念法.ogg',
       beatIntervalMs: 5863,
       tags: [
         ChantTag.fourCharAmitabha,
@@ -439,7 +594,7 @@ class ChantConstants {
     ChantSong(
       id: 11,
       title: '南無阿彌陀佛-思鄉佛號-祥林精舍-開松法師',
-      assetPath: 'audio/bb12-南無阿彌陀佛-思鄉佛號-祥林精舍-開松法師.ogg',
+      assetPath: 'audio/南無阿彌陀佛-思鄉佛號-祥林精舍-開松法師.ogg',
       beatIntervalMs: 7279,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -462,7 +617,7 @@ class ChantConstants {
     ChantSong(
       id: 12,
       title: '南無阿彌陀佛-六字四音-歸鄉佛號',
-      assetPath: 'audio/bb13-南無阿彌陀佛-六字四音-歸鄉佛號.ogg',
+      assetPath: 'audio/南無阿彌陀佛-六字四音-歸鄉佛號.ogg',
       beatIntervalMs: 9046,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -482,7 +637,7 @@ class ChantConstants {
     ChantSong(
       id: 13,
       title: '南無阿彌陀佛-六字四音-華樂版',
-      assetPath: 'audio/bb14-南無阿彌陀佛-六字四音-華樂版.ogg',
+      assetPath: 'audio/南無阿彌陀佛-六字四音-華樂版.ogg',
       beatIntervalMs: 7874,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -502,7 +657,7 @@ class ChantConstants {
     ChantSong(
       id: 14,
       title: '南無阿彌陀佛-六字二音-慢速-靈巖山寺',
-      assetPath: 'audio/bb15-南無阿彌陀佛-六字二音-慢速-靈巖山寺.ogg',
+      assetPath: 'audio/南無阿彌陀佛-六字二音-慢速-靈巖山寺.ogg',
       beatIntervalMs: 8648,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -519,7 +674,7 @@ class ChantConstants {
     ChantSong(
       id: 15,
       title: '南無阿彌陀佛-六字唱誦慢速-印光大師版',
-      assetPath: 'audio/bb16-南無阿彌陀佛-六字唱誦慢速-印光大師版.ogg',
+      assetPath: 'audio/南無阿彌陀佛-六字唱誦慢速-印光大師版.ogg',
       beatIntervalMs: 6797,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -539,7 +694,7 @@ class ChantConstants {
     ChantSong(
       id: 16,
       title: '南無阿彌陀佛-六字唱誦中速-印光大師版',
-      assetPath: 'audio/bb17-南無阿彌陀佛-六字唱誦中速-印光大師版.ogg',
+      assetPath: 'audio/南無阿彌陀佛-六字唱誦中速-印光大師版.ogg',
       beatIntervalMs: 5338,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -555,7 +710,7 @@ class ChantConstants {
     ChantSong(
       id: 17,
       title: '南無阿彌陀佛-唱誦-佛光山',
-      assetPath: 'audio/bb18-南無阿彌陀佛-唱誦-佛光山.ogg',
+      assetPath: 'audio/南無阿彌陀佛-唱誦-佛光山.ogg',
       beatIntervalMs: 5365,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -575,7 +730,7 @@ class ChantConstants {
     ChantSong(
       id: 18,
       title: '南無阿彌陀佛-六字四字-男女對唱',
-      assetPath: 'audio/bb19-南無阿彌陀佛-六字四字-男女對唱.ogg',
+      assetPath: 'audio/南無阿彌陀佛-六字四字-男女對唱.ogg',
       beatIntervalMs: 4791,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -597,7 +752,7 @@ class ChantConstants {
     ChantSong(
       id: 19,
       title: '南無阿彌陀佛-呼吸五段配樂',
-      assetPath: 'audio/bb20-南無阿彌陀佛-呼吸五段配樂.ogg',
+      assetPath: 'audio/南無阿彌陀佛-呼吸五段配樂.ogg',
       beatIntervalMs: 4062,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -627,9 +782,33 @@ class ChantConstants {
       ],
     ),
     ChantSong(
+      id: 33,
+      title: '南無阿彌陀佛-佛光常照-念佛回家',
+      assetPath: 'audio/南無阿彌陀佛-佛光常照-念佛回家.ogg',
+      beatIntervalMs: 7232,
+      tags: [
+        ChantTag.sixCharAmitabha,
+        ChantTag.slowSolemn,
+      ],
+      phraseMarkersMs: [
+        5349,
+        12466,
+        20208,
+        27384,
+        35165,
+        42287,
+        49818,
+        56868,
+        64432,
+        71791,
+        79246,
+        86778,
+      ],
+    ),
+    ChantSong(
       id: 20,
       title: '南無阿彌陀佛-慢速念誦-淨宗法師',
-      assetPath: 'audio/bb21-南無阿彌陀佛-慢速念誦-淨宗法師.ogg',
+      assetPath: 'audio/南無阿彌陀佛-慢速念誦-淨宗法師.ogg',
       beatIntervalMs: 3879,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -657,7 +836,7 @@ class ChantConstants {
     ChantSong(
       id: 21,
       title: '南無阿彌陀佛-台語慢速-沙鹿彌陀念佛堂-陳有宏居士',
-      assetPath: 'audio/bb22-南無阿彌陀佛-台語慢速-沙鹿彌陀念佛堂-陳有宏居士.ogg',
+      assetPath: 'audio/南無阿彌陀佛-台語慢速-沙鹿彌陀念佛堂-陳有宏居士.ogg',
       beatIntervalMs: 4684,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -682,7 +861,7 @@ class ChantConstants {
     ChantSong(
       id: 22,
       title: '南無阿彌陀佛-夏蓮居老居士',
-      assetPath: 'audio/bb23-南無阿彌陀佛-夏蓮居老居士.ogg',
+      assetPath: 'audio/南無阿彌陀佛-夏蓮居老居士.ogg',
       beatIntervalMs: 3332,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -711,7 +890,7 @@ class ChantConstants {
     ChantSong(
       id: 23,
       title: '南無阿彌陀佛-六度彌陀-靈巖梵唄-沙彌師父',
-      assetPath: 'audio/bb24-南無阿彌陀佛-六度彌陀-靈巖梵唄-沙彌師父.ogg',
+      assetPath: 'audio/南無阿彌陀佛-六度彌陀-靈巖梵唄-沙彌師父.ogg',
       beatIntervalMs: 12906,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -729,7 +908,7 @@ class ChantConstants {
     ChantSong(
       id: 24,
       title: '南無阿彌陀佛-懷念恩師-靈巖梵唄-沙彌師父',
-      assetPath: 'audio/bb25-南無阿彌陀佛-懷念恩師-靈巖梵唄-沙彌師父.ogg',
+      assetPath: 'audio/南無阿彌陀佛-懷念恩師-靈巖梵唄-沙彌師父.ogg',
       beatIntervalMs: 7608,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -747,7 +926,7 @@ class ChantConstants {
     ChantSong(
       id: 25,
       title: '南無阿彌陀佛-朝山聖號-靈巖梵唄-沙彌師父',
-      assetPath: 'audio/bb26-南無阿彌陀佛-朝山聖號-靈巖梵唄-沙彌師父.ogg',
+      assetPath: 'audio/南無阿彌陀佛-朝山聖號-靈巖梵唄-沙彌師父.ogg',
       beatIntervalMs: 9276,
       tags: [
         ChantTag.sixCharAmitabha,
@@ -769,7 +948,7 @@ class ChantConstants {
     ChantSong(
       id: 26,
       title: '南無釋迦牟尼佛-朝山聖號-靈巖梵唄-沙彌師父',
-      assetPath: 'audio/bb27-南無釋迦牟尼佛-朝山聖號-靈巖梵唄-沙彌師父.ogg',
+      assetPath: 'audio/南無釋迦牟尼佛-朝山聖號-靈巖梵唄-沙彌師父.ogg',
       beatIntervalMs: 8660,
       tags: [
         ChantTag.bodhisattvaMantra,
@@ -789,7 +968,7 @@ class ChantConstants {
     ChantSong(
       id: 27,
       title: '南無地藏王菩薩-朝山聖號-靈巖梵唄-沙彌師父',
-      assetPath: 'audio/bb28-南無地藏王菩薩-朝山聖號-靈巖梵唄-沙彌師父.ogg',
+      assetPath: 'audio/南無地藏王菩薩-朝山聖號-靈巖梵唄-沙彌師父.ogg',
       beatIntervalMs: 7672,
       tags: [
         ChantTag.bodhisattvaMantra,
@@ -811,7 +990,7 @@ class ChantConstants {
     ChantSong(
       id: 28,
       title: '南無觀世音菩薩-朝山聖號-靈巖梵唄-沙彌師父',
-      assetPath: 'audio/bb29-南無觀世音菩薩-朝山聖號-靈巖梵唄-沙彌師父.ogg',
+      assetPath: 'audio/南無觀世音菩薩-朝山聖號-靈巖梵唄-沙彌師父.ogg',
       beatIntervalMs: 9199,
       tags: [
         ChantTag.bodhisattvaMantra,
@@ -831,7 +1010,7 @@ class ChantConstants {
     ChantSong(
       id: 29,
       title: '南無觀世音菩薩-七字五音-莊嚴樂曲',
-      assetPath: 'audio/bb30-南無觀世音菩薩-七字五音-莊嚴樂曲.ogg',
+      assetPath: 'audio/南無觀世音菩薩-七字五音-莊嚴樂曲.ogg',
       beatIntervalMs: 6456,
       tags: [
         ChantTag.bodhisattvaMantra,
@@ -853,7 +1032,7 @@ class ChantConstants {
     ChantSong(
       id: 30,
       title: '六字大明咒-女聲唱誦',
-      assetPath: 'audio/bb31-六字大明咒-女聲唱誦.ogg',
+      assetPath: 'audio/六字大明咒-女聲唱誦.ogg',
       beatIntervalMs: 3653,
       tags: [
         ChantTag.bodhisattvaMantra,
@@ -928,11 +1107,29 @@ class ChantConstants {
 
   static List<ChantSong> getAllSongs() => _resolvedSongs;
 
+  /// 以 [ChantSong.id] 取曲目；找不到時回傳清單第一首。
+  /// id 是永久識別碼 (使用者存下的「上次播放曲目」靠它)，**不等於**清單位置：
+  /// 新曲目可以插在清單任何位置，id 接續最大值。
   static ChantSong getSongById(int id) {
-    if (id >= 0 && id < _resolvedSongs.length) {
-      return _resolvedSongs[id];
-    }
-    return _resolvedSongs[0];
+    final i = indexOfId(id);
+    return _resolvedSongs[i < 0 ? 0 : i];
+  }
+
+  /// [id] 在清單中的位置 (0 起算)；找不到回傳 -1
+  static int indexOfId(int id) => _resolvedSongs.indexWhere((s) => s.id == id);
+
+  /// 顯示用的曲目編號 (1 起算，依清單順序；找不到回傳 1)
+  static int numberOfId(int id) {
+    final i = indexOfId(id);
+    return i < 0 ? 1 : i + 1;
+  }
+
+  /// 清單中 [id] 往後 ([delta] > 0) 或往前 ([delta] < 0) 第 |delta| 首的 id，頭尾相接
+  static int neighborId(int id, int delta) {
+    final n = _resolvedSongs.length;
+    final i = indexOfId(id);
+    final from = i < 0 ? 0 : i;
+    return _resolvedSongs[((from + delta) % n + n) % n].id;
   }
 
   /// 取得目前所有可用分類標籤（依推薦順序排列，並自動納入曲庫內新增的自訂標籤）

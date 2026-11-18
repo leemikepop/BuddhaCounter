@@ -48,7 +48,7 @@ class PlayerControls extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            '#${(song.id + 1).toString().padLeft(2, '0')} ${song.title}',
+            '#${ChantConstants.numberOfId(song.id).toString().padLeft(2, '0')} ${song.title}',
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

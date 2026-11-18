@@ -21,7 +21,7 @@ lib/
 │   ├── playback/             # PlaybackController (曲目、播放、進度、循環)
 │   └── auto_count/           # AutoCountController、BeatTracker (純 Dart 節拍判斷)
 ├── core/
-│   ├── constants/            # 31 首佛曲定義與時間標記 (chant_songs.dart)
+│   ├── constants/            # 34 首佛曲定義與時間標記 (chant_songs.dart)
 │   ├── content/              # 曲目名稱、迴向文的各語言版本
 │   ├── services/             # 儲存、音訊、背景播放 handler、通知、桌面小工具、功課紀錄
 │   └── utils/                # 音檔 metadata 解析、時間格式
