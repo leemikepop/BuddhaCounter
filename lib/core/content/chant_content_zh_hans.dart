@@ -56,7 +56,6 @@ class ChantContentZhHans extends ChantContent {
         '夏蓮居老居士': '夏莲居老居士',
         '沙彌師父': '沙弥师父',
         '靈巖梵唄': '灵岩梵呗',
-        '念佛回家 | Homeward with Amitabha': '念佛回家 | Homeward with Amitabha',
       };
 
   @override

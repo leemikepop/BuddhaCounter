@@ -57,7 +57,6 @@ class ChantContentEn extends ChantContent {
         '夏蓮居老居士': 'Elder Upasaka Xia Lianju',
         '沙彌師父': 'Novice Monk',
         '靈巖梵唄': 'Ling Yen Chant',
-        '念佛回家 | Homeward with Amitabha': 'Homeward with Amitabha',
       };
 
   @override
