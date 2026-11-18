@@ -312,8 +312,16 @@
       position: relative;
     }
 
+    .waveform-spacer {
+      position: relative;
+      height: 150px;
+      min-width: 100%;
+    }
+
     #waveformCanvas {
       display: block;
+      position: sticky;
+      left: 0;
       height: 150px;
       cursor: crosshair;
     }
@@ -866,7 +874,10 @@
       </div>
 
       <div class="waveform-scroll" id="waveformScrollWrap">
-        <canvas id="waveformCanvas" width="980" height="150"></canvas>
+        <!-- spacer 撐出放大後的完整寬度；canvas 只有可視範圍那麼寬，並用 sticky 固定在視窗左側 -->
+        <div id="waveformSpacer" class="waveform-spacer">
+          <canvas id="waveformCanvas" width="980" height="150"></canvas>
+        </div>
       </div>
 
       <div class="deck-controls">
@@ -1067,7 +1078,7 @@
 
           <div class="form-grid-2">
             <div class="form-field">
-              <label for="songPresetSelect" class="field-label">對應 App 31 首佛曲編號（選填，可自動同步 Dart 代碼）：</label>
+              <label for="songPresetSelect" class="field-label">對應 App 佛曲 id（選填；新曲目留「自動推斷」，Dart 代碼會接續最大 id）：</label>
               <select id="songPresetSelect" name="songPreset"></select>
             </div>
 
@@ -1103,11 +1114,10 @@
           <div class="form-grid-2" style="margin-top: 8px;">
             <div class="form-field">
               <label for="outputFilenameInput" class="field-label">輸出檔案名稱：</label>
-              <input type="text" id="outputFilenameInput" name="outputFilename" value="bb01.ogg"
+              <input type="text" id="outputFilenameInput" name="outputFilename" value="佛曲.ogg"
                      autocorrect="off" autocapitalize="off" spellcheck="false" required aria-describedby="outFileErr">
               <div class="inline-nudge-bar">
-                <button type="button" class="btn btn-sm" id="nameStyleDescriptiveBtn">命名為 bbXX-標題.副檔名</button>
-                <button type="button" class="btn btn-sm" id="nameStyleAppAssetBtn">命名為 App 正式檔名 (如 bb1.ogg)</button>
+                <button type="button" class="btn btn-sm" id="nameStyleDescriptiveBtn">命名為 標題.副檔名（App 正式檔名）</button>
               </div>
               <span id="outFileErr" class="field-error" aria-live="polite"></span>
             </div>
@@ -1246,37 +1256,37 @@
 
       // 內建 31 首佛曲預設清單 (與 lib/core/constants/chant_songs.dart 同步)
       const SONG_PRESETS = [
-        { id: 0, bbNum: 1, title: '阿彌陀佛-四字四音-華藏淨宗-悟道法師', beatMs: 3846 },
-        { id: 1, bbNum: 2, title: '阿彌陀佛-四字四音配樂-華藏淨宗', beatMs: 3429 },
-        { id: 2, bbNum: 3, title: '阿彌陀佛-四字四音-引磬慢板', beatMs: 5559 },
-        { id: 3, bbNum: 4, title: '阿彌陀佛-四字四音-女眾慢版', beatMs: 5400 },
-        { id: 4, bbNum: 5, title: '阿彌陀佛-四字四音-女眾快版-靈巖山寺', beatMs: 1925 },
-        { id: 5, bbNum: 6, title: '阿彌陀佛-四字中速-淨空法師', beatMs: 1348 },
-        { id: 6, bbNum: 7, title: '阿彌陀佛-四字快速-淨空法師', beatMs: 747 },
-        { id: 7, bbNum: 8, title: '阿彌陀佛-純人聲慢版-淨空法師', beatMs: 5979 },
-        { id: 8, bbNum: 9, title: '阿彌陀佛-地鐘念佛慢版-悟行法師', beatMs: 3434 },
-        { id: 9, bbNum: 10, title: '阿彌陀佛-唱誦-佛光山', beatMs: 2692 },
-        { id: 10, bbNum: 11, title: '阿彌陀佛-十念法', beatMs: 5863 },
-        { id: 11, bbNum: 12, title: '南無阿彌陀佛-思鄉佛號-祥林精舍-開松法師', beatMs: 7279 },
-        { id: 12, bbNum: 13, title: '南無阿彌陀佛-六字四音-歸鄉佛號', beatMs: 9046 },
-        { id: 13, bbNum: 14, title: '南無阿彌陀佛-六字四音-華樂版', beatMs: 7874 },
-        { id: 14, bbNum: 15, title: '南無阿彌陀佛-六字二音-慢速-靈巖山寺', beatMs: 8648 },
-        { id: 15, bbNum: 16, title: '南無阿彌陀佛-六字唱誦慢速-印光大師版', beatMs: 6797 },
-        { id: 16, bbNum: 17, title: '南無阿彌陀佛-六字唱誦中速-印光大師版', beatMs: 5338 },
-        { id: 17, bbNum: 18, title: '南無阿彌陀佛-唱誦-佛光山', beatMs: 5365 },
-        { id: 18, bbNum: 19, title: '南無阿彌陀佛-六字四字-男女對唱', beatMs: 4791 },
-        { id: 19, bbNum: 20, title: '南無阿彌陀佛-呼吸五段配樂', beatMs: 4062 },
-        { id: 20, bbNum: 21, title: '南無阿彌陀佛-慢速念誦-淨宗法師', beatMs: 3879 },
-        { id: 21, bbNum: 22, title: '南無阿彌陀佛-台語慢速-沙鹿彌陀念佛堂-陳有宏居士', beatMs: 4684 },
-        { id: 22, bbNum: 23, title: '南無阿彌陀佛-夏蓮居老居士', beatMs: 3332 },
-        { id: 23, bbNum: 24, title: '南無阿彌陀佛-六度彌陀-靈巖梵唄-沙彌師父', beatMs: 12906 },
-        { id: 24, bbNum: 25, title: '南無阿彌陀佛-懷念恩師-靈巖梵唄-沙彌師父', beatMs: 7608 },
-        { id: 25, bbNum: 26, title: '南無阿彌陀佛-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 9276 },
-        { id: 26, bbNum: 27, title: '南無釋迦牟尼佛-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 8660 },
-        { id: 27, bbNum: 28, title: '南無地藏王菩薩-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 7672 },
-        { id: 28, bbNum: 29, title: '南無觀世音菩薩-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 9199 },
-        { id: 29, bbNum: 30, title: '南無觀世音菩薩-七字五音-莊嚴樂曲', beatMs: 6456 },
-        { id: 30, bbNum: 31, title: '六字大明咒-女聲唱誦', beatMs: 3653 }
+        { id: 0, title: '阿彌陀佛-四字四音-華藏淨宗-悟道法師', beatMs: 3846 },
+        { id: 1, title: '阿彌陀佛-四字四音配樂-華藏淨宗', beatMs: 3429 },
+        { id: 2, title: '阿彌陀佛-四字四音-引磬慢板', beatMs: 5559 },
+        { id: 3, title: '阿彌陀佛-四字四音-女眾慢版', beatMs: 5400 },
+        { id: 4, title: '阿彌陀佛-四字四音-女眾快版-靈巖山寺', beatMs: 1925 },
+        { id: 5, title: '阿彌陀佛-四字中速-淨空法師', beatMs: 1348 },
+        { id: 6, title: '阿彌陀佛-四字快速-淨空法師', beatMs: 747 },
+        { id: 7, title: '阿彌陀佛-純人聲慢版-淨空法師', beatMs: 5979 },
+        { id: 8, title: '阿彌陀佛-地鐘念佛慢版-悟行法師', beatMs: 3434 },
+        { id: 9, title: '阿彌陀佛-唱誦-佛光山', beatMs: 2692 },
+        { id: 10, title: '阿彌陀佛-十念法', beatMs: 5863 },
+        { id: 11, title: '南無阿彌陀佛-思鄉佛號-祥林精舍-開松法師', beatMs: 7279 },
+        { id: 12, title: '南無阿彌陀佛-六字四音-歸鄉佛號', beatMs: 9046 },
+        { id: 13, title: '南無阿彌陀佛-六字四音-華樂版', beatMs: 7874 },
+        { id: 14, title: '南無阿彌陀佛-六字二音-慢速-靈巖山寺', beatMs: 8648 },
+        { id: 15, title: '南無阿彌陀佛-六字唱誦慢速-印光大師版', beatMs: 6797 },
+        { id: 16, title: '南無阿彌陀佛-六字唱誦中速-印光大師版', beatMs: 5338 },
+        { id: 17, title: '南無阿彌陀佛-唱誦-佛光山', beatMs: 5365 },
+        { id: 18, title: '南無阿彌陀佛-六字四字-男女對唱', beatMs: 4791 },
+        { id: 19, title: '南無阿彌陀佛-呼吸五段配樂', beatMs: 4062 },
+        { id: 20, title: '南無阿彌陀佛-慢速念誦-淨宗法師', beatMs: 3879 },
+        { id: 21, title: '南無阿彌陀佛-台語慢速-沙鹿彌陀念佛堂-陳有宏居士', beatMs: 4684 },
+        { id: 22, title: '南無阿彌陀佛-夏蓮居老居士', beatMs: 3332 },
+        { id: 23, title: '南無阿彌陀佛-六度彌陀-靈巖梵唄-沙彌師父', beatMs: 12906 },
+        { id: 24, title: '南無阿彌陀佛-懷念恩師-靈巖梵唄-沙彌師父', beatMs: 7608 },
+        { id: 25, title: '南無阿彌陀佛-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 9276 },
+        { id: 26, title: '南無釋迦牟尼佛-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 8660 },
+        { id: 27, title: '南無地藏王菩薩-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 7672 },
+        { id: 28, title: '南無觀世音菩薩-朝山聖號-靈巖梵唄-沙彌師父', beatMs: 9199 },
+        { id: 29, title: '南無觀世音菩薩-七字五音-莊嚴樂曲', beatMs: 6456 },
+        { id: 30, title: '六字大明咒-女聲唱誦', beatMs: 3653 }
       ];
 
       // DOM References
@@ -1303,6 +1313,7 @@
 
       const waveformScrollWrap = document.getElementById('waveformScrollWrap');
       const waveformCanvas = document.getElementById('waveformCanvas');
+      const waveformSpacer = document.getElementById('waveformSpacer');
       const audioPlayer = document.getElementById('audioPlayer');
       const jumpStartABtn = document.getElementById('jumpStartABtn');
       const seamlessLoopBtn = document.getElementById('seamlessLoopBtn');
@@ -1346,7 +1357,6 @@
       const outputFilenameInput = document.getElementById('outputFilenameInput');
       const outFileErr = document.getElementById('outFileErr');
       const nameStyleDescriptiveBtn = document.getElementById('nameStyleDescriptiveBtn');
-      const nameStyleAppAssetBtn = document.getElementById('nameStyleAppAssetBtn');
       const autoLoadProcessedChk = document.getElementById('autoLoadProcessedChk');
 
       const runFfmpegBtn = document.getElementById('runFfmpegBtn');
@@ -1419,8 +1429,7 @@
         SONG_PRESETS.forEach((s) => {
           const opt = document.createElement('option');
           opt.value = String(s.id);
-          const numStr = String(s.bbNum).padStart(2, '0');
-          opt.textContent = `#${numStr} (bb${s.bbNum}) · ${s.title}`;
+          opt.textContent = `[id ${s.id}] ${s.title}`;
           songPresetSelect.appendChild(opt);
         });
       }
@@ -1724,29 +1733,17 @@
       // ==================== Auto Filename & Song Matching ====================
       function autoPopulateFieldsFromFilename(filename) {
         const stem = filename.replace(/\.[^.]+$/, '');
-        // Match bb01-標題 or bb1
-        const match = /^bb0*(\d{1,2})(?:[-_\s]+(.+))?$/i.exec(stem);
         const targetExt = getTargetOutputExt();
+        // 舊檔名 bb01-標題 / bb1：去掉前綴取標題；沒有標題時用舊編號（bbN → id N-1）找對應曲目
+        const legacy = /^bb0*(\d{1,2})(?:[-_\s]+(.+))?$/i.exec(stem);
+        const legacyPreset = legacy ? SONG_PRESETS.find((s) => s.id === parseInt(legacy[1], 10) - 1) : null;
+        const title = legacy ? (legacy[2] ? legacy[2].trim() : legacyPreset?.title || stem) : stem;
+        // 新命名：檔名＝標題，以標題對應曲目（找不到就是新曲目）
+        const preset = SONG_PRESETS.find((s) => s.title === title) || legacyPreset;
 
-        if (match) {
-          const bbNum = parseInt(match[1], 10);
-          const customTitle = match[2] ? match[2].trim() : '';
-          const preset = SONG_PRESETS.find((s) => s.bbNum === bbNum);
-          if (preset) {
-            songPresetSelect.value = String(preset.id);
-          }
-          if (customTitle) {
-            metaTitleInput.value = customTitle;
-            const numPad = String(bbNum).padStart(2, '0');
-            outputFilenameInput.value = `bb${numPad}-${customTitle}.${targetExt}`;
-          } else if (preset) {
-            metaTitleInput.value = preset.title;
-            outputFilenameInput.value = `bb${bbNum}.${targetExt}`;
-          }
-        } else {
-          metaTitleInput.value = stem;
-          outputFilenameInput.value = `${stem}.${targetExt}`;
-        }
+        songPresetSelect.value = preset ? String(preset.id) : '-1';
+        metaTitleInput.value = title;
+        outputFilenameInput.value = `${title}.${targetExt}`;
         updateFfmpegCommandPreview();
         updateDartCodeOutput();
       }
@@ -1964,16 +1961,40 @@
         return trimEndSec > trimStartSec ? Math.min(trimEndSec, audioDuration) : audioDuration;
       }
 
-      function renderWaveform() {
-        const dpr = window.devicePixelRatio || 1;
+      // 放大後的「完整波形寬度」（CSS px）。畫布本身只有可視範圍那麼寬，
+      // 放大 8 倍也只畫看得到的那一段，所以拖拽 A/B 不會卡。
+      function getWaveformFullWidth() {
         const baseW = Math.max(940, waveformScrollWrap.clientWidth || 940);
-        const cssW = Math.floor(baseW * waveformZoom);
+        return Math.floor(baseW * waveformZoom);
+      }
+
+      // 把重繪合併成每個畫面影格最多一次（滑鼠移動事件一秒可達上百次）
+      let renderQueued = false;
+      function renderWaveform() {
+        if (renderQueued) return;
+        renderQueued = true;
+        requestAnimationFrame(() => {
+          renderQueued = false;
+          drawWaveformNow();
+        });
+      }
+
+      function drawWaveformNow() {
+        const dpr = window.devicePixelRatio || 1;
+        const fullW = getWaveformFullWidth();
+        const viewW = Math.max(1, Math.min(fullW, waveformScrollWrap.clientWidth || fullW));
         const cssH = 150;
 
-        if (waveformCanvas.width !== Math.floor(cssW * dpr) || waveformCanvas.height !== Math.floor(cssH * dpr)) {
-          waveformCanvas.width = Math.floor(cssW * dpr);
+        const spacerW = `${fullW}px`;
+        if (waveformSpacer.style.width !== spacerW) waveformSpacer.style.width = spacerW;
+        const maxScroll = Math.max(0, fullW - viewW);
+        if (waveformScrollWrap.scrollLeft > maxScroll) waveformScrollWrap.scrollLeft = maxScroll;
+        const scrollX = waveformScrollWrap.scrollLeft;
+
+        if (waveformCanvas.width !== Math.floor(viewW * dpr) || waveformCanvas.height !== Math.floor(cssH * dpr)) {
+          waveformCanvas.width = Math.floor(viewW * dpr);
           waveformCanvas.height = Math.floor(cssH * dpr);
-          waveformCanvas.style.width = `${cssW}px`;
+          waveformCanvas.style.width = `${viewW}px`;
           waveformCanvas.style.height = `${cssH}px`;
         }
 
@@ -1982,32 +2003,38 @@
         ctx.scale(dpr, dpr);
 
         ctx.fillStyle = '#14161B';
-        ctx.fillRect(0, 0, cssW, cssH);
+        ctx.fillRect(0, 0, viewW, cssH);
 
         const midY = cssH / 2;
         ctx.strokeStyle = '#2A303C';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, midY);
-        ctx.lineTo(cssW, midY);
+        ctx.lineTo(viewW, midY);
         ctx.stroke();
 
         if (!decodedBuffer || !waveformPeaks || audioDuration <= 0) {
           ctx.fillStyle = '#64748B';
           ctx.font = '13px sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText('載入音檔後將在此顯示高解析度互動式波形', cssW / 2, midY + 5);
+          ctx.fillText('載入音檔後將在此顯示高解析度互動式波形', viewW / 2, midY + 5);
           ctx.restore();
           return;
         }
 
-        // Draw waveform peaks
+        // 以下所有 x 座標＝完整寬度上的位置 − scrollX（轉成畫布座標）
+        const toX = (sec) => (sec / audioDuration) * fullW - scrollX;
+
+        // Draw waveform peaks（只畫可視範圍）
         const { totalCols, mins, maxs } = waveformPeaks;
+        const colPerPx = totalCols / fullW;
+        const colStart = Math.max(0, Math.floor(scrollX * colPerPx) - 1);
+        const colEnd = Math.min(totalCols, Math.ceil((scrollX + viewW) * colPerPx) + 1);
         ctx.strokeStyle = '#63B3ED';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        for (let x = 0; x < totalCols; x++) {
-          const px = (x / totalCols) * cssW;
+        for (let x = colStart; x < colEnd; x++) {
+          const px = x / colPerPx - scrollX;
           const y1 = midY - maxs[x] * (midY - 12);
           const y2 = midY - mins[x] * (midY - 12);
           ctx.moveTo(px, y1);
@@ -2016,13 +2043,13 @@
         ctx.stroke();
 
         // Draw Trim A & B overlays
-        const xA = (trimStartSec / audioDuration) * cssW;
-        const xB = (trimEndSec / audioDuration) * cssW;
+        const xA = toX(trimStartSec);
+        const xB = toX(trimEndSec);
 
         if (trimEnabledChk.checked) {
           ctx.fillStyle = 'rgba(10, 12, 16, 0.68)';
-          if (xA > 0) ctx.fillRect(0, 0, xA, cssH);
-          if (xB < cssW) ctx.fillRect(xB, 0, cssW - xB, cssH);
+          if (xA > 0) ctx.fillRect(0, 0, Math.min(xA, viewW), cssH);
+          if (xB < viewW) ctx.fillRect(Math.max(0, xB), 0, viewW - Math.max(0, xB), cssH);
         }
 
         // Marker lines (phraseMarkersMs)
@@ -2033,7 +2060,8 @@
         markers.forEach((ms, idx) => {
           const absSec = baseOffsetSec + ms / 1000;
           if (absSec >= 0 && absSec <= audioDuration) {
-            const mx = (absSec / audioDuration) * cssW;
+            const mx = toX(absSec);
+            if (mx < -30 || mx > viewW + 30) return;
             ctx.beginPath();
             ctx.moveTo(mx, 16);
             ctx.lineTo(mx, cssH);
@@ -2069,7 +2097,7 @@
 
         // Playhead (White)
         const curSec = getCurrentPlayheadSec();
-        const xPlay = (curSec / audioDuration) * cssW;
+        const xPlay = toX(curSec);
         ctx.strokeStyle = '#FFFFFF';
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -2179,7 +2207,7 @@
 
         const tick = () => {
           if (!isLoopPlaying) return;
-          renderWaveform();
+          drawWaveformNow();
           updateLiveReadout();
           checkVerifyModeProgress();
           rafId = requestAnimationFrame(tick);
@@ -2699,11 +2727,10 @@
         const preset = SONG_PRESETS.find((s) => s.id === presetId);
 
         if (outMode === 'full') {
-          const id = preset ? preset.id : 0;
+          // 新曲目的 id 接在現有最大 id 後面（id 一經發佈就不能改，插入順序只靠清單位置）
+          const id = preset ? preset.id : Math.max(...SONG_PRESETS.map((s) => s.id)) + 1;
           const title = (metaTitleInput.value.trim() || preset?.title || '佛曲標題').replace(/'/g, "\\'");
-          const defaultFile = preset
-            ? `bb${String(preset.bbNum).padStart(2, '0')}-${preset.title}.ogg`
-            : 'bb01.ogg';
+          const defaultFile = `${metaTitleInput.value.trim() || preset?.title || '佛曲'}.ogg`;
           const outFile = outputFilenameInput.value.trim() || defaultFile;
           const markersLines = markers.map((m) => `        ${m},`).join('\n');
           outputArea.value =
@@ -2799,19 +2826,57 @@ ${markersLines}
       // Waveform Zoom & Mouse Dragging
       document.querySelectorAll('[data-zoom]').forEach((btn) => {
         btn.addEventListener('click', () => {
+          // 縮放時保持視窗中心對準同一個時間點
+          const viewW = waveformScrollWrap.clientWidth || 1;
+          const oldFullW = getWaveformFullWidth();
+          const centerRatio = (waveformScrollWrap.scrollLeft + viewW / 2) / oldFullW;
           waveformZoom = Number(btn.dataset.zoom) || 1;
           document.querySelectorAll('[data-zoom]').forEach((b) => b.classList.toggle('active', b === btn));
           computeWaveformPeaks();
+          const newFullW = getWaveformFullWidth();
+          waveformSpacer.style.width = `${newFullW}px`;
+          waveformScrollWrap.scrollLeft = Math.max(0, centerRatio * newFullW - viewW / 2);
           renderWaveform();
         });
       });
+
+      waveformScrollWrap.addEventListener('scroll', () => renderWaveform(), { passive: true });
+
+      // 滑鼠 x（視窗座標）→ 秒數：加上捲動位置，以完整波形寬度換算
+      function clientXToSec(clientX) {
+        const rect = waveformScrollWrap.getBoundingClientRect();
+        const fullW = getWaveformFullWidth();
+        const x = clientX - rect.left + waveformScrollWrap.scrollLeft;
+        return Math.max(0, Math.min(audioDuration, (x / fullW) * audioDuration));
+      }
+
+      let lastDragClientX = 0;
+      let edgeScrollRaf = null;
+      // 拖曳 A/B 時滑鼠靠近左右邊緣就自動捲動，放大時才拖得到遠處
+      function edgeScrollStep() {
+        edgeScrollRaf = null;
+        if (!draggingHandle) return;
+        const rect = waveformScrollWrap.getBoundingClientRect();
+        const zone = 40;
+        let dx = 0;
+        if (lastDragClientX < rect.left + zone) dx = -Math.ceil((rect.left + zone - lastDragClientX) / 4);
+        else if (lastDragClientX > rect.right - zone) dx = Math.ceil((lastDragClientX - (rect.right - zone)) / 4);
+        if (dx !== 0) {
+          const before = waveformScrollWrap.scrollLeft;
+          waveformScrollWrap.scrollLeft = before + Math.max(-40, Math.min(40, dx));
+          if (waveformScrollWrap.scrollLeft !== before) applyDrag(lastDragClientX);
+          edgeScrollRaf = requestAnimationFrame(edgeScrollStep);
+        }
+      }
 
       waveformCanvas.addEventListener('mousedown', (e) => {
         if (!decodedBuffer || audioDuration <= 0) return;
         const rect = waveformCanvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
-        const xA = (trimStartSec / audioDuration) * rect.width;
-        const xB = (trimEndSec / audioDuration) * rect.width;
+        const fullW = getWaveformFullWidth();
+        const scrollX = waveformScrollWrap.scrollLeft;
+        const xA = (trimStartSec / audioDuration) * fullW - scrollX;
+        const xB = (trimEndSec / audioDuration) * fullW - scrollX;
 
         if (Math.abs(x - xA) <= 14) {
           draggingHandle = 'A';
@@ -2819,7 +2884,7 @@ ${markersLines}
           draggingHandle = 'B';
         } else {
           draggingHandle = 'seek';
-          const sec = Math.max(0, Math.min(audioDuration, (x / rect.width) * audioDuration));
+          const sec = clientXToSec(e.clientX);
           if (isLoopPlaying) {
             startSeamlessLoopAt(sec);
           } else {
@@ -2832,9 +2897,15 @@ ${markersLines}
 
       window.addEventListener('mousemove', (e) => {
         if (!draggingHandle || !decodedBuffer || audioDuration <= 0) return;
-        const rect = waveformCanvas.getBoundingClientRect();
-        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-        const sec = ratio * audioDuration;
+        lastDragClientX = e.clientX;
+        applyDrag(e.clientX);
+        if (draggingHandle !== 'seek' && edgeScrollRaf === null) {
+          edgeScrollRaf = requestAnimationFrame(edgeScrollStep);
+        }
+      });
+
+      function applyDrag(clientX) {
+        const sec = clientXToSec(clientX);
 
         if (draggingHandle === 'A') {
           trimStartSec = Math.min(sec, trimEndSec - 0.05);
@@ -2853,7 +2924,7 @@ ${markersLines}
         }
         renderWaveform();
         updateLiveReadout();
-      });
+      }
 
       window.addEventListener('mouseup', () => {
         if (draggingHandle === 'A' || draggingHandle === 'B') {
@@ -3055,20 +3126,9 @@ ${markersLines}
       nameStyleDescriptiveBtn.addEventListener('click', () => {
         const presetId = parseInt(songPresetSelect.value, 10);
         const preset = SONG_PRESETS.find((s) => s.id === presetId);
-        const bbPad = preset ? String(preset.bbNum).padStart(2, '0') : '01';
         const title = metaTitleInput.value.trim() || preset?.title || '佛曲';
         const ext = getTargetOutputExt();
-        outputFilenameInput.value = `bb${bbPad}-${title}.${ext}`;
-        updateFfmpegCommandPreview();
-        updateDartCodeOutput();
-      });
-
-      nameStyleAppAssetBtn.addEventListener('click', () => {
-        const presetId = parseInt(songPresetSelect.value, 10);
-        const preset = SONG_PRESETS.find((s) => s.id === presetId);
-        const bbNum = preset ? preset.bbNum : 1;
-        const ext = getTargetOutputExt();
-        outputFilenameInput.value = `bb${bbNum}.${ext}`;
+        outputFilenameInput.value = `${title}.${ext}`;
         updateFfmpegCommandPreview();
         updateDartCodeOutput();
       });
