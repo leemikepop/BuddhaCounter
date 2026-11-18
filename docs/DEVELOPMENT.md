@@ -127,13 +127,13 @@ dart format lib test            # 可選：統一格式
 ```bash
 bash tool/screenshots/fetch_fonts.sh             # 第一次：下載 Noto Sans / Serif TC、SC（約 60 MB，不進 repo）
 flutter test tool/screenshots                    # 約 1 分鐘，輸出到 build/screenshots/
-bash tool/screenshots/export_store_assets.sh     # 把繁中宣傳圖複製到 assets/store_assets/（其他語言：zh_Hans / en）
+bash tool/screenshots/export_store_assets.sh     # 把繁中宣傳圖複製到 assets/store-assets/（其他語言：zh_Hans / en）
 ```
 
 不想在本機跑的話，到 GitHub → Actions → **Screenshots - Generate store images** → Run workflow
 （或 `gh workflow run screenshots.yml --ref <branch>`），約 5 分鐘後在該次執行的頁面下載：
 
-- `store-assets`：和 repo 裡相同的整理方式（繁中），解壓縮覆蓋 `assets/store_assets/` 後 commit。
+- `store-assets`：和 repo 裡相同的整理方式（繁中），解壓縮覆蓋 `assets/store-assets/` 後 commit。
 - `screenshots-all-languages`：三種語言的原始截圖與宣傳圖（`build/screenshots/` 整個資料夾）。
 
 artifact 保留 14 天；workflow 不會自己 commit 回 repo。
@@ -144,7 +144,7 @@ artifact 保留 14 天；workflow 不會自己 commit 回 repo。
   Android 手機（1080×1920）× 繁中、簡中、英文；畫面清單在 `tool/screenshots/shots.dart` 的 `shots`。
 - 宣傳圖 `build/screenshots/posters/`（`tool/screenshots/posters.dart`）：紙紋背景 + 明體標題 + 手機外框，
   外框裡是**真的在跑的 App**（有狀態列、動態島），不是貼上去的截圖。標題文字在 `_captions`。
-  另外產生 App Store 搜尋結果圖 `posters/search_results/<語言>.jpg`（3840×2560，App 名稱 + 兩支手機，都放在 Apple 規定的中央安全區內），
+  另外產生 App Store 搜尋結果圖 `posters/search_results/<語言>_<尺寸>.jpg`（3840×2560 與 5244×2950 兩種，App 名稱 + 兩支手機，都放在置中的安全區內；5244×2950 Apple 沒公布安全區，沿用同樣大小），
   以及 README 首圖與 GitHub 社群預覽圖（只有繁中）。
 - 文字一律用 Noto 排版，和 iPhone 實機的蘋方 / SF 略有不同。畫面裡不要用 emoji（截圖會畫成方框），改用 `Icons.*`；`test/no_emoji_in_ui_test.dart` 會檢查 `lib/ui/`。
 - 截不到的：桌面小工具、通知、鎖定畫面播放控制（都是原生畫面），仍要手動截。

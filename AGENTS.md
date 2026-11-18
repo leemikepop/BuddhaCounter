@@ -135,8 +135,8 @@
   這個覆寫必須在測試本體結束前設回 `null`（框架在 tearDown 之前就會檢查）。
 - 網頁版行為用 `AppPlatform.debugIsWebOverride = true` 模擬，見 `test/web_test.dart`。
 - 商店截圖與宣傳圖：`flutter test tool/screenshots`（先跑一次 `tool/screenshots/fetch_fonts.sh`），
-  再用 `tool/screenshots/export_store_assets.sh` 更新 `assets/store_assets/`，見 docs/DEVELOPMENT.md。
-  改了畫面就重新產生；`assets/store_assets/` 裡產生的圖不要手動改。主題裡的 `TextStyle`（例如 `AppBarTheme.titleTextStyle`）**要帶字型名稱**：
+  再用 `tool/screenshots/export_store_assets.sh` 更新 `assets/store-assets/`，見 docs/DEVELOPMENT.md。
+  改了畫面就重新產生；`assets/store-assets/` 裡產生的圖不要手動改。主題裡的 `TextStyle`（例如 `AppBarTheme.titleTextStyle`）**要帶字型名稱**：
   沒指定字型的文字在截圖裡會畫成方框（`test/modern_theme_test.dart` 有檢查 AppBar 標題）。
 
 ## 其他

@@ -15,8 +15,8 @@ import 'shots.dart';
 /// 宣傳圖標題字型 (Noto Serif TC / SC Bold，由 shots.dart 載入)
 const posterSerif = 'PosterSerif';
 
-const _template = 'assets/store_assets/source/paper_template_1080x1920.png';
-const _paperArt = 'assets/store_assets/source/paper_art_3840x2143.png';
+const _template = 'assets/store-assets/source/paper_template_1080x1920.png';
+const _paperArt = 'assets/store-assets/source/paper_art_3840x2143.png';
 const _appIcon = 'assets/images/app_icon_new.png';
 
 // 背景模板 (1080×1920) 裡已經畫了一支手機，新的外框要完整蓋住它：
@@ -535,11 +535,28 @@ void registerPosterTests(ShotLocale l) {
   });
 }
 
-/// App Store「標題和搜尋結果」的搜尋結果圖：3:2，輸出 3840×2560。
-/// 以 1920×1280 排版、2 倍輸出；重要內容都放在 Apple 規定的安全區
-/// (3840×2560 上是 x 836、y 765 起 2168×1030，這裡座標減半)，外面只放背景。
-const _searchCanvas = Size(1920, 1280);
-const _searchSafe = Rect.fromLTWH(418, 382.5, 1084, 515);
+/// App Store「標題和搜尋結果」的搜尋結果圖。Apple 接受 5244×2950、3840×2560、1920×1280，
+/// 這裡產生 3840×2560 (3:2) 與 5244×2950 (約 16:9) 兩種。
+/// 都以 2 倍輸出；重要內容都放在置中的安全區
+/// (3840×2560 上是 x 836、y 765 起 2168×1030，這裡座標減半 = 1084×515)，外面只放背景。
+/// 5244×2950 沒有公布安全區，沿用同樣大小並置中 (比例上比 3:2 的更保守)。
+class _SearchSize {
+  const _SearchSize(this.name, this.canvas);
+
+  /// 輸出檔名用的像素尺寸，例如 `3840x2560`
+  final String name;
+
+  /// 排版用的邏輯尺寸 (輸出時放大 2 倍)
+  final Size canvas;
+
+  Rect get safe => Rect.fromCenter(
+      center: canvas.center(Offset.zero), width: 1084, height: 515);
+}
+
+const _searchSizes = <_SearchSize>[
+  _SearchSize('3840x2560', Size(1920, 1280)),
+  _SearchSize('5244x2950', Size(2622, 1475)),
+];
 
 /// 搜尋結果圖的 App 名稱與一句話介紹 (繁中、簡中、英文)
 const _searchCaptions = <String, (String, String)>{
@@ -549,15 +566,22 @@ const _searchCaptions = <String, (String, String)>{
 };
 
 void registerSearchImageTest(ShotLocale l) {
-  testWidgets('App Store search image ${l.name}', (tester) async {
-    tester.view.physicalSize = _searchCanvas;
+  for (final size in _searchSizes) {
+    _registerSearchImageTest(l, size);
+  }
+}
+
+void _registerSearchImageTest(ShotLocale l, _SearchSize size) {
+  final searchCanvas = size.canvas;
+  testWidgets('App Store search image ${l.name} ${size.name}', (tester) async {
+    tester.view.physicalSize = searchCanvas;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     final app = await demoApp(l, shots.first);
     final (title, subtitle) = _searchCaptions[l.name]!;
     final isLatin = l.name == 'en';
-    const safe = _searchSafe;
+    final safe = size.safe;
     // 兩支手機的高度剛好放進安全區 (第二支往下錯開一點)
     const drop = 30.0;
     const phoneW = 230.0;
@@ -572,7 +596,7 @@ void registerSearchImageTest(ShotLocale l) {
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: SizedBox.fromSize(
-          size: _searchCanvas,
+          size: searchCanvas,
           child: Stack(children: [
             Positioned.fill(
                 child: Image.memory(_bytes(_paperArt), fit: BoxFit.cover)),
@@ -595,8 +619,8 @@ void registerSearchImageTest(ShotLocale l) {
             Positioned(
               left: safe.left + 20,
               top: safe.top,
-              bottom: _searchCanvas.height - safe.bottom,
-              right: _searchCanvas.width - phoneALeft + 40,
+              bottom: searchCanvas.height - safe.bottom,
+              right: searchCanvas.width - phoneALeft + 40,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -643,9 +667,9 @@ void registerSearchImageTest(ShotLocale l) {
     ));
     await _openCalendarInPhoneB(tester, l);
     await openShot(tester, l, const Shot('search'));
-    // 1920×1280 × 2 = 3840×2560 (Apple 的最大尺寸)
-    await capture(
-        tester, key, '$outDir/posters/search_results/${l.name}.jpg', 2);
+    // 邏輯尺寸 × 2 = 輸出尺寸 (1920×1280 → 3840×2560、2622×1475 → 5244×2950)
+    await capture(tester, key,
+        '$outDir/posters/search_results/${l.name}_${size.name}.jpg', 2);
     await disposeAndSettleTimers(tester);
   });
 }
